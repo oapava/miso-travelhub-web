@@ -1,0 +1,54 @@
+.pagination {
+  display: flex;
+  justify-content: center;
+
+  &__list {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__item {
+    display: flex;
+  }
+
+  &__button {
+    @include flex-center;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    padding: $spacing-2xs;
+    border: none;
+    border-radius: $border-radius-md;
+    background-color: transparent;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-700;
+    cursor: pointer;
+    @include transition(background-color, color);
+    @include focus-visible-outline;
+
+    &:hover {
+      background-color: $color-neutral-100;
+    }
+
+    &--active {
+      background-color: $color-primary-700;
+      color: $color-neutral-white;
+
+      &:hover {
+        background-color: $color-primary-800;
+      }
+    }
+  }
+
+  &__ellipsis {
+    @include flex-center;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    font-size: $font-size-sm;
+    color: $color-neutral-500;
+  }
+}

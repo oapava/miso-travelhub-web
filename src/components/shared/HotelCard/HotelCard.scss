@@ -1,0 +1,297 @@
+.hotel-card {
+  background-color: rgb(196, 212, 224);
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+  @include card-shadow;
+  @include transition(box-shadow);
+
+  &:hover {
+    box-shadow: $shadow-xl;
+  }
+
+  // --- Horizontal (Results/Bookings) ---
+  &--horizontal {
+    display: flex;
+    gap: 0;
+
+    .hotel-card__image-container {
+      position: relative;
+      width: 16rem;
+      min-height: 11rem;
+      flex-shrink: 0;
+
+      @include respond-to('tablet') {
+        width: 100%;
+        min-height: 12rem;
+      }
+    }
+
+    .hotel-card__content {
+      flex: 1;
+      padding: $spacing-md $spacing-lg;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      background-color: rgba($color-neutral-white, 100);
+
+      @include respond-to('tablet') {
+        padding: $spacing-md;
+      }
+    }
+
+    .hotel-card__pricing {
+      .price-display__final {
+        font-size: $font-size-sm;
+        color: $color-neutral-900;
+      }
+    }
+
+    @include respond-to('tablet') {
+      flex-direction: column;
+    }
+  }
+
+  // --- Vertical (Home cards) ---
+  &--vertical {
+    @include flex-column;
+    width: 100%;
+    position: relative;
+
+    .hotel-card__image-container {
+      position: relative;
+      width: 100%;
+      height: 34rem;
+    }
+
+    .hotel-card__content {
+      padding: $spacing-sm $spacing-md;
+    }
+
+    // Hide detailed info in vertical card
+    .hotel-card__header,
+    .hotel-card__location,
+    .hotel-card__details,
+    .hotel-card__amenities,
+    .hotel-card__review {
+      display: none;
+    }
+
+    .hotel-card__detail-button {
+      z-index: 2;
+    }
+
+    // Hotel name overlaid on image
+    .hotel-card__name {
+      color: $color-neutral-white;
+      bottom: $spacing-2xl;
+      left: $spacing-md;
+      right: $spacing-md;
+      z-index: 2;
+      font-size: $font-size-md;
+      font-weight: $font-weight-bold;
+      text-shadow: 0 1px 3px rgba($color-neutral-black, 0.6);
+      line-height: $line-height-tight;
+    }
+
+    // Price overlaid on image
+    .hotel-card__pricing {
+      position: relative;
+      bottom: $spacing-sm;
+      z-index: 2;
+
+      .price-display__final {
+        font-size: $font-size-xl;
+        color: $color-accent-yellow;
+        font-weight: $font-weight-bold;
+      }
+
+      .price-display__stay-info {
+        font-size: $font-size-xl;
+      }
+
+      .price-display__original,
+      .price-display__discount {
+        display: none;
+      }
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        transparent 30%,
+        rgba($color-neutral-black, 0.75) 100%
+      );
+      z-index: 1;
+    }
+
+    // Footer layout overrides for vertical variant
+    .hotel-card__footer {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: auto;
+      padding-top: 0.5rem;
+      align-items: flex-start;
+      flex-direction: column;
+      width: auto;
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: $color-neutral-200;
+  }
+
+  &__badge {
+    position: absolute;
+    top: $spacing-xs;
+    left: $spacing-xs;
+    z-index: 2;
+  }
+
+  &__favorite {
+    position: absolute;
+    top: $spacing-xs;
+    right: $spacing-xs;
+    z-index: 2;
+    @include flex-center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: $border-radius-full;
+    background-color: rgba($color-neutral-white, 0.85);
+    border: none;
+    cursor: pointer;
+    font-size: $font-size-base;
+    color: $color-neutral-400;
+    @include transition(color, background-color);
+    @include focus-visible-outline;
+
+    &--active {
+      color: $color-error;
+    }
+
+    &:hover {
+      background-color: $color-neutral-white;
+      color: $color-error;
+    }
+  }
+
+  &__content {
+    @include flex-column;
+    gap: $spacing-xs;
+    position: absolute;
+    bottom: 0;
+  }
+
+  &__header {
+    @include flex-between;
+    flex-wrap: wrap;
+    gap: $spacing-xs;
+    align-items: flex-start;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    flex-wrap: wrap;
+  }
+
+  &__name {
+    font-size: $font-size-md;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-900;
+    line-height: $line-height-tight;
+  }
+
+  &__review {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+    font-size: $font-size-xs;
+  }
+
+  &__review-label-box{
+    display: flex;
+    align-items: center;
+    align-content: space-between;
+    flex-direction: column;
+  }
+
+  &__review-label {
+    color: $color-primary-700;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__review-count {
+    color: $color-neutral-500;
+  }
+
+  &__location {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+    font-size: $font-size-sm;
+    color: $color-neutral-900;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  &__location-name {
+    color: $color-primary-700;
+    font-weight: $font-weight-medium;
+  }
+
+  &__details {
+    font-size: $font-size-xs;
+    color: $color-neutral-600;
+    line-height: $line-height-base;
+  }
+
+  &__ammenities-price-box{
+    display: flex;
+  }
+
+  &__amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-2xs;
+    width: 60%;
+    align-content: flex-start;
+    justify-content: flex-start;
+  }
+
+  &__footer {
+    @include flex-between;
+    align-content: flex-end;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: $spacing-xs;
+    margin-top: auto;
+    padding-top: $spacing-xs;
+    align-items: flex-start;
+    width: 40%;
+  }
+
+  &__pricing {
+    @include flex-column;
+    gap: 2px;
+  }
+
+  &__stay-info {
+    font-size: $font-size-sm;
+    color: $color-neutral-500;
+  }
+
+  &__location-pin{
+    @include flex-center
+  }
+}

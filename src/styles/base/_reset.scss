@@ -1,0 +1,105 @@
+// ============================================
+// TravelHub - CSS Reset & Base Styles
+// ============================================
+
+@use '@/styles/abstracts' as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: $font-family-primary;
+  font-size: $font-size-base;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-base;
+  color: $color-neutral-800;
+  background-color: $color-page-bg;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family-heading;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-tight;
+  overflow-wrap: break-word;
+}
+
+p {
+  overflow-wrap: break-word;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+// --- Accessibility ---
+.visually-hidden {
+  @include visually-hidden;
+}
+
+:focus-visible {
+  outline: 2px solid $color-primary-500;
+  outline-offset: 2px;
+}
+
+// Skip to content link
+.skip-to-content {
+  @include visually-hidden;
+
+  &:focus {
+    position: fixed;
+    top: $spacing-md;
+    left: $spacing-md;
+    z-index: $z-index-tooltip;
+    padding: $spacing-xs $spacing-md;
+    background-color: $color-primary-800;
+    color: $color-neutral-white;
+    font-size: $font-size-sm;
+    border-radius: $border-radius-md;
+    width: auto;
+    height: auto;
+    clip: auto;
+    white-space: normal;
+    margin: 0;
+  }
+}

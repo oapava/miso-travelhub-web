@@ -1,0 +1,52 @@
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-2xs;
+
+  &__stars {
+    display: inline-flex;
+    gap: 1px;
+  }
+
+  &__star {
+    line-height: 1;
+
+    &--filled {
+      color: $color-accent-yellow;
+    }
+
+    &--half {
+      color: $color-accent-yellow;
+      opacity: 0.6;
+    }
+
+    &--empty {
+      color: $color-neutral-300;
+    }
+  }
+
+  &__value {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-neutral-700;
+  }
+
+  // --- Sizes ---
+  &--small {
+    .star-rating__star {
+      font-size: $font-size-sm;
+    }
+  }
+
+  &--medium {
+    .star-rating__star {
+      font-size: $font-size-lg;
+    }
+  }
+
+  &--large {
+    .star-rating__star {
+      font-size: $font-size-xl;
+    }
+  }
+}

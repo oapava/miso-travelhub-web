@@ -1,0 +1,46 @@
+.price-display {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  flex-wrap: wrap;
+
+  &__original {
+    text-decoration: line-through;
+    color: $color-neutral-500;
+    font-weight: $font-weight-regular;
+  }
+
+  &__discount {
+    // The discount badge sits inline — uses Badge component
+    flex-shrink: 0;
+  }
+
+  &__final {
+    font-weight: $font-weight-bold;
+    color: $color-neutral-900;
+  }
+
+  &__period {
+    font-weight: $font-weight-regular;
+    color: $color-neutral-600;
+  }
+
+  // --- Sizes ---
+  &--small {
+    .price-display__original { font-size: $font-size-xs; }
+    .price-display__final     { font-size: $font-size-sm; }
+    .price-display__period    { font-size: $font-size-xs; }
+  }
+
+  &--medium {
+    .price-display__original { font-size: $font-size-sm; }
+    .price-display__final     { font-size: $font-size-sm; }
+    .price-display__period    { font-size: $font-size-sm; }
+  }
+
+  &--large {
+    .price-display__original { font-size: $font-size-base; }
+    .price-display__final     { font-size: $font-size-xl; }
+    .price-display__period    { font-size: $font-size-base; }
+  }
+}

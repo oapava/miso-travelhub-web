@@ -1,0 +1,80 @@
+@use "sass:color";
+
+.b2b-header {
+  background-color: $color-neutral-white;
+  border-bottom: 1px solid $color-neutral-200;
+  padding: 0 $spacing-lg;
+
+  &__container {
+    @include flex-between;
+    height: 4rem;
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+  }
+
+  &__breadcrumb {
+    font-size: $font-size-sm;
+    color: $color-neutral-600;
+
+    @include respond-to('tablet') {
+      display: none;
+    }
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+  }
+
+  &__lang-toggle {
+    padding: $spacing-2xs $spacing-xs;
+    border: none;
+    background: none;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-neutral-700;
+    cursor: pointer;
+    @include focus-visible-outline;
+
+    &:hover {
+      color: $color-primary-700;
+    }
+  }
+
+  &__currency {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-700;
+  }
+
+  &__notification {
+    @include flex-center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: $border-radius-full;
+    background-color: $color-accent-yellow;
+    font-size: $font-size-base;
+    cursor: pointer;
+    @include transition(background-color);
+    @include focus-visible-outline;
+
+    &:hover {
+      background-color: color.adjust($color-accent-yellow, $lightness: -5%);
+    }
+  }
+
+  &__date {
+    padding: $spacing-2xs $spacing-sm;
+    border-radius: $border-radius-xl;
+    background-color: $color-primary-900;
+    color: $color-neutral-white;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+  }
+}

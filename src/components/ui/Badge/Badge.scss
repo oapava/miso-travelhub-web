@@ -1,0 +1,61 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $border-radius-pill;
+  font-family: $font-family-primary;
+  font-weight: $font-weight-bold;
+  white-space: nowrap;
+
+  &--small {
+    padding: 2px $spacing-xs;
+    font-size: $font-size-xs;
+    min-height: 1.375rem;
+  }
+
+  &--medium {
+    padding: $spacing-2xs $spacing-sm;
+    font-size: $font-size-sm;
+  }
+
+  &--primary {
+    background-color: $color-primary-700;
+    color: $color-neutral-white;
+  }
+
+  &--success {
+    background-color: $color-accent-green;
+    color: $color-neutral-white;
+  }
+
+  &--warning {
+    background-color: $color-accent-yellow;
+    color: $color-primary-900;
+  }
+
+  &--info {
+    background-color: rgba($color-primary-700, 0.15);
+    color: $color-primary-700;
+  }
+
+  // Discount badge: compact green pill (10%)
+  &--discount {
+    background-color: #c8e6a0;
+    color: #3d6b1a;
+    border-radius: $border-radius-pill;
+    padding: 2px $spacing-xs;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+  }
+
+  // Rating badge: dark navy-blue square
+  &--rating {
+    background-color: $color-primary-800;
+    color: $color-neutral-white;
+    border-radius: $border-radius-sm;
+    min-width: 2rem;
+    min-height: 2rem;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+  }
+}

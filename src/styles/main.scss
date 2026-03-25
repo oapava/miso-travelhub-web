@@ -1,0 +1,14 @@
+// ============================================
+// TravelHub - Main Stylesheet Entry Point
+// ============================================
+
+// Note: Variables & mixins are injected globally
+// via vite.config.ts additionalData function
+
+// Base (must come before other at-rules like @import)
+@use 'base/reset';
+@use 'base/typography';
+
+// Load brand fonts (Inter default, Poppins headings)
+// Include weight 300 to support body-text-light
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap');

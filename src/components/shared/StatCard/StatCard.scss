@@ -1,0 +1,107 @@
+.stat-card {
+  background-color: $color-neutral-white;
+  border: 1px solid $color-neutral-200;
+  border-radius: $border-radius-lg;
+  padding: $spacing-lg;
+
+  &__title {
+    font-size: $font-size-md;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-900;
+    margin-bottom: $spacing-md;
+  }
+
+  &__body {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: $spacing-md;
+  }
+
+  &__values {
+    @include flex-column;
+    gap: $spacing-2xs;
+  }
+
+  &__main-value {
+    font-size: $font-size-4xl;
+    font-weight: $font-weight-bold;
+    color: $color-primary-800;
+    line-height: 1;
+  }
+
+  &__subtitle {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-600;
+  }
+
+  &__secondary {
+    display: flex;
+    align-items: baseline;
+    gap: $spacing-2xs;
+  }
+
+  &__secondary-value {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-400;
+    line-height: 1;
+  }
+
+  &__secondary-label {
+    font-size: $font-size-sm;
+    color: $color-neutral-500;
+  }
+
+  &__badge {
+    display: inline-flex;
+    padding: $spacing-2xs $spacing-sm;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+
+    &--success {
+      background-color: $color-accent-yellow;
+      color: $color-neutral-900;
+    }
+
+    &--warning {
+      background-color: $color-warning;
+      color: $color-neutral-white;
+    }
+
+    &--info {
+      background-color: $color-accent-yellow;
+      color: $color-neutral-900;
+    }
+  }
+
+  &__chart {
+    flex-shrink: 0;
+    width: 6rem;
+    height: 4rem;
+  }
+
+  &__chart-placeholder {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 100%;
+  }
+
+  &__chart-bar {
+    flex: 1;
+    background-color: $color-primary-800;
+    border-radius: 2px 2px 0 0;
+    min-width: 4px;
+
+    &:nth-child(even) {
+      background-color: $color-neutral-300;
+    }
+
+    &:last-child {
+      background-color: $color-accent-yellow;
+    }
+  }
+}

@@ -1,0 +1,93 @@
+.bookings-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: $color-page-bg;
+
+  &__search-bar-wrapper {
+    background: $color-neutral-white;
+    padding: $spacing-sm $spacing-lg;
+    box-shadow: 0 2px 6px rgba($color-neutral-black, 0.06);
+  }
+
+  &__container {
+    @include container;
+    padding: $spacing-lg;
+    flex-grow: 1;
+  }
+
+  &__content {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: $spacing-3xl;
+    margin-top: $spacing-xl;
+
+    @include respond-to('tablet') {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xl;
+  }
+
+  &__title {
+    @include heading(2xl);
+    color: $color-primary-900;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xl;
+  }
+
+  &__booking-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  &__group-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding-bottom: $spacing-md;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  &__group-date {
+    @include heading(lg);
+    color: $color-primary-900;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__group-bookings {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  &__booking-item {
+    position: relative;
+    padding: $spacing-lg;
+    background: $color-neutral-white;
+    border-radius: $border-radius-lg;
+    border: 1px solid rgba($color-neutral-black, 0.06);
+    @include card-shadow;
+
+    > :first-child {
+      margin-bottom: $spacing-md;
+    }
+
+    > :last-child {
+      position: absolute;
+      top: $spacing-lg;
+      right: $spacing-lg;
+    }
+  }
+}

@@ -1,0 +1,144 @@
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+
+  &__container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  &__main {
+    flex: 1;
+    overflow-y: auto;
+    background-color: $color-neutral-50;
+  }
+
+  &__content {
+    @include container;
+    padding: $spacing-3xl;
+
+    @include respond-to('tablet') {
+      padding: $spacing-2xl;
+    }
+  }
+
+  &__title {
+    @include heading('2xl');
+    margin-bottom: $spacing-3xl;
+    color: $color-neutral-black;
+
+    strong {
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-3xl;
+    margin-bottom: $spacing-3xl;
+
+    @include respond-to('tablet') {
+      grid-template-columns: 1fr;
+      gap: $spacing-2xl;
+    }
+
+    &--top {
+      min-height: 300px;
+    }
+
+    &--bottom {
+      min-height: 300px;
+    }
+  }
+
+  &__grid-item {
+    min-height: 300px;
+  }
+
+  &__table-wrapper {
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-md;
+    @include card-shadow;
+    overflow: hidden;
+  }
+
+  &__name-cell {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__name {
+    @include body-text('md');
+    font-weight: $font-weight-semibold;
+    color: $color-neutral-black;
+  }
+
+  &__reservation {
+    @include body-text('sm');
+    color: $color-neutral-600;
+  }
+
+  &__action-arrow {
+    color: $color-primary-700;
+    font-size: $font-size-lg;
+  }
+
+  &__occupation-card {
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-md;
+    @include card-shadow;
+    padding: $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    height: 100%;
+  }
+
+  &__occupation-title {
+    @include heading('md');
+    color: $color-neutral-black;
+  }
+
+  &__occupation-value {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    margin-top: $spacing-md;
+  }
+
+  &__occupation-number {
+    @include heading('lg');
+    color: $color-primary-700;
+  }
+
+  &__occupation-label {
+    @include body-text('sm');
+    color: $color-neutral-600;
+  }
+
+  &__occupation-chart {
+    flex: 1;
+    min-height: 100px;
+    margin-top: $spacing-md;
+  }
+
+  &__chart-placeholder {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 100%;
+    gap: $spacing-xs;
+    padding-top: $spacing-md;
+  }
+
+  &__chart-bar {
+    flex: 1;
+    background: linear-gradient(180deg, $color-accent-yellow 0%, $color-accent-green 100%);
+    border-radius: $border-radius-sm $border-radius-sm 0 0;
+    min-height: 20px;
+  }
+}

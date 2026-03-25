@@ -1,0 +1,82 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-index-modal-backdrop;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba($color-neutral-black, 0.5);
+  padding: $spacing-md;
+}
+
+.modal {
+  position: relative;
+  background-color: $color-neutral-white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-xl;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modal-enter 0.2s ease-out;
+
+  &--small {
+    width: 100%;
+    max-width: 400px;
+    padding: $spacing-lg;
+  }
+
+  &--medium {
+    width: 100%;
+    max-width: 560px;
+    padding: $spacing-xl;
+  }
+
+  &--large {
+    width: 100%;
+    max-width: 720px;
+    padding: $spacing-xl;
+  }
+
+  &__close {
+    position: absolute;
+    top: $spacing-md;
+    right: $spacing-md;
+    @include flex-center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: $border-radius-full;
+    background-color: transparent;
+    font-size: $font-size-lg;
+    color: $color-neutral-600;
+    cursor: pointer;
+    @include transition(background-color, color);
+    @include focus-visible-outline;
+
+    &:hover {
+      background-color: $color-neutral-100;
+      color: $color-neutral-900;
+    }
+  }
+
+  &__title {
+    @include heading($font-size-xl);
+    margin-bottom: $spacing-lg;
+    padding-right: $spacing-xl;
+  }
+
+  &__content {
+    width: 100%;
+  }
+}
+
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

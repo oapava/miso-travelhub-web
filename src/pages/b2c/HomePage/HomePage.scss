@@ -1,0 +1,142 @@
+.home-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+
+  &__hero {
+    position: relative;
+    height: 500px;
+    margin-bottom: -60px;
+    overflow: visible;
+  }
+
+  &__hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    //background: linear-gradient(135deg, $color-primary-900 0%, $color-primary-500 100%);
+    background-image: url('img/hero-bg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    z-index: 1;
+    border-radius: 0 0 2rem 2rem;
+  }
+
+  &__hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 2;
+    border-radius: 0 0 2rem 2rem;
+  }
+
+  &__hero-content {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+    @include flex-bottom;
+    flex-direction: column;
+    color: $color-neutral-white;
+    text-align: center;
+    padding: $spacing-4xl;
+  }
+
+  &__hero-title {
+    @include heading($font-size-2xl);
+    color: $color-neutral-white;
+    margin-bottom: $spacing-md;
+    font-weight: $font-weight-bold;
+  }
+
+  &__hero-subtitle {
+    @include body-text-light($font-size-2xl);
+    color: $color-neutral-white;
+    max-width: 800px;
+    font-weight: $font-weight-light;
+  }
+
+  &__search-bar-container {
+    position: absolute;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95%;
+    max-width: 1000px;
+    z-index: 4;
+  }
+
+  &__categories {
+    padding: $spacing-3xl $spacing-lg $spacing-xl $spacing-lg;
+    background: $color-page-bg;
+    margin-top: $spacing-2xl;
+  }
+
+  &__categories-content {
+    @include container;
+    display: flex;
+    gap: $spacing-md;
+    overflow-x: auto;
+    padding-bottom: $spacing-sm;
+
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $color-neutral-400;
+      border-radius: $border-radius-full;
+    }
+  }
+
+  &__top-hotels {
+    padding: $spacing-6xl $spacing-lg $spacing-lg $spacing-lg;
+    background: $color-page-bg;
+    flex-grow: 1;
+  }
+
+  &__section-container {
+    @include container;
+  }
+
+  &__top-hotels-header {
+    margin-bottom: $spacing-xl;
+  }
+
+  &__section-title {
+    @include heading(2xl);
+    color: $color-primary-900;
+    margin-bottom: $spacing-md;
+    font-weight: $font-weight-bold;
+  }
+
+  &__security-tags {
+    display: flex;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+  }
+
+  &__hotels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: $spacing-lg;
+    margin-bottom: $spacing-3xl;
+
+    @include respond-to('tablet') {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include respond-to('laptop') {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}

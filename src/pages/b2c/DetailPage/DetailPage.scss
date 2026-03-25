@@ -1,0 +1,269 @@
+.detail-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: $color-page-bg;
+
+  &__search-bar-wrapper {
+    background: $color-neutral-white;
+    padding: $spacing-sm $spacing-lg;
+    box-shadow: 0 2px 6px rgba($color-neutral-black, 0.06);
+  }
+
+  &__container {
+    @include container;
+    padding: $spacing-lg;
+    flex-grow: 1;
+  }
+
+  &__header-info {
+    margin-bottom: $spacing-2xl;
+    padding-bottom: $spacing-xl;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  &__title-section {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-md;
+  }
+
+  &__title {
+    @include heading(2xl);
+    color: $color-primary-900;
+    font-weight: $font-weight-bold;
+    flex: 1;
+  }
+
+  &__rating-section {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+  }
+
+  &__icon-btn {
+    background: none;
+    border: none;
+    font-size: $font-size-xl;
+    cursor: pointer;
+    padding: $spacing-xs;
+    @include transition(transform);
+
+    &:hover {
+      transform: scale(1.2);
+    }
+
+    &:focus {
+      @include focus-visible-outline;
+    }
+  }
+
+  &__location-info {
+    margin-top: $spacing-md;
+  }
+
+  &__location-text {
+    @include body-text(md);
+    color: $color-neutral-600;
+  }
+
+  &__tabs {
+    display: flex;
+    gap: $spacing-lg;
+    border-bottom: 2px solid $color-neutral-200;
+    margin-bottom: $spacing-2xl;
+  }
+
+  &__tab {
+    padding: $spacing-md $spacing-lg;
+    background: none;
+    border: none;
+    @include body-text(md);
+    font-weight: $font-weight-medium;
+    color: $color-neutral-600;
+    cursor: pointer;
+    position: relative;
+    @include transition(color);
+
+    &:hover {
+      color: $color-primary-500;
+    }
+
+    &:focus {
+      @include focus-visible-outline;
+    }
+
+    &--active {
+      color: $color-primary-900;
+      font-weight: $font-weight-semibold;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: $color-primary-900;
+      }
+    }
+  }
+
+  &__content {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: $spacing-2xl;
+    margin-bottom: $spacing-3xl;
+
+    @include respond-to('tablet') {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__gallery {
+    grid-column: 1;
+  }
+
+  &__main-image {
+    width: 100%;
+    height: 400px;
+    background: linear-gradient(135deg, $color-primary-100 0%, $color-primary-200 100%);
+    border-radius: $border-radius-lg;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__thumbnails {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: $spacing-md;
+  }
+
+  &__thumbnail {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, $color-neutral-200 0%, $color-neutral-300 100%);
+    border-radius: $border-radius-md;
+    cursor: pointer;
+    @include transition(transform, box-shadow);
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: $shadow-md;
+    }
+  }
+
+  &__main-content {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xl;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &__section-title {
+    @include heading(lg);
+    color: $color-primary-900;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__description-text {
+    @include body-text(md);
+    color: $color-neutral-700;
+    line-height: 1.6;
+  }
+
+  &__amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__show-more-btn {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    color: $color-primary-500;
+    @include body-text(md);
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    @include transition(color);
+
+    &:hover {
+      color: $color-primary-700;
+    }
+
+    &:focus {
+      @include focus-visible-outline;
+    }
+  }
+
+  &__map-placeholder {
+    width: 100%;
+    height: 400px;
+    background: $color-neutral-300;
+    border-radius: $border-radius-lg;
+    @include flex-center;
+    @include body-text(lg);
+    color: $color-neutral-600;
+    font-weight: $font-weight-medium;
+  }
+
+  &__sidebar {
+    grid-column: 2;
+    grid-row: 1 / 3;
+
+    @include respond-to('tablet') {
+      grid-column: 1;
+      grid-row: auto;
+    }
+  }
+
+  &__booking-card {
+    background: $color-neutral-white;
+    border: 1px solid rgba($color-neutral-black, 0.07);
+    border-radius: $border-radius-lg;
+    padding: $spacing-lg;
+    @include card-shadow;
+    position: sticky;
+    top: 5.5rem;
+  }
+
+  &__booking-title {
+    @include heading(lg);
+    color: $color-primary-900;
+    margin-bottom: $spacing-lg;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__form-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-md;
+  }
+
+  &__form-label {
+    @include body-text(sm);
+    font-weight: $font-weight-medium;
+    color: $color-neutral-800;
+  }
+
+  &__form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-md;
+  }
+
+  &__price-section {
+    margin: $spacing-lg 0;
+    padding: $spacing-lg 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+}

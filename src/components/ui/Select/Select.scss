@@ -1,0 +1,65 @@
+.select-field {
+  @include flex-column;
+  gap: $spacing-2xs;
+
+  &--full-width {
+    width: 100%;
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-700;
+  }
+
+  &__wrapper {
+    position: relative;
+    display: flex;
+  }
+
+  &__select {
+    width: 100%;
+    padding: $spacing-xs $spacing-xl $spacing-xs $spacing-sm;
+    border: 1px solid $color-neutral-300;
+    border-radius: $border-radius-md;
+    font-size: $font-size-base;
+    font-family: $font-family-primary;
+    color: $color-neutral-800;
+    background-color: $color-neutral-white;
+    appearance: none;
+    cursor: pointer;
+    @include transition(border-color, box-shadow);
+    @include focus-visible-outline;
+
+    &:hover {
+      border-color: $color-neutral-400;
+    }
+
+    &:focus {
+      border-color: $color-primary-500;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba($color-primary-500, 0.15);
+    }
+  }
+
+  &__arrow {
+    position: absolute;
+    right: $spacing-sm;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: $color-neutral-500;
+    font-size: $font-size-sm;
+  }
+
+  &--error {
+    .select-field__select {
+      border-color: $color-error;
+    }
+  }
+
+  &__error {
+    font-size: $font-size-xs;
+    color: $color-error;
+  }
+}

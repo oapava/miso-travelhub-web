@@ -1,0 +1,44 @@
+{
+  "navigation": {
+    "home": "Home",
+    "destinations": "Destinations",
+    "packages": "Packages",
+    "about": "About Us",
+    "contact": "Contact",
+    "business": "Business",
+    "services": "Services",
+    "partners": "Partners",
+    "language": "Language",
+    "login": "Login",
+    "signup": "Sign Up"
+  },
+  "common": {
+    "readMore": "Read more",
+    "viewAll": "View all",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try again",
+    "search": "Search",
+    "searchPlaceholder": "Where do you want to go?",
+    "bookNow": "Book now",
+    "learnMore": "Learn more",
+    "goBack": "Go back",
+    "seeDetails": "Detail",
+    "from": "From",
+    "perPerson": "per person"
+  },
+  "footer": {
+    "rights": "All rights reserved",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "support": "Support"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to main content",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu",
+    "changeLanguage": "Change language",
+    "mainNavigation": "Main navigation",
+    "footerNavigation": "Footer navigation"
+  }
+}

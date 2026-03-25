@@ -1,0 +1,35 @@
+.breadcrumb {
+  &__list {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-2xs;
+    font-size: $font-size-sm;
+  }
+
+  &__link {
+    color: $color-primary-700;
+    text-decoration: none;
+    @include focus-visible-outline;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__separator {
+    color: $color-neutral-400;
+  }
+
+  &__current {
+    color: $color-neutral-600;
+  }
+}

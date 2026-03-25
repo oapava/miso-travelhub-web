@@ -1,0 +1,102 @@
+.b2b-login-page {
+  @include flex-between;
+  height: 100vh;
+  width: 100%;
+
+  @include respond-to('tablet') {
+    flex-direction: column;
+  }
+
+  &__left {
+    @include flex-center;
+    flex: 1;
+    background-color: $color-neutral-white;
+    padding: $spacing-4xl;
+
+    @include respond-to('tablet') {
+      padding: $spacing-2xl;
+      min-height: 100vh;
+    }
+  }
+
+  &__container {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  &__logo-wrapper {
+    margin-bottom: $spacing-3xl;
+    text-align: center;
+  }
+
+  &__heading {
+    @include heading('2xl');
+    margin-bottom: $spacing-md;
+    text-align: center;
+    color: $color-neutral-black;
+
+    strong {
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  &__subtitle {
+    @include body-text('md');
+    margin-bottom: $spacing-3xl;
+    text-align: center;
+    color: $color-neutral-600;
+
+    strong {
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  &__links-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+    font-size: $font-size-sm;
+    text-align: center;
+  }
+
+  &__link {
+    color: $color-primary-700;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      text-decoration: underline;
+      color: $color-primary-900;
+    }
+
+    &--bold {
+      font-weight: $font-weight-semibold;
+    }
+
+    strong {
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  &__separator {
+    color: $color-neutral-400;
+  }
+
+  &__right {
+    flex: 1;
+    background: linear-gradient(135deg, $color-primary-700 0%, $color-accent-green 100%);
+    display: none;
+
+    @include respond-to('tablet') {
+      display: none;
+    }
+  }
+}

@@ -1,0 +1,173 @@
+.financial-reports-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+
+  &__container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  &__main {
+    flex: 1;
+    overflow-y: auto;
+    background-color: $color-neutral-50;
+  }
+
+  &__content {
+    @include container;
+    padding: $spacing-3xl;
+
+    @include respond-to('tablet') {
+      padding: $spacing-2xl;
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-3xl;
+    gap: $spacing-2xl;
+
+    @include respond-to('tablet') {
+      flex-direction: column;
+    }
+  }
+
+  &__title {
+    @include heading('2xl');
+    color: $color-neutral-black;
+    flex-shrink: 0;
+
+    strong {
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  &__date-filters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-lg;
+    min-width: 350px;
+
+    @include respond-to('tablet') {
+      grid-template-columns: 1fr;
+      min-width: auto;
+      width: 100%;
+    }
+  }
+
+  &__summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-lg;
+    margin-bottom: $spacing-3xl;
+
+    @include respond-to('tablet') {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__income-graphic {
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-md;
+    @include card-shadow;
+    padding: $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    min-height: 300px;
+  }
+
+  &__income-title {
+    @include heading('md');
+    color: $color-neutral-black;
+  }
+
+  &__chart-placeholder {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex: 1;
+    gap: $spacing-md;
+    padding: $spacing-lg 0;
+  }
+
+  &__chart-column {
+    flex: 1;
+    background: linear-gradient(180deg, $color-primary-700 0%, $color-primary-500 100%);
+    border-radius: $border-radius-sm $border-radius-sm 0 0;
+    min-height: 50px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: $spacing-sm;
+  }
+
+  &__chart-label {
+    @include body-text('xs');
+    color: $color-neutral-white;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__occupation-summary {
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-md;
+    @include card-shadow;
+    padding: $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    min-height: 300px;
+    justify-content: center;
+  }
+
+  &__occupation-title {
+    @include heading('md');
+    color: $color-neutral-black;
+  }
+
+  &__occupation-content {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    align-items: center;
+  }
+
+  &__occupation-percent {
+    @include heading('3xl');
+    color: $color-accent-green;
+  }
+
+  &__occupation-bar {
+    width: 100%;
+    height: 12px;
+    background-color: $color-neutral-200;
+    border-radius: $border-radius-full;
+    overflow: hidden;
+  }
+
+  &__occupation-fill {
+    height: 100%;
+    background: linear-gradient(90deg, $color-accent-yellow 0%, $color-accent-green 100%);
+    border-radius: $border-radius-full;
+    @include transition(width);
+  }
+
+  &__subtitle {
+    @include heading('md');
+    margin-bottom: $spacing-lg;
+    color: $color-neutral-black;
+  }
+
+  &__table-wrapper {
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-md;
+    @include card-shadow;
+    overflow: hidden;
+    margin-bottom: $spacing-3xl;
+  }
+}

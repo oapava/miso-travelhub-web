@@ -1,0 +1,111 @@
+@use "sass:color";
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  border-radius: .9rem;
+  font-family: $font-family-primary;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 2px solid transparent;
+  letter-spacing: 0.02em;
+  @include transition(background-color, color, border-color, box-shadow, transform);
+  @include focus-visible-outline;
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  // --- Sizes ---
+  &--small {
+    padding: $spacing-2xs $spacing-md;
+    font-size: $font-size-sm;
+    min-height: 2.25rem;
+  }
+
+  &--medium {
+    padding: $spacing-xs $spacing-xl;
+    font-size: $font-size-base;
+    min-height: 2.75rem;
+  }
+
+  &--large {
+    padding: $spacing-sm $spacing-2xl;
+    font-size: $font-size-md;
+    min-height: 3.25rem;
+  }
+
+  // --- Variants ---
+  &--primary {
+    background-color: $color-primary-700;
+    color: $color-neutral-white;
+
+    &:hover {
+      background-color: $color-primary-800;
+    }
+
+    &:active {
+      background-color: $color-primary-900;
+    }
+  }
+
+  // Secondary = Yellow (SIGN IN style)
+  &--secondary {
+    background-color: $color-accent-yellow;
+    color: $color-primary-900;
+
+    &:hover {
+      background-color: color.adjust($color-accent-yellow, $lightness: -8%);
+    }
+
+    &:active {
+      background-color: color.adjust($color-accent-yellow, $lightness: -14%);
+    }
+  }
+
+  &--outline {
+    background-color: transparent;
+    color: $color-primary-700;
+    border-color: $color-primary-700;
+
+    &:hover {
+      background-color: rgba($color-primary-700, 0.06);
+    }
+
+    &:active {
+      background-color: rgba($color-primary-700, 0.12);
+    }
+  }
+
+  &--ghost {
+    background-color: transparent;
+    color: $color-primary-700;
+
+    &:hover {
+      background-color: rgba($color-primary-700, 0.08);
+    }
+  }
+
+  &--yellow {
+    background-color: $color-accent-medium-yellow;
+    color: $color-primary-900;
+
+    &:hover {
+      background-color: rgba($color-primary-700, 0.08);
+    }
+  }
+
+  // --- Modifiers ---
+  &--full-width {
+    width: 100%;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}

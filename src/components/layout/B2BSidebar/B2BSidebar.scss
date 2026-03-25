@@ -1,0 +1,126 @@
+.b2b-sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 16rem;
+  min-height: calc(100vh - 4rem);
+  padding: $spacing-lg $spacing-md;
+  background-color: $color-neutral-50;
+  border-right: 1px solid $color-neutral-200;
+  flex-shrink: 0;
+
+  @include respond-to('tablet') {
+    width: 100%;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid $color-neutral-200;
+  }
+
+  &__title {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-900;
+    text-transform: uppercase;
+    margin-bottom: $spacing-md;
+  }
+
+  &__menu {
+    @include flex-column;
+    gap: $spacing-2xs;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $border-radius-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-700;
+    text-decoration: none;
+    @include transition(background-color, color);
+    @include focus-visible-outline;
+
+    &:hover {
+      background-color: $color-neutral-200;
+    }
+
+    &--active {
+      color: $color-primary-700;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  &__link-icon {
+    font-size: $font-size-base;
+    width: 1.25rem;
+    text-align: center;
+  }
+
+  &__footer {
+    @include flex-column;
+    gap: $spacing-sm;
+  }
+
+  &__user-card {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm;
+    border-radius: $border-radius-lg;
+    background-color: $color-accent-yellow;
+  }
+
+  &__user-avatar {
+    @include flex-center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: $border-radius-full;
+    background-color: rgba($color-neutral-black, 0.1);
+    flex-shrink: 0;
+  }
+
+  &__user-avatar-placeholder {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-800;
+  }
+
+  &__user-info {
+    @include flex-column;
+    min-width: 0;
+  }
+
+  &__user-email {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-800;
+    @include text-truncate(1);
+  }
+
+  &__user-role {
+    font-size: $font-size-xs;
+    color: $color-neutral-700;
+  }
+
+  &__logout {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-sm;
+    border: none;
+    background: none;
+    font-size: $font-size-sm;
+    color: $color-neutral-600;
+    cursor: pointer;
+    @include focus-visible-outline;
+
+    &:hover {
+      color: $color-error;
+    }
+  }
+}

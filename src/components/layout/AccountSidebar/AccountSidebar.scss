@@ -1,0 +1,93 @@
+.account-sidebar {
+  width: 15rem;
+  flex-shrink: 0;
+  background: $color-neutral-white;
+  border-radius: $border-radius-lg;
+  padding: $spacing-lg;
+  @include card-shadow;
+  align-self: flex-start;
+
+  @include respond-to('tablet') {
+    width: 100%;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__header {
+    margin-bottom: $spacing-lg;
+    padding-bottom: $spacing-md;
+    border-bottom: 1px solid $color-neutral-100;
+  }
+
+  &__title {
+    font-size: $font-size-md;
+    font-weight: $font-weight-bold;
+    color: $color-primary-900;
+    margin-bottom: $spacing-2xs;
+  }
+
+  &__user-info {
+    font-size: $font-size-xs;
+    color: $color-neutral-500;
+    line-height: $line-height-base;
+  }
+
+  &__menu {
+    @include flex-column;
+    gap: $spacing-2xs;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $border-radius-pill;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-700;
+    text-decoration: none;
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    @include transition(background-color, color);
+    @include focus-visible-outline;
+
+    &:hover {
+      background-color: $color-neutral-100;
+      color: $color-primary-700;
+    }
+
+    &--active {
+      background-color: $color-primary-900;
+      color: $color-neutral-white;
+      font-weight: $font-weight-semibold;
+
+      &:hover {
+        background-color: $color-primary-800;
+        color: $color-neutral-white;
+      }
+    }
+  }
+
+  &__link-icon {
+    font-size: $font-size-base;
+    width: 1.25rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  &__logout {
+    color: $color-neutral-500;
+    margin-top: $spacing-xs;
+
+    &:hover {
+      color: $color-error;
+      background-color: rgba($color-error, 0.06);
+    }
+  }
+}

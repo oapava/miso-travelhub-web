@@ -1,0 +1,40 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  @include focus-visible-outline;
+
+  &__track {
+    position: relative;
+    width: 3rem;
+    height: 1.625rem;
+    background-color: $color-neutral-300;
+    border-radius: 1rem;
+    @include transition(background-color);
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.375rem;
+    height: 1.375rem;
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-full;
+    box-shadow: $shadow-sm;
+    @include transition(transform);
+  }
+
+  &--active {
+    .toggle__track {
+      background-color: $color-primary-700;
+    }
+
+    .toggle__thumb {
+      transform: translateX(1.375rem);
+    }
+  }
+}

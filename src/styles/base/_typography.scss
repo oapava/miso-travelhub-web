@@ -1,0 +1,54 @@
+// ============================================
+// TravelHub - Typography Styles
+// ============================================
+
+@use '@/styles/abstracts' as *;
+
+h1 {
+  @include heading($font-size-4xl);
+
+  @include respond-to('tablet') {
+    font-size: $font-size-3xl;
+  }
+}
+
+h2 {
+  @include heading($font-size-3xl);
+
+  @include respond-to('tablet') {
+    font-size: $font-size-2xl;
+  }
+}
+
+h3 {
+  @include heading($font-size-2xl);
+
+  @include respond-to('tablet') {
+    font-size: $font-size-xl;
+  }
+}
+
+h4 {
+  @include heading($font-size-xl);
+}
+
+h5 {
+  @include heading($font-size-lg);
+}
+
+h6 {
+  @include heading($font-size-md);
+}
+
+.text {
+  &--xs { font-size: $font-size-xs; }
+  &--sm { font-size: $font-size-sm; }
+  &--base { font-size: $font-size-base; }
+  &--md { font-size: $font-size-md; }
+  &--lg { font-size: $font-size-lg; }
+  &--xl { font-size: $font-size-xl; }
+  &--bold { font-weight: $font-weight-bold; }
+  &--semibold { font-weight: $font-weight-semibold; }
+  &--medium { font-weight: $font-weight-medium; }
+  &--center { text-align: center; }
+}

@@ -1,0 +1,120 @@
+// ============================================
+// TravelHub - Design Tokens & Variables
+// ============================================
+
+// --- Color Palette ---
+// Primary blues (from dark to light)
+$color-primary-900: #0a2342;
+$color-primary-800: #0d3b6e;
+$color-primary-700: #1565c0;
+$color-primary-600: #1976d2;
+$color-primary-500: #2196f3;
+$color-primary-200: #90caf9;
+$color-primary-100: #bbdefb;
+
+// Accent colors
+$color-accent-green: #7cb342;
+$color-accent-yellow: #fdd835;
+$color-accent-medium-yellow: #FFE000;
+
+// Neutral colors
+$color-neutral-white: #ffffff;
+$color-neutral-50: #f8f9fa;
+$color-neutral-100: #f1f3f5;
+$color-neutral-200: #e9ecef;
+$color-neutral-300: #dee2e6;
+$color-neutral-400: #ced4da;
+$color-neutral-500: #adb5bd;
+$color-neutral-600: #868e96;
+$color-neutral-700: #495057;
+$color-neutral-800: #343a40;
+$color-neutral-900: #212529;
+$color-neutral-black: #000000;
+
+// Semantic colors
+$color-success: #4caf50;
+$color-warning: #ff9800;
+$color-error: #f44336;
+$color-info: #2196f3;
+
+// --- Typography ---
+$font-family-primary: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+$font-family-heading: 'Poppins', 'Inter', sans-serif;
+
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.875rem;   // 14px
+$font-size-base: 1rem;     // 16px
+$font-size-md: 1.125rem;   // 18px
+$font-size-lg: 1.25rem;    // 20px
+$font-size-xl: 1.5rem;     // 24px
+$font-size-2xl: 2rem;      // 32px
+$font-size-3xl: 2.5rem;    // 40px
+$font-size-4xl: 3rem;      // 48px
+
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+$line-height-tight: 1.2;
+$line-height-base: 1.5;
+$line-height-relaxed: 1.75;
+
+// --- Spacing ---
+$spacing-2xs: 0.25rem;   // 4px
+$spacing-xs: 0.5rem;     // 8px
+$spacing-sm: 0.75rem;    // 12px
+$spacing-md: 1rem;       // 16px
+$spacing-lg: 1.5rem;     // 24px
+$spacing-xl: 2rem;       // 32px
+$spacing-2xl: 3rem;      // 48px
+$spacing-3xl: 4rem;      // 64px
+$spacing-4xl: 6rem;      // 96px
+$spacing-5xl: 8rem;      // 128px
+$spacing-6xl: 9rem;      // 144px
+
+// --- Border Radius ---
+$border-radius-sm: 0.25rem;  // 4px
+$border-radius-md: 0.5rem;   // 8px
+$border-radius-lg: 0.75rem;  // 12px
+$border-radius-xl: 1rem;     // 16px
+$border-radius-xxl: 3rem;    // 48px
+$border-radius-full: 50%;
+
+// --- Shadows ---
+$shadow-sm: 0 1px 2px rgba($color-neutral-black, 0.05);
+$shadow-md: 0 4px 6px rgba($color-neutral-black, 0.07);
+$shadow-lg: 0 10px 15px rgba($color-neutral-black, 0.1);
+$shadow-xl: 0 20px 25px rgba($color-neutral-black, 0.15);
+
+// --- Breakpoints ---
+$breakpoint-mobile: 480px;
+$breakpoint-tablet: 768px;
+$breakpoint-laptop: 1024px;
+$breakpoint-desktop: 1280px;
+$breakpoint-wide: 1440px;
+
+// --- Z-Index Scale ---
+$z-index-dropdown: 100;
+$z-index-sticky: 200;
+$z-index-fixed: 300;
+$z-index-modal-backdrop: 400;
+$z-index-modal: 500;
+$z-index-popover: 600;
+$z-index-tooltip: 700;
+
+// --- Transitions ---
+$transition-fast: 150ms ease-in-out;
+$transition-base: 250ms ease-in-out;
+$transition-slow: 350ms ease-in-out;
+
+// --- Container ---
+$container-max-width: 1200px;
+$container-padding: $spacing-md;
+
+// --- Page Background ---
+$color-page-bg: #dce8f5;
+
+// --- Pill Border Radius (for buttons, chips) ---
+$border-radius-pill: 9999px;

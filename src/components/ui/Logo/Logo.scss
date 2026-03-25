@@ -1,0 +1,55 @@
+.logo {
+  // default to medium
+  --logo-icon-width: 2.5rem;
+  --logo-icon-height: 2rem;
+  --logo-text-size: $font-size-lg;
+
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-2xs;
+  text-decoration: none;
+  cursor: pointer;
+
+  &__icon {
+    flex-shrink: 0;
+    display: block;
+    object-fit: contain;
+    width: var(--logo-icon-width);
+    height: var(--logo-icon-height);
+  }
+
+  &__text {
+    display: inline-flex;
+    font-family: $font-family-heading;
+    font-weight: $font-weight-bold;
+    line-height: 1;
+    font-size: var(--logo-text-size);
+  }
+
+  &__text-travel {
+    color: $color-primary-800;
+  }
+
+  &__text-hub {
+    color: $color-accent-yellow;
+  }
+
+  // --- Sizes ---
+  &--small {
+    --logo-icon-width: 2rem;
+    --logo-icon-height: 1.6rem;
+    --logo-text-size: $font-size-base;
+  }
+
+  &--medium {
+    --logo-icon-width: 2.5rem;
+    --logo-icon-height: 2rem;
+    --logo-text-size: $font-size-lg;
+  }
+
+  &--large {
+    --logo-icon-width: 4rem;
+    --logo-icon-height: 4rem;
+    --logo-text-size: $font-size-2xl;
+  }
+}

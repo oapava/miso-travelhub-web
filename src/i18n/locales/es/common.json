@@ -1,0 +1,44 @@
+{
+  "navigation": {
+    "home": "Inicio",
+    "destinations": "Destinos",
+    "packages": "Paquetes",
+    "about": "Nosotros",
+    "contact": "Contacto",
+    "business": "Empresas",
+    "services": "Servicios",
+    "partners": "Socios",
+    "language": "Idioma",
+    "login": "Iniciar sesión",
+    "signup": "Registrarse"
+  },
+  "common": {
+    "readMore": "Leer más",
+    "viewAll": "Ver todo",
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "retry": "Intentar de nuevo",
+    "search": "Buscar",
+    "searchPlaceholder": "¿A dónde quieres ir?",
+    "bookNow": "Reservar ahora",
+    "learnMore": "Conocer más",
+    "goBack": "Volver",
+    "seeDetails": "Ver detalles",
+    "from": "Desde",
+    "perPerson": "por persona"
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio",
+    "support": "Soporte"
+  },
+  "accessibility": {
+    "skipToContent": "Ir al contenido principal",
+    "openMenu": "Abrir menú de navegación",
+    "closeMenu": "Cerrar menú de navegación",
+    "changeLanguage": "Cambiar idioma",
+    "mainNavigation": "Navegación principal",
+    "footerNavigation": "Navegación del pie de página"
+  }
+}

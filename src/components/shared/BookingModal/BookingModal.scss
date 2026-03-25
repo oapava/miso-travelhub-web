@@ -1,0 +1,158 @@
+@use "sass:color";
+
+.booking-modal {
+  &__container {
+    @include flex-column;
+    gap: $spacing-lg;
+    padding: $spacing-2xl;
+    width: 100%;
+    position: relative;
+  }
+
+  &__close {
+    position: absolute;
+    top: $spacing-lg;
+    right: $spacing-lg;
+    background: none;
+    border: none;
+    font-size: $font-size-lg;
+    color: $color-neutral-600;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    @include flex-center;
+    @include transition(color);
+
+    &:hover {
+      color: $color-neutral-black;
+    }
+
+    &:focus-visible {
+      @include focus-visible-outline;
+      border-radius: $border-radius-sm;
+    }
+  }
+
+  &__image-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: $color-neutral-200;
+    border-radius: $border-radius-md;
+    @include flex-center;
+    margin-top: $spacing-md;
+  }
+
+  &__image-content {
+    font-size: $font-size-4xl;
+    color: $color-neutral-400;
+  }
+
+  &__header {
+    @include flex-column;
+    gap: $spacing-xs;
+  }
+
+  &__title {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-black;
+    margin: 0;
+  }
+
+  &__details {
+    @include flex-column;
+    gap: $spacing-md;
+  }
+
+  &__destination {
+    font-size: $font-size-md;
+    color: $color-primary-600;
+    text-decoration: none;
+    font-weight: $font-weight-medium;
+
+    &:hover {
+      text-decoration: underline;
+      color: $color-primary-700;
+    }
+
+    &:focus-visible {
+      @include focus-visible-outline;
+    }
+  }
+
+  &__trip-info {
+    @include flex-column;
+    gap: $spacing-xs;
+  }
+
+  &__dates {
+    font-size: $font-size-md;
+    color: $color-neutral-700;
+    font-weight: $font-weight-regular;
+  }
+
+  &__guests {
+    font-size: $font-size-md;
+    color: $color-neutral-700;
+    font-weight: $font-weight-regular;
+  }
+
+  &__separator {
+    height: 1px;
+    background-color: $color-neutral-300;
+    width: 100%;
+    margin: $spacing-md 0;
+  }
+
+  &__payment-section {
+    @include flex-column;
+    gap: $spacing-md;
+  }
+
+  &__payment-title {
+    font-size: $font-size-md;
+    font-weight: $font-weight-semibold;
+    color: $color-neutral-black;
+    margin: 0;
+  }
+
+  &__payment-chip {
+    display: inline-block;
+    padding: $spacing-sm $spacing-md;
+    border: 2px solid $color-accent-yellow;
+    border-radius: $border-radius-md;
+    background-color: transparent;
+    color: $color-neutral-black;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    width: fit-content;
+  }
+
+  &__pricing {
+    width: 100%;
+    padding: $spacing-lg;
+    background-color: $color-neutral-100;
+    border-radius: $border-radius-md;
+    @include flex-center;
+  }
+
+  &__continue-btn {
+    background-color: $color-accent-yellow;
+    color: $color-neutral-black;
+    font-weight: $font-weight-bold;
+
+    &:hover {
+      background-color: color.adjust($color-accent-yellow, $lightness: -10%);
+    }
+
+    &:focus-visible {
+      @include focus-visible-outline;
+    }
+  }
+
+  @include respond-to('tablet') {
+    &__container {
+      padding: $spacing-xl;
+    }
+  }
+}

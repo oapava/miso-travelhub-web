@@ -1,0 +1,132 @@
+.booking-manager-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+
+  &__container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  &__main {
+    flex: 1;
+    overflow-y: auto;
+    background-color: $color-neutral-50;
+  }
+
+  &__content {
+    @include container;
+    padding: $spacing-3xl;
+
+    @include respond-to('tablet') {
+      padding: $spacing-2xl;
+    }
+  }
+
+  &__title {
+    @include heading('2xl');
+    margin-bottom: $spacing-3xl;
+    color: $color-neutral-black;
+
+    strong {
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  &__filters {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: $spacing-lg;
+    margin-bottom: $spacing-3xl;
+    background-color: $color-neutral-white;
+    padding: $spacing-lg;
+    border-radius: $border-radius-md;
+    @include card-shadow;
+
+    @include respond-to('tablet') {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  &__subtitle {
+    @include heading('md');
+    margin-bottom: $spacing-lg;
+    color: $color-neutral-black;
+  }
+
+  &__table-wrapper {
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-md;
+    @include card-shadow;
+    overflow: hidden;
+    margin-bottom: $spacing-3xl;
+  }
+
+  &__client-cell {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+  }
+
+  &__client-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: $border-radius-full;
+    background-color: $color-primary-700;
+    @include flex-center;
+    color: $color-neutral-white;
+    font-weight: $font-weight-bold;
+    font-size: $font-size-lg;
+  }
+
+  &__client-info {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__client-name {
+    @include body-text('md');
+    font-weight: $font-weight-semibold;
+    color: $color-neutral-black;
+  }
+
+  &__client-reservation {
+    @include body-text('sm');
+    color: $color-neutral-600;
+  }
+
+  &__date {
+    color: $color-primary-700;
+    font-weight: $font-weight-medium;
+  }
+
+  &__state {
+    padding: $spacing-2xs $spacing-sm;
+    border-radius: $border-radius-sm;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-sm;
+
+    &--active {
+      color: $color-success;
+      background-color: rgba($color-success, 0.1);
+    }
+
+    &--pending {
+      color: $color-warning;
+      background-color: rgba($color-warning, 0.1);
+    }
+
+    &--cancelled {
+      color: $color-error;
+      background-color: rgba($color-error, 0.1);
+    }
+  }
+
+  &__action-arrow {
+    color: $color-primary-700;
+    font-size: $font-size-lg;
+    cursor: pointer;
+  }
+}

@@ -1,0 +1,60 @@
+.prices-manager-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+
+  &__container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  &__main {
+    flex: 1;
+    overflow-y: auto;
+    background-color: $color-neutral-50;
+  }
+
+  &__content {
+    @include container;
+    padding: $spacing-3xl;
+
+    @include respond-to('tablet') {
+      padding: $spacing-2xl;
+    }
+  }
+
+  &__title {
+    @include heading('2xl');
+    margin-bottom: $spacing-3xl;
+    color: $color-neutral-black;
+
+    strong {
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  &__subtitle {
+    @include heading('md');
+    margin-bottom: $spacing-lg;
+    color: $color-neutral-black;
+  }
+
+  &__table-wrapper {
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-md;
+    @include card-shadow;
+    overflow: hidden;
+    margin-bottom: $spacing-3xl;
+  }
+
+  &__input-inline {
+    max-width: 120px;
+  }
+
+  &__action-arrow {
+    color: $color-primary-700;
+    font-size: $font-size-lg;
+    cursor: pointer;
+  }
+}
