@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Logo, Button } from '@/components/ui';
 import { B2CRoutes } from '@/types';
 import './Header.scss';
+import { SearchBar } from '../SearchBar';
 
 interface UserInfo {
   name: string;
@@ -28,15 +29,14 @@ const Header: React.FC<HeaderProps> = ({
   dataTestId,
 }) => {
   const { t, i18n } = useTranslation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const [isMobileMenuOpen] = useState(false);
+
+  const showSearchBar = location.pathname !== B2CRoutes.HOME;
 
   const handleLanguageToggle = () => {
     const nextLanguage = i18n.language === 'es' ? 'en' : 'es';
     i18n.changeLanguage(nextLanguage);
-  };
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen((previousState) => !previousState);
   };
 
   return (
@@ -45,6 +45,8 @@ const Header: React.FC<HeaderProps> = ({
         <Link to={B2CRoutes.HOME} className="header__logo-link" aria-label="TravelHub Home">
           <Logo size="large" variant="icon" />
         </Link>
+
+        {showSearchBar && <SearchBar variant="compact" />}
 
         <div className={`header__actions ${isMobileMenuOpen ? 'header__actions--open' : ''}`}>
           <button
