@@ -25,6 +25,11 @@ jobs:
       - name: Run unit tests with coverage
         run: npm test -- --runInBand --coverage
 
+      - name: Publish coverage summary
+        if: success()
+        run: |
+          node -e "const fs=require('fs');const path='coverage/coverage-summary.json';if(!fs.existsSync(path)){console.warn('coverage-summary.json not found');process.exit(0);}const data=JSON.parse(fs.readFileSync(path,'utf8'));const total=data.total||{};const fmt=t=>t?`${t.pct}% ( ${t.covered}/${t.total} )`:'n/a';const lines=[`## Jest coverage summary`,`| Metric | Coverage |`,`| --- | --- |`,`| Statements | ${fmt(total.statements)} |`,`| Branches | ${fmt(total.branches)} |`,`| Functions | ${fmt(total.functions)} |`,`| Lines | ${fmt(total.lines)} |`];fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n'));"
+
       - name: Upload coverage report
         if: success()
         uses: actions/upload-artifact@v4
