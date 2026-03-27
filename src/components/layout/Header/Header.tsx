@@ -5,6 +5,8 @@ import { Logo, Button } from '@/components/ui';
 import { B2CRoutes } from '@/types';
 import './Header.scss';
 import { SearchBar } from '../SearchBar';
+import LoginModal from '../../shared/LoginModal/LoginModal';
+import SignUpModal from '../../shared/SignUpModal/SignUpModal';
 
 interface UserInfo {
   name: string;
@@ -30,13 +32,33 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
-  const [isMobileMenuOpen] = useState(false);
+  const isMobileMenuOpen = false;
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
 
   const showSearchBar = location.pathname !== B2CRoutes.HOME;
 
   const handleLanguageToggle = () => {
     const nextLanguage = i18n.language === 'es' ? 'en' : 'es';
     i18n.changeLanguage(nextLanguage);
+  };
+
+  const handleLoginClickInternal = () => {
+    onLoginClick?.();
+    setIsLoginModalOpen(true);
+  };
+
+  const handleLoginClose = () => {
+    setIsLoginModalOpen(false);
+  };
+
+  const handleSignUpClickInternal = () => {
+    onSignUpClick?.();
+    setIsSignUpModalOpen(true);
+  };
+
+  const handleSignUpClose = () => {
+    setIsSignUpModalOpen(false);
   };
 
   return (
@@ -70,12 +92,12 @@ const Header: React.FC<HeaderProps> = ({
                   <img src={user.avatarUrl} alt={user.name} />
                 ) : (
                   <span className="header__user-avatar-placeholder">
-                    {user?.name?.charAt(0) || 'U'}
+                    {user?.name?.charAt(0) || 'O'}
                   </span>
                 )}
               </div>
               <div className="header__user-info">
-                <span className="header__user-name">{user?.name}</span>
+                <span className="header__user-name">{user?.name} Omar Pava</span>
                 <button
                   type="button"
                   className="header__logout-link"
@@ -91,7 +113,7 @@ const Header: React.FC<HeaderProps> = ({
               <Button
                 variant="primary"
                 size="small"
-                onClick={onLoginClick}
+                onClick={handleLoginClickInternal}
                 dataTestId="header-login-button"
               >
                 {t('navigation.login')}
@@ -99,7 +121,7 @@ const Header: React.FC<HeaderProps> = ({
               <Button
                 variant="yellow"
                 size="small"
-                onClick={onSignUpClick}
+                onClick={handleSignUpClickInternal}
                 dataTestId="header-signup-button"
               >
                 {t('navigation.signup')}
@@ -108,6 +130,16 @@ const Header: React.FC<HeaderProps> = ({
           )}
         </div>
       </div>
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={handleLoginClose}
+        onLoginSuccess={handleLoginClose}
+      />
+      <SignUpModal
+        isOpen={isSignUpModalOpen}
+        onClose={handleSignUpClose}
+      />
     </header>
   );
 };

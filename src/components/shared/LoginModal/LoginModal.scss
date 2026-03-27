@@ -9,14 +9,12 @@
   &__avatar {
     @include flex-center;
     width: 100%;
-    margin-bottom: $spacing-md;
   }
 
   &__avatar-placeholder {
-    width: 80px;
-    height: 80px;
+    width: 160px;
+    height: 160px;
     border-radius: $border-radius-full;
-    background: linear-gradient(135deg, $color-primary-500, $color-accent-green);
     @include flex-center;
     position: relative;
   }
@@ -43,20 +41,21 @@
   }
 
   &__title-accent {
-    color: $color-accent-yellow;
+    color: $color-primary-700;
     font-weight: $font-weight-medium;
   }
 
   &__title-bold {
-    color: $color-neutral-black;
+    color: $color-primary-800;
     font-weight: $font-weight-bold;
   }
 
   &__subtitle {
-    font-size: $font-size-md;
-    color: $color-neutral-600;
+    font-size: $font-size-lg;
+    color: $color-primary-800;
     margin: 0;
-    font-weight: $font-weight-regular;
+    text-align: center;
+    font-weight: $font-weight-bold;
   }
 
   &__form {
@@ -68,6 +67,16 @@
   &__forgot-password {
     text-align: right;
     width: 100%;
+  }
+
+  &__sign-in-button{
+    width: 6rem;
+    align-self: flex-end;
+  }
+
+  &__login-button{
+    width: 6rem;
+    align-self: flex-end;
   }
 
   &__forgot-link {
@@ -87,7 +96,7 @@
   }
 
   &__actions {
-    @include flex-column;
+    @include flex-row-end();
     gap: $spacing-md;
     margin-top: $spacing-lg;
   }

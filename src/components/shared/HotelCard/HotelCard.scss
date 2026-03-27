@@ -1,5 +1,4 @@
 .hotel-card {
-  background-color: rgb(196, 212, 224);
   border-radius: $border-radius-lg;
   overflow: hidden;
   @include card-shadow;
@@ -13,6 +12,8 @@
   &--horizontal {
     display: flex;
     gap: 0;
+    border: 1px solid $color-neutral-100;
+    padding: .5rem;
 
     .hotel-card__image-container {
       position: relative;
@@ -24,6 +25,10 @@
         width: 100%;
         min-height: 12rem;
       }
+    }
+
+    .hotel-card__image{
+        border-radius: $border-radius-xl;
     }
 
     .hotel-card__content {

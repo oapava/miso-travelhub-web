@@ -86,8 +86,12 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
       <div className="signup-modal__container" data-testid={`${dataTestId}-container`}>
         <div className="signup-modal__avatar" data-testid={`${dataTestId}-avatar`}>
           <div className="signup-modal__avatar-placeholder">
-            <span className="signup-modal__avatar-icon">👤</span>
-            <div className="signup-modal__avatar-edit">✎</div>
+            <span className="signup-modal__avatar-icon">
+              <img src="img/user-avatar.png" alt="user avatar" />
+            </span>
+            <div className="signup-modal__avatar-edit">
+              <img src="img/edit.svg" alt="edit avatar" />
+            </div>
           </div>
         </div>
 
@@ -129,7 +133,6 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
 
           <div className="signup-modal__row" data-testid={`${dataTestId}-country-language-row`}>
             <Select
-              label="Country"
               options={COUNTRY_OPTIONS}
               value={country}
               onChange={(e) => setCountry(e.target.value)}
@@ -137,7 +140,6 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
               dataTestId={`${dataTestId}-country`}
             />
             <Select
-              label="Language Preference"
               options={LANGUAGE_OPTIONS}
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
@@ -156,7 +158,6 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
 
           <div className="signup-modal__row" data-testid={`${dataTestId}-currency-notifications-row`}>
             <Select
-              label="Currency"
               options={CURRENCY_OPTIONS}
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
@@ -164,7 +165,6 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
               dataTestId={`${dataTestId}-currency`}
             />
             <Select
-              label="Notifications"
               options={NOTIFICATION_OPTIONS}
               value={notifications}
               onChange={(e) => setNotifications(e.target.value)}
@@ -174,11 +174,12 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
           </div>
 
           <Button
-            variant="primary"
-            size="medium"
-            fullWidth
+            variant="yellow"
+            size="small"
+            fullWidth={false}
             onClick={handleSignUp}
             dataTestId={`${dataTestId}-sign-in`}
+            className='signup-modal__sign-in-button'
           >
             SIGN IN
           </Button>

@@ -43,19 +43,23 @@ const LoginModal: React.FC<LoginModalProps> = ({
       className="login-modal"
     >
       <div className="login-modal__container" data-testid={`${dataTestId}-container`}>
-        <div className="login-modal__avatar" data-testid={`${dataTestId}-avatar`}>
-          <div className="login-modal__avatar-placeholder">
-            <span className="login-modal__avatar-icon">👤</span>
-          </div>
-        </div>
 
         <div className="login-modal__header" data-testid={`${dataTestId}-header`}>
           <h1 className="login-modal__title">
             <span className="login-modal__title-accent">Welcome Back</span>
             <span className="login-modal__title-bold"> Traveler!</span>
           </h1>
-          <p className="login-modal__subtitle">Login</p>
+          
         </div>
+
+        <div className="login-modal__avatar" data-testid={`${dataTestId}-avatar`}>
+          <div className="login-modal__avatar-placeholder">
+            <span className="login-modal__avatar-icon">
+              <img src="img/user-avatar.png" alt="user avatar" />
+            </span>
+          </div>
+        </div>
+        <p className="login-modal__subtitle">Login</p>
 
         <div className="login-modal__form" data-testid={`${dataTestId}-form`}>
           <Input
@@ -83,20 +87,22 @@ const LoginModal: React.FC<LoginModalProps> = ({
 
           <div className="login-modal__actions" data-testid={`${dataTestId}-actions`}>
             <Button
-              variant="primary"
-              size="medium"
-              fullWidth
+              variant="yellow"
+              size="small"
+              fullWidth={false}
               onClick={handleSignIn}
               dataTestId={`${dataTestId}-sign-in`}
+              className='login-modal__sign-in-button'
             >
               SIGN IN
             </Button>
             <Button
-              variant="outline"
-              size="medium"
-              fullWidth
+              variant="primary"
+              size="small"
+              fullWidth={false}
               onClick={handleLogin}
               dataTestId={`${dataTestId}-login`}
+              className='login-modal__login-button'
             >
               LOGIN
             </Button>
