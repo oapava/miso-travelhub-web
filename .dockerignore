@@ -1,0 +1,14 @@
+.git
+.github
+node_modules
+npm-debug.log*
+yarn-error.log*
+.pnpm-store
+coverage
+dist
+.env
+.env.*
+.env.*.local
+.DS_Store
+.idea
+.vscode
