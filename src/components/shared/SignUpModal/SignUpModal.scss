@@ -15,10 +15,9 @@
   }
 
   &__avatar-placeholder {
-    width: 80px;
-    height: 80px;
+    width: 160px;
+    height: 160px;
     border-radius: $border-radius-full;
-    background: linear-gradient(135deg, $color-primary-500, $color-accent-green);
     @include flex-center;
     position: relative;
   }
@@ -32,12 +31,11 @@
 
   &__avatar-edit {
     position: absolute;
-    bottom: 0;
+    bottom: -15px;
     right: 0;
     width: 28px;
     height: 28px;
     border-radius: $border-radius-full;
-    background-color: $color-accent-yellow;
     color: $color-neutral-black;
     @include flex-center;
     font-size: $font-size-sm;
@@ -65,6 +63,12 @@
     grid-template-columns: 1fr 1fr;
     gap: $spacing-md;
     width: 100%;
+  }
+
+  &__sign-in-button {
+    width: 6rem;
+    align-self: flex-end;
+    margin-left: auto;
   }
 
   @include respond-to('tablet') {

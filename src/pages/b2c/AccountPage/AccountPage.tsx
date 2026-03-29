@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { Header, SearchBar, AccountSidebar, Footer } from '@/components/layout';
 import { Breadcrumb, Input, Select, Button } from '@/components/ui';
+import { useAuth } from '@/context/AuthContext';
 import './AccountPage.scss';
 
 const AccountPage: React.FC = () => {
+  const { user } = useAuth();
+
   const [formData, setFormData] = useState({
-    name: 'John Doe',
-    username: 'johndoe',
+    name: user?.nombre ?? '',
+    username: user?.username ?? '',
     password: '••••••••',
-    country: 'france',
-    language: 'en',
-    phone: '+33 6 12 34 56 78',
-    currency: 'eur',
+    country: user?.pais ?? '',
+    language: user?.idioma ?? '',
+    phone: user?.telefono ?? '',
+    currency: user?.moneda_preferida?.toLowerCase() ?? '',
     status: 'active',
   });
 
@@ -46,7 +49,7 @@ const AccountPage: React.FC = () => {
 
   return (
     <div className="account-page" data-testid="account-page">
-      <Header isLoggedIn={true} user={{ name: formData.name }} />
+      <Header />
       <div className="account-page__search-bar-wrapper">
         <SearchBar variant="compact" />
       </div>
@@ -61,8 +64,8 @@ const AccountPage: React.FC = () => {
 
         <div className="account-page__content">
           <AccountSidebar
-            userName={formData.name}
-            userEmail="johndoe@example.com"
+            userName={user?.nombre ?? ''}
+            userEmail={user?.email ?? ''}
             dataTestId="account-sidebar"
           />
 

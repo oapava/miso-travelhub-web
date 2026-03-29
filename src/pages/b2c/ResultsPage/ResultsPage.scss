@@ -12,6 +12,7 @@
 
   &__container {
     @include container;
+    background-color: $color-neutral-white;
     padding: $spacing-lg;
     flex-grow: 1;
   }
@@ -110,15 +111,16 @@
   &__main {
     display: flex;
     flex-direction: column;
-    gap: $spacing-2xl;
+    gap: $spacing-md;
   }
 
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    flex-direction: column;
+    flex-wrap: nowrap;
     gap: $spacing-lg;
-    margin-bottom: $spacing-lg;
 
     @include respond-to('tablet') {
       flex-direction: column;

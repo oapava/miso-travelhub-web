@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Header, SearchBar, Footer } from '@/components/layout';
 import { Breadcrumb, Select, Pagination } from '@/components/ui';
 import { HotelCard } from '@/components/shared/HotelCard';
@@ -6,6 +7,8 @@ import ResultsSidebar from '@/components/shared/ResultsSidebar/ResultsSidebar';
 import './ResultsPage.scss';
 
 const ResultsPage: React.FC = () => {
+  const location = useLocation();
+  const showHomeSearchBar = location.pathname === '/';
   const [minPrice, setMinPrice] = useState('0');
   const [maxPrice, setMaxPrice] = useState('2000');
   const [selectedStars, setSelectedStars] = useState<number[]>([]);
@@ -92,10 +95,10 @@ const ResultsPage: React.FC = () => {
 
   return (
     <div className="results-page" data-testid="results-page">
-      <Header isLoggedIn={true} />
-      <div className="results-page__search-bar-wrapper">
-        <SearchBar variant="compact" />
-      </div>
+      <Header />
+      {showHomeSearchBar && <div className="results-page__search-bar-wrapper">
+         <SearchBar variant="compact" />
+      </div>}
 
       <div className="results-page__container">
         <Breadcrumb

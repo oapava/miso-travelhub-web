@@ -1,42 +1,42 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Logo, Button } from '@/components/ui';
 import { B2CRoutes } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import type { TokenResponse, UserResponse } from '@/services/auth.service';
 import './Header.scss';
-
-interface UserInfo {
-  name: string;
-  avatarUrl?: string;
-}
+import { SearchBar } from '../SearchBar';
+import LoginModal from '../../shared/LoginModal/LoginModal';
+import SignUpModal from '../../shared/SignUpModal/SignUpModal';
 
 interface HeaderProps {
-  isLoggedIn?: boolean;
-  user?: UserInfo;
-  onLoginClick?: () => void;
-  onSignUpClick?: () => void;
-  onLogoutClick?: () => void;
   dataTestId?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({
-  isLoggedIn = false,
-  user,
-  onLoginClick,
-  onSignUpClick,
-  onLogoutClick,
-  dataTestId,
-}) => {
+const Header: React.FC<HeaderProps> = ({ dataTestId }) => {
   const { t, i18n } = useTranslation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const { isAuthenticated, user, logout, login } = useAuth();
+  const isMobileMenuOpen = false;
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
+
+  const showSearchBar = location.pathname !== B2CRoutes.HOME;
 
   const handleLanguageToggle = () => {
     const nextLanguage = i18n.language === 'es' ? 'en' : 'es';
     i18n.changeLanguage(nextLanguage);
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen((previousState) => !previousState);
+  const handleLoginSuccess = (token: TokenResponse, userResponse: UserResponse) => {
+    login(token, userResponse);
+    setIsLoginModalOpen(false);
+  };
+
+  const handleSignUpSuccess = (token: TokenResponse, userResponse: UserResponse) => {
+    login(token, userResponse);
+    setIsSignUpModalOpen(false);
   };
 
   return (
@@ -45,6 +45,8 @@ const Header: React.FC<HeaderProps> = ({
         <Link to={B2CRoutes.HOME} className="header__logo-link" aria-label="TravelHub Home">
           <Logo size="large" variant="icon" />
         </Link>
+
+        {showSearchBar && <SearchBar variant="compact" />}
 
         <div className={`header__actions ${isMobileMenuOpen ? 'header__actions--open' : ''}`}>
           <button
@@ -61,27 +63,29 @@ const Header: React.FC<HeaderProps> = ({
             USD
           </span>
 
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <div className="header__user">
               <div className="header__user-avatar">
-                {user?.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.name} />
-                ) : (
-                  <span className="header__user-avatar-placeholder">
-                    {user?.name?.charAt(0) || 'U'}
-                  </span>
-                )}
+                <span className="header__user-avatar-placeholder">
+                  {user?.nombre?.charAt(0) || user?.username?.charAt(0) || 'U'}
+                </span>
               </div>
               <div className="header__user-info">
-                <span className="header__user-name">{user?.name}</span>
-                <button
-                  type="button"
-                  className="header__logout-link"
-                  onClick={onLogoutClick}
-                  data-testid="header-logout"
-                >
-                  {t('navigation.login')} | Logout
-                </button>
+                <span className="header__user-name">{user?.nombre}</span>
+                <div className="header__user-links">
+                  <Link to="/account" className="header__account-link" data-testid="header-account">
+                    Account
+                  </Link>
+                  <span className="header__user-divider">|</span>
+                  <button
+                    type="button"
+                    className="header__logout-link"
+                    onClick={logout}
+                    data-testid="header-logout"
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -89,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({
               <Button
                 variant="primary"
                 size="small"
-                onClick={onLoginClick}
+                onClick={() => setIsLoginModalOpen(true)}
                 dataTestId="header-login-button"
               >
                 {t('navigation.login')}
@@ -97,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({
               <Button
                 variant="yellow"
                 size="small"
-                onClick={onSignUpClick}
+                onClick={() => setIsSignUpModalOpen(true)}
                 dataTestId="header-signup-button"
               >
                 {t('navigation.signup')}
@@ -106,6 +110,17 @@ const Header: React.FC<HeaderProps> = ({
           )}
         </div>
       </div>
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
+      <SignUpModal
+        isOpen={isSignUpModalOpen}
+        onClose={() => setIsSignUpModalOpen(false)}
+        onSignUpSuccess={handleSignUpSuccess}
+      />
     </header>
   );
 };

@@ -9,6 +9,7 @@ const config: Config = {
   moduleNameMapper: {
     '\\.(scss|css)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|svg|webp)$': '<rootDir>/src/__mocks__/fileMock.ts',
+    '^@/config/env$': '<rootDir>/src/__mocks__/env.mock.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@components/(.*)$': '<rootDir>/src/components/$1',
     '^@pages/(.*)$': '<rootDir>/src/pages/$1',
@@ -22,7 +23,7 @@ const config: Config = {
     '^@services/(.*)$': '<rootDir>/src/services/$1',
     '^@constants/(.*)$': '<rootDir>/src/constants/$1',
   },
-  setupFilesAfterSetup: ['<rootDir>/src/setupTests.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}', '**/*.test.{ts,tsx}'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

@@ -20,7 +20,7 @@ const DetailPage: React.FC = () => {
 
   return (
     <div className="detail-page" data-testid="detail-page">
-      <Header isLoggedIn={true} />
+      <Header />
       <div className="detail-page__search-bar-wrapper">
         <SearchBar variant="compact" />
       </div>

@@ -143,14 +143,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       <Button
         variant="primary"
-        size="small"//{variant === 'compact' ? 'small' : 'medium'}
+        size={variant === 'compact' ? 'icon' : 'small'}
         onClick={handleSearch}
         dataTestId="search-bar-submit"
         aria-label={t('common.search')}
         className="search-bar__submit"
       >
         <img src="/img/search-ico.png" alt="Search" className="search-bar__submit-icon" />
-        {t('common.search').toUpperCase()}
+        {variant !== 'compact' && t('common.search').toUpperCase()}
       </Button>
     </div>
   );

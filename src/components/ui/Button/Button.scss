@@ -20,6 +20,13 @@
   }
 
   // --- Sizes ---
+  &--icon {
+    padding: $spacing-2xs;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: $font-size-lg;
+    margin-left: 3rem;
+  }
   &--small {
     padding: $spacing-2xs $spacing-md;
     font-size: $font-size-sm;

@@ -57,6 +57,22 @@
   flex-direction: column;
 }
 
+@mixin flex-row-end(
+  $gap: $spacing-md,
+  $margin-top: $spacing-xl,
+  $wrap: nowrap,
+  $justify: flex-end,
+  $align: center
+) {
+  display: flex;
+  flex-direction: row;
+  gap: $gap;
+  margin-top: $margin-top;
+  flex-wrap: $wrap;
+  justify-content: $justify;
+  align-items: $align;
+}
+
 // --- Typography ---
 @mixin heading($size: $font-size-xl) {
   font-family: $font-family-heading;

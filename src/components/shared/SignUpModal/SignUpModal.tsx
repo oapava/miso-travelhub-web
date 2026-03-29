@@ -3,12 +3,14 @@ import { Button } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { Select } from '@/components/ui';
 import { Modal } from '@/components/ui';
+import { authService } from '@/services/auth.service';
+import type { TokenResponse, UserResponse } from '@/services/auth.service';
 import './SignUpModal.scss';
 
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSignUpSuccess?: () => void;
+  onSignUpSuccess?: (token: TokenResponse, user: UserResponse) => void;
   dataTestId?: string;
 }
 
@@ -48,6 +50,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
   onSignUpSuccess,
   dataTestId = 'signup-modal',
 }) => {
+  const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -57,21 +60,41 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
   const [phone, setPhone] = useState('');
   const [currency, setCurrency] = useState('');
   const [notifications, setNotifications] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSignUp = () => {
-    if (
-      fullName &&
-      username &&
-      password &&
-      repeatPassword &&
-      country &&
-      language &&
-      phone &&
-      currency &&
-      notifications
-    ) {
-      onSignUpSuccess?.();
-      onClose();
+  const handleSignUp = async () => {
+    if (!email || !fullName || !username || !password || !repeatPassword) return;
+
+    if (password !== repeatPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Register the user
+      await authService.register({
+        email,
+        username,
+        nombre: fullName,
+        password,
+        telefono: phone || undefined,
+        pais: country || undefined,
+        idioma: language || 'es',
+        moneda_preferida: currency.toUpperCase() || 'USD',
+      });
+
+      // Auto-login after successful registration
+      const token = await authService.login(email, password);
+      const user = await authService.getCurrentUser(token.access_token);
+      onSignUpSuccess?.(token, user);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sign up failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,12 +109,24 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
       <div className="signup-modal__container" data-testid={`${dataTestId}-container`}>
         <div className="signup-modal__avatar" data-testid={`${dataTestId}-avatar`}>
           <div className="signup-modal__avatar-placeholder">
-            <span className="signup-modal__avatar-icon">👤</span>
-            <div className="signup-modal__avatar-edit">✎</div>
+            <span className="signup-modal__avatar-icon">
+              <img src="img/user-avatar.png" alt="user avatar" />
+            </span>
+            <div className="signup-modal__avatar-edit">
+              <img src="img/edit.svg" alt="edit avatar" />
+            </div>
           </div>
         </div>
 
         <div className="signup-modal__form" data-testid={`${dataTestId}-form`}>
+          <Input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            fullWidth
+            dataTestId={`${dataTestId}-email`}
+          />
+
           <div className="signup-modal__row" data-testid={`${dataTestId}-name-row`}>
             <Input
               placeholder="Full Name"
@@ -129,7 +164,6 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
 
           <div className="signup-modal__row" data-testid={`${dataTestId}-country-language-row`}>
             <Select
-              label="Country"
               options={COUNTRY_OPTIONS}
               value={country}
               onChange={(e) => setCountry(e.target.value)}
@@ -137,7 +171,6 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
               dataTestId={`${dataTestId}-country`}
             />
             <Select
-              label="Language Preference"
               options={LANGUAGE_OPTIONS}
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
@@ -156,7 +189,6 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
 
           <div className="signup-modal__row" data-testid={`${dataTestId}-currency-notifications-row`}>
             <Select
-              label="Currency"
               options={CURRENCY_OPTIONS}
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
@@ -164,7 +196,6 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
               dataTestId={`${dataTestId}-currency`}
             />
             <Select
-              label="Notifications"
               options={NOTIFICATION_OPTIONS}
               value={notifications}
               onChange={(e) => setNotifications(e.target.value)}
@@ -173,14 +204,22 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
             />
           </div>
 
+          {error && (
+            <p className="signup-modal__error" data-testid={`${dataTestId}-error`}>
+              {error}
+            </p>
+          )}
+
           <Button
-            variant="primary"
-            size="medium"
-            fullWidth
+            variant="yellow"
+            size="small"
+            fullWidth={false}
             onClick={handleSignUp}
             dataTestId={`${dataTestId}-sign-in`}
+            className='signup-modal__sign-in-button'
+            disabled={isLoading}
           >
-            SIGN IN
+            {isLoading ? 'SIGNING UP...' : 'SIGN IN'}
           </Button>
         </div>
       </div>
