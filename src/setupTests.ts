@@ -12,3 +12,4 @@ if (!global.TextDecoder) {
 	// @ts-ignore
 	global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder;
 }
+

@@ -3,8 +3,10 @@
 Aplicación frontend (React 19 + Vite + TypeScript) para el portal de reservas **MISO Travel Hub**, con vistas B2C y B2B, ruteo con React Router 7, i18n con i18next y estilos en Sass. Incluye pipeline de CI, pruebas unitarias con Jest/Testing Library y artefacto Docker listo para servir con Nginx.
 
 ## 🧭 Características principales
-- **B2C**: Home, resultados, detalle, cuenta, reservas, notificaciones (maquetado con datos mock).
+- **B2C**: Home, resultados, detalle, cuenta, reservas, notificaciones.
 - **B2B**: Login, dashboard, gestor de reservas, reportes financieros, gestor de precios.
+- **Autenticación**: Login y registro de usuarios integrados con `uniandes-pf-user-services` (JWT). Sesión persistida en `localStorage` con expiración automática.
+- **Rutas protegidas**: `/account`, `/account/bookings` y `/account/notifications` requieren sesión activa; redirigen a home si no hay sesión.
 - **Internacionalización**: i18next + react-i18next.
 - **Ruteo**: `react-router-dom@7` con enrutador central en `src/routes/AppRouter.tsx` y enums de rutas en `src/types/routes.types.ts`.
 - **Estilos**: Sass global en `src/styles/main.scss` y componentes modulares.
@@ -15,13 +17,17 @@ Aplicación frontend (React 19 + Vite + TypeScript) para el portal de reservas *
 ```
 .
 ├─ src/
+│  ├─ context/         # AuthContext: estado de sesión global (useAuth hook)
+│  ├─ services/        # auth.service.ts: llamadas al backend de autenticación
 │  ├─ pages/           # Vistas B2C y B2B
-│  ├─ components/      # UI y layout (Header, Footer, SearchBar, etc.)
-│  ├─ routes/          # Enrutador y constantes de rutas
+│  ├─ components/      # UI y layout (Header, Footer, SearchBar, modales de auth, etc.)
+│  ├─ routes/          # AppRouter, ProtectedRoute y constantes de rutas
 │  ├─ i18n/            # Configuración de internacionalización
 │  ├─ styles/          # Sass global y variables
 │  └─ types/           # Tipos compartidos y rutas
 ├─ public/             # Assets estáticos
+├─ .env.local          # Variables de entorno locales (no versionado)
+├─ .env.example        # Plantilla de variables de entorno
 ├─ jest.config.ts      # Config de Jest/ts-jest + aliases
 ├─ src/setupTests.ts   # Setup de pruebas + polyfills
 ├─ Dockerfile          # Build Vite + runtime Nginx
@@ -40,16 +46,23 @@ npm ci
 ## 🔑 Variables de entorno
 Vite solo expone variables que empiezan con `VITE_`.
 
-1) Duplica `.env.example` al modo que necesites, por ejemplo:
+1) Para desarrollo local usa `.env.local` (ya incluido, ignorado por git):
+```
+VITE_AUTH_BASE_URL=http://localhost:8000
+VITE_ENV_NAME=local
+```
+2) Para otros entornos duplica `.env.example`:
 ```bash
-cp .env.example .env.development
+cp .env.example .env.staging
 ```
-2) Ajusta los valores (no guardes secretos en el repositorio). Ejemplos:
-```
-VITE_API_BASE_URL=https://api.example.com
-VITE_ENV_NAME=local|staging|production
-```
-3) Selecciona el modo al correr Vite (`--mode`) o con los scripts ya definidos.
+3) Variables disponibles:
+
+| Variable | Descripción | Ejemplo local |
+|---|---|---|
+| `VITE_AUTH_BASE_URL` | URL base del servicio de autenticación | `http://localhost:8000` |
+| `VITE_ENV_NAME` | Nombre del entorno | `local` |
+
+4) Selecciona el modo al correr Vite (`--mode`) o con los scripts ya definidos.
 
 ## 📜 Scripts disponibles
 ```bash
@@ -123,8 +136,31 @@ Workflow en `.github/workflows/ci.yml`:
 5. Antes de subir cambios: `npm run lint` y `npm run test:coverage`.
 6. Para validar el artefacto: `npm run build` o construir la imagen Docker.
 
+## 🔐 Autenticación
+
+El frontend consume el microservicio `uniandes-pf-user-services` (FastAPI).
+
+**Endpoints utilizados:**
+| Método | Ruta | Uso |
+|---|---|---|
+| `POST` | `/api/v1/auth/login` | Inicio de sesión |
+| `POST` | `/api/v1/auth/register` | Registro de usuario |
+| `GET` | `/api/v1/auth/me` | Obtener perfil del usuario autenticado |
+
+**Flujo de sesión:**
+1. Login → obtiene `access_token` (15 min) + `refresh_token`
+2. Llama `/auth/me` para obtener datos del perfil
+3. Guarda sesión en `localStorage` (clave `travelhub_session`) con expiración
+4. Al recargar la app se restaura la sesión si no ha expirado
+5. Logout elimina la sesión del `localStorage`
+
+**Archivos clave:**
+- `src/services/auth.service.ts` — llamadas HTTP al backend
+- `src/context/AuthContext.tsx` — estado global de autenticación (`useAuth` hook)
+- `src/routes/ProtectedRoute.tsx` — guarda rutas privadas
+
 ## 📌 Próximos pasos (ideas)
-- Conectar servicios reales usando `VITE_API_BASE_URL`.
-- Añadir manejo de estado (p. ej. Zustand/Redux) si crece la complejidad.
+- Implementar refresh automático de token antes de que expire.
+- Añadir flujo de recuperación de contraseña.
 - Incorporar pruebas de integración de rutas y componentes críticos.
 - Automatizar despliegue de la imagen a un registry.

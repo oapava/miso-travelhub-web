@@ -9,6 +9,13 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
+jest.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({ isAuthenticated: false, user: null, accessToken: null, login: jest.fn(), logout: jest.fn() }),
+}));
+
+jest.mock('@/components/shared/LoginModal/LoginModal', () => ({ __esModule: true, default: () => null }));
+jest.mock('@/components/shared/SignUpModal/SignUpModal', () => ({ __esModule: true, default: () => null }));
+
 describe('HomePage', () => {
   it('renders hero section and search bar', () => {
     render(

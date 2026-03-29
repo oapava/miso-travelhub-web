@@ -61,7 +61,7 @@ const BookingsPage: React.FC = () => {
 
   return (
     <div className="bookings-page" data-testid="bookings-page">
-      <Header isLoggedIn={true} user={{ name: 'John Doe' }} />
+      <Header />
       <div className="bookings-page__search-bar-wrapper">
         <SearchBar variant="compact" />
       </div>

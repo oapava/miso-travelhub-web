@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { B2CRoutes, B2BRoutes } from '@/types';
+import ProtectedRoute from './ProtectedRoute';
 
 // B2C Pages
 import { HomePage } from '@/pages/b2c/HomePage';
@@ -24,9 +25,9 @@ const AppRouter: React.FC = () => {
         <Route path={B2CRoutes.HOME} element={<HomePage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/detail/:hotelId" element={<DetailPage />} />
-        <Route path="/account" element={<AccountPage />} />
-        <Route path="/account/bookings" element={<BookingsPage />} />
-        <Route path="/account/notifications" element={<NotificationsPage />} />
+        <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
+        <Route path="/account/bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />
+        <Route path="/account/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
 
         {/* B2B Routes */}
         <Route path="/business/login" element={<B2BLoginPage />} />

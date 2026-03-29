@@ -34,7 +34,7 @@ const NotificationsPage: React.FC = () => {
 
   return (
     <div className="notifications-page" data-testid="notifications-page">
-      <Header isLoggedIn={true} user={{ name: 'John Doe' }} />
+      <Header />
       <div className="notifications-page__search-bar-wrapper">
         <SearchBar variant="compact" />
       </div>

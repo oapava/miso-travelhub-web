@@ -3,35 +3,21 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Logo, Button } from '@/components/ui';
 import { B2CRoutes } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import type { TokenResponse, UserResponse } from '@/services/auth.service';
 import './Header.scss';
 import { SearchBar } from '../SearchBar';
 import LoginModal from '../../shared/LoginModal/LoginModal';
 import SignUpModal from '../../shared/SignUpModal/SignUpModal';
 
-interface UserInfo {
-  name: string;
-  avatarUrl?: string;
-}
-
 interface HeaderProps {
-  isLoggedIn?: boolean;
-  user?: UserInfo;
-  onLoginClick?: () => void;
-  onSignUpClick?: () => void;
-  onLogoutClick?: () => void;
   dataTestId?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({
-  isLoggedIn = false,
-  user,
-  onLoginClick,
-  onSignUpClick,
-  onLogoutClick,
-  dataTestId,
-}) => {
+const Header: React.FC<HeaderProps> = ({ dataTestId }) => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const { isAuthenticated, user, logout, login } = useAuth();
   const isMobileMenuOpen = false;
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
@@ -43,21 +29,13 @@ const Header: React.FC<HeaderProps> = ({
     i18n.changeLanguage(nextLanguage);
   };
 
-  const handleLoginClickInternal = () => {
-    onLoginClick?.();
-    setIsLoginModalOpen(true);
-  };
-
-  const handleLoginClose = () => {
+  const handleLoginSuccess = (token: TokenResponse, userResponse: UserResponse) => {
+    login(token, userResponse);
     setIsLoginModalOpen(false);
   };
 
-  const handleSignUpClickInternal = () => {
-    onSignUpClick?.();
-    setIsSignUpModalOpen(true);
-  };
-
-  const handleSignUpClose = () => {
+  const handleSignUpSuccess = (token: TokenResponse, userResponse: UserResponse) => {
+    login(token, userResponse);
     setIsSignUpModalOpen(false);
   };
 
@@ -85,27 +63,29 @@ const Header: React.FC<HeaderProps> = ({
             USD
           </span>
 
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <div className="header__user">
               <div className="header__user-avatar">
-                {user?.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.name} />
-                ) : (
-                  <span className="header__user-avatar-placeholder">
-                    {user?.name?.charAt(0) || 'O'}
-                  </span>
-                )}
+                <span className="header__user-avatar-placeholder">
+                  {user?.nombre?.charAt(0) || user?.username?.charAt(0) || 'U'}
+                </span>
               </div>
               <div className="header__user-info">
-                <span className="header__user-name">{user?.name} Omar Pava</span>
-                <button
-                  type="button"
-                  className="header__logout-link"
-                  onClick={onLogoutClick}
-                  data-testid="header-logout"
-                >
-                  {t('navigation.login')} | Logout
-                </button>
+                <span className="header__user-name">{user?.nombre}</span>
+                <div className="header__user-links">
+                  <Link to="/account" className="header__account-link" data-testid="header-account">
+                    Account
+                  </Link>
+                  <span className="header__user-divider">|</span>
+                  <button
+                    type="button"
+                    className="header__logout-link"
+                    onClick={logout}
+                    data-testid="header-logout"
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -113,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({
               <Button
                 variant="primary"
                 size="small"
-                onClick={handleLoginClickInternal}
+                onClick={() => setIsLoginModalOpen(true)}
                 dataTestId="header-login-button"
               >
                 {t('navigation.login')}
@@ -121,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({
               <Button
                 variant="yellow"
                 size="small"
-                onClick={handleSignUpClickInternal}
+                onClick={() => setIsSignUpModalOpen(true)}
                 dataTestId="header-signup-button"
               >
                 {t('navigation.signup')}
@@ -133,12 +113,13 @@ const Header: React.FC<HeaderProps> = ({
 
       <LoginModal
         isOpen={isLoginModalOpen}
-        onClose={handleLoginClose}
-        onLoginSuccess={handleLoginClose}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
       />
       <SignUpModal
         isOpen={isSignUpModalOpen}
-        onClose={handleSignUpClose}
+        onClose={() => setIsSignUpModalOpen(false)}
+        onSignUpSuccess={handleSignUpSuccess}
       />
     </header>
   );

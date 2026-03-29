@@ -95,7 +95,7 @@ const ResultsPage: React.FC = () => {
 
   return (
     <div className="results-page" data-testid="results-page">
-      <Header isLoggedIn={true} />
+      <Header />
       {showHomeSearchBar && <div className="results-page__search-bar-wrapper">
          <SearchBar variant="compact" />
       </div>}
