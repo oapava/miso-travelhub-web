@@ -61,7 +61,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
         <div className="login-modal__avatar" data-testid={`${dataTestId}-avatar`}>
           <div className="login-modal__avatar-placeholder">
             <span className="login-modal__avatar-icon">
-              <img src="img/user-avatar.png" alt="user avatar" />
+              <img src="/img/user-avatar.png" alt="user avatar" />
             </span>
           </div>
         </div>

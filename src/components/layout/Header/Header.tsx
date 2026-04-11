@@ -10,15 +10,26 @@ import { SearchBar } from '../SearchBar';
 import LoginModal from '../../shared/LoginModal/LoginModal';
 import SignUpModal from '../../shared/SignUpModal/SignUpModal';
 
-interface HeaderProps {
-  dataTestId?: string;
+interface SearchValues {
+  location?: string;
+  checkIn?: string;
+  checkOut?: string;
+  rooms?: number;
+  adults?: number;
+  children?: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ dataTestId }) => {
+interface HeaderProps {
+  dataTestId?: string;
+  searchInitialValues?: SearchValues;
+  onSearch?: (params: SearchValues) => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ dataTestId, searchInitialValues, onSearch }) => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const { isAuthenticated, user, logout, login } = useAuth();
-  const isMobileMenuOpen = false;
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
 
@@ -40,13 +51,23 @@ const Header: React.FC<HeaderProps> = ({ dataTestId }) => {
   };
 
   return (
-    <header className="header" data-testid={dataTestId}>
+    <header className={`header ${isMobileMenuOpen ? 'header--menu-open' : ''}`} data-testid={dataTestId}>
       <div className="header__container">
         <Link to={B2CRoutes.HOME} className="header__logo-link" aria-label="TravelHub Home">
           <Logo size="large" variant="icon" />
         </Link>
 
-        {showSearchBar && <SearchBar variant="compact" />}
+        {showSearchBar && <SearchBar variant="compact" initialValues={searchInitialValues} onSearch={onSearch} />}
+
+        <button
+          type="button"
+          className={`header__mobile-toggle ${isMobileMenuOpen ? 'header__mobile-toggle--open' : ''}`}
+          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isMobileMenuOpen}
+        >
+          <span className="header__hamburger" />
+        </button>
 
         <div className={`header__actions ${isMobileMenuOpen ? 'header__actions--open' : ''}`}>
           <button

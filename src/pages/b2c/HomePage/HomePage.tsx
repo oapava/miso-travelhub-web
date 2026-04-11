@@ -1,13 +1,33 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header, SearchBar, Footer } from '@/components/layout';
 import { FilterChip } from '@/components/ui';
 import { HotelCard } from '@/components/shared/HotelCard';
+import { searchService } from '@/services/search.service';
+import { searchParamsStorage, searchResultsStorage, LastSearchParams } from '@/services/search-params.storage';
 import './HomePage.scss';
 
 const HomePage: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState('hotel');
+  const navigate = useNavigate();
+  const lastSearch = searchParamsStorage.load();
 
-  const categories = ['Hotel', 'Villa', 'Apartment', 'Resort', 'Hostel'];
+  const handleSearch = async (searchParams: LastSearchParams) => {
+    try {
+      const results = await searchService.searchRooms({
+        ciudad: searchParams.location,
+        checkin: searchParams.checkIn,
+        checkout: searchParams.checkOut,
+        group: searchParams.adults,
+        rooms: searchParams.rooms,
+      });
+      searchParamsStorage.save(searchParams);
+      searchResultsStorage.save(results);
+      console.log('[SearchService] Habitaciones disponibles:', results);
+      navigate('/results', { state: { results, searchParams } });
+    } catch (error) {
+      console.error('[SearchService] Error al buscar habitaciones:', error);
+    }
+  };
 
   const mockHotels = [
     {
@@ -94,7 +114,7 @@ const HomePage: React.FC = () => {
 
         {/* SearchBar overlapping hero */}
         <div className="home-page__search-bar-container">
-          <SearchBar variant="expanded" />
+          <SearchBar variant="expanded" onSearch={handleSearch} initialValues={lastSearch ?? undefined} />
         </div>
       </section>
 

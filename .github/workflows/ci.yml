@@ -1,10 +1,12 @@
 name: CI
 
 on:
+  # Runs on push to main/master/develop — feature/* is handled by deploy-dev.yml
   push:
-    branches: [ main, master, feature/** ]
+    branches: [ main, master, develop ]
+  # Runs on PRs targeting any branch (code review gate)
   pull_request:
-    branches: [ main, master, feature/** ]
+    branches: [ main, master, develop, 'feature/**' ]
 
 jobs:
   test:

@@ -18,7 +18,7 @@
     width: 100%;
     height: 100%;
     //background: linear-gradient(135deg, $color-primary-900 0%, $color-primary-500 100%);
-    background-image: url('img/hero-bg.png');
+    background-image: url('/img/hero-bg.png');
     background-repeat: no-repeat;
     background-size: cover;
     z-index: 1;
@@ -100,7 +100,7 @@
 
   &__top-hotels {
     padding: $spacing-6xl $spacing-lg $spacing-lg $spacing-lg;
-    background: $color-page-bg;
+    background: $color-neutral-white;
     flex-grow: 1;
   }
 
@@ -130,6 +130,10 @@
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: $spacing-lg;
     margin-bottom: $spacing-3xl;
+
+    @include respond-to('mobile') {
+      grid-template-columns: 1fr;
+    }
 
     @include respond-to('tablet') {
       grid-template-columns: repeat(2, 1fr);

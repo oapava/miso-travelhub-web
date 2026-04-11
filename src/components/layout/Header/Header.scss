@@ -9,6 +9,37 @@
     @include container;
     @include flex-between;
     height: 5rem;
+
+    // SearchBar ajustado solo para el header — solo desktop
+    @include respond-from('tablet') {
+      .search-bar {
+        max-width: 720px;
+
+        .search-bar__field:nth-child(2) {
+          flex: 1.2;
+        }
+
+        .search-bar__field:nth-child(4),
+        .search-bar__field:nth-child(6) {
+          flex: 0.8;
+        }
+      }
+    }
+
+    // En tablet/mobile: layout wrap, SearchBar oculto por defecto
+    @include respond-to('tablet') {
+      flex-wrap: wrap;
+      height: auto;
+
+      .search-bar {
+        display: none;
+        order: 3;
+        flex: 1 1 100%;
+        max-width: 100%;
+        padding: $spacing-xs $spacing-sm;
+        border-top: 1px solid $color-neutral-100;
+      }
+    }
   }
 
   &__logo-link {
@@ -16,9 +47,12 @@
     @include focus-visible-outline;
   }
 
+  // Botón hamburguesa — oculto en desktop, visible en tablet/mobile
   &__mobile-toggle {
     display: none;
-    @include flex-center;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     width: 2.5rem;
     height: 2.5rem;
     border: none;
@@ -29,6 +63,20 @@
     @include respond-to('tablet') {
       display: flex;
     }
+
+    &--open {
+      .header__hamburger {
+        background-color: transparent;
+
+        &::before {
+          transform: translateY(6px) rotate(45deg);
+        }
+
+        &::after {
+          transform: translateY(-6px) rotate(-45deg);
+        }
+      }
+    }
   }
 
   &__hamburger {
@@ -36,6 +84,7 @@
     width: 1.25rem;
     height: 2px;
     background-color: $color-neutral-800;
+    transition: background-color $transition-base;
 
     &::before,
     &::after {
@@ -45,15 +94,11 @@
       width: 100%;
       height: 2px;
       background-color: $color-neutral-800;
+      transition: transform $transition-base;
     }
 
-    &::before {
-      top: -6px;
-    }
-
-    &::after {
-      top: 6px;
-    }
+    &::before { top: -6px; }
+    &::after  { top: 6px; }
   }
 
   &__actions {
@@ -63,15 +108,15 @@
 
     @include respond-to('tablet') {
       display: none;
-      position: absolute;
-      top: 4rem;
-      left: 0;
-      right: 0;
-      flex-direction: column;
-      padding: $spacing-lg;
-      background-color: $color-neutral-white;
-      border-bottom: 1px solid $color-neutral-200;
-      box-shadow: $shadow-md;
+      order: 4;
+      flex: 1 1 100%;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: $spacing-sm;
+      padding: $spacing-sm $spacing-md;
+      border-top: 1px solid $color-neutral-100;
 
       &--open {
         display: flex;
@@ -150,6 +195,20 @@
     line-height: $line-height-tight;
   }
 
+  &__account-link {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    color: $color-primary-700;
+    line-height: $line-height-tight;
+    text-decoration: none;
+    @include transition(color);
+
+    &:hover {
+      color: $color-primary-900;
+      text-decoration: underline;
+    }
+  }
+
   &__logout-link {
     font-size: $font-size-xs;
     font-weight: $font-weight-medium;
@@ -165,6 +224,19 @@
     &:hover {
       color: $color-primary-900;
       text-decoration: underline;
+    }
+  }
+
+  // Estado menú abierto en mobile
+  &--menu-open {
+    @include respond-to('tablet') {
+      .header__container {
+        padding-bottom: $spacing-sm;
+
+        .search-bar {
+          display: flex;
+        }
+      }
     }
   }
 }

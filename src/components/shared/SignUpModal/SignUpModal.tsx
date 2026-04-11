@@ -110,10 +110,10 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
         <div className="signup-modal__avatar" data-testid={`${dataTestId}-avatar`}>
           <div className="signup-modal__avatar-placeholder">
             <span className="signup-modal__avatar-icon">
-              <img src="img/user-avatar.png" alt="user avatar" />
+              <img src="/img/user-avatar.png" alt="user avatar" />
             </span>
             <div className="signup-modal__avatar-edit">
-              <img src="img/edit.svg" alt="edit avatar" />
+              <img src="/img/edit.svg" alt="edit avatar" />
             </div>
           </div>
         </div>

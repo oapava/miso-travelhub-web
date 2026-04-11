@@ -1,0 +1,231 @@
+name: Deploy to Dev
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggered on every push to feature/* branches.
+# Pipeline: test → build & push (dev repo) → deploy (Cloud Run dev) → PR.
+# The deploy jobs only run if the test job passes — no deploy on failing tests.
+# After a successful deploy, a PR to develop is created or updated automatically.
+# ─────────────────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - 'feature/**'
+
+env:
+  REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev
+  REPO_DEV: miso-travel-hub-dev
+  SERVICE_DEV: miso-travel-hub-web-dev
+  IMAGE_NAME: miso-travel-hub-web
+
+jobs:
+  # ── Job 1: Run tests ────────────────────────────────────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --runInBand --coverage
+
+      - name: Upload coverage report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ github.sha }}
+          path: coverage
+          retention-days: 7
+
+  # ── Job 2: Build Docker image and push to dev registry ──────────────────────
+  build-and-push:
+    name: Build & Push (dev)
+    runs-on: ubuntu-latest
+    needs: test   # only runs if tests pass
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_DEV }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Set image tag
+        id: image-tag
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+          BRANCH="${GITHUB_REF_NAME//\//-}"   # feature/my-feat → feature-my-feat
+          IMAGE="${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_DEV }}/${{ env.IMAGE_NAME }}:${BRANCH}-${SHORT_SHA}"
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "Building image: ${IMAGE}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image (linux/amd64)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.image-tag.outputs.image }}
+            ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_DEV }}/${{ env.IMAGE_NAME }}:dev-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Job 3: Deploy to Cloud Run dev ──────────────────────────────────────────
+  deploy:
+    name: Deploy to Cloud Run (dev)
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: development
+
+    outputs:
+      url: ${{ steps.get-url.outputs.url }}
+
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_DEV }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Compute image name
+        # Recalculate using the same deterministic formula as build-and-push.
+        # This avoids relying on job outputs, which are empty when only failed
+        # jobs are re-run in GitHub Actions.
+        id: image
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+          BRANCH="${GITHUB_REF_NAME//\//-}"
+          IMAGE="${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_DEV }}/${{ env.IMAGE_NAME }}:${BRANCH}-${SHORT_SHA}"
+          echo "tag=${IMAGE}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_DEV }} \
+            --image "${{ steps.image.outputs.tag }}" \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --labels "environment=dev,branch=${GITHUB_REF_NAME//\//-},sha=${GITHUB_SHA::8}" \
+            --set-env-vars "VITE_AUTH_BASE_URL=${{ secrets.DEV_AUTH_BASE_URL }},VITE_SEARCH_BASE_URL=${{ secrets.DEV_SEARCH_BASE_URL }},VITE_ENV_NAME=development" \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Get service URL
+        id: get-url
+        run: |
+          URL=$(gcloud run services describe ${{ env.SERVICE_DEV }} \
+            --region ${{ env.REGION }} \
+            --project ${{ secrets.GCP_PROJECT_ID }} \
+            --format "value(status.url)")
+          echo "url=${URL}" >> $GITHUB_OUTPUT
+
+      - name: Print deployment summary
+        run: |
+          echo "### Dev deployment successful :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **URL** | ${{ steps.get-url.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${GITHUB_REF_NAME}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${GITHUB_SHA::8}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Image** | \`${{ steps.image.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+
+  # ── Job 4: Create or update PR → develop ────────────────────────────────────
+  pull-request:
+    name: Create / Update PR → develop
+    runs-on: ubuntu-latest
+    needs: deploy   # only runs after a successful deploy
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create or update PR to develop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEV_URL: ${{ needs.deploy.outputs.url }}
+        run: |
+          BRANCH="${GITHUB_REF_NAME}"
+          SHORT_SHA="${GITHUB_SHA::8}"
+          FEATURE_NAME="${BRANCH#feature/}"   # strip "feature/" prefix for the title
+
+          BODY=$(cat <<EOF
+          ## ${FEATURE_NAME}
+
+          Automated PR created by the CI/CD pipeline after a successful deploy to the **dev** environment.
+          Each push to this branch updates this PR — merge when everything looks good in dev.
+
+          ---
+
+          ### Last deployment
+          | | |
+          |---|---|
+          | **Dev URL** | ${DEV_URL} |
+          | **Commit** | \`${SHORT_SHA}\` |
+          | **Deployed at** | $(date -u '+%Y-%m-%d %H:%M UTC') |
+
+          ---
+
+          ### Review checklist
+          - [ ] Tested in the dev environment
+          - [ ] No regressions in existing flows
+          - [ ] UI looks correct on mobile and desktop
+          - [ ] Ready to merge into \`develop\`
+          EOF
+          )
+
+          # Verify that the develop branch exists before attempting to create a PR
+          if ! gh api repos/${{ github.repository }}/branches/develop --silent 2>/dev/null; then
+            echo "::warning::Branch 'develop' does not exist. Create it first: git checkout -b develop && git push origin develop"
+            exit 0
+          fi
+
+          # Check if an open PR already exists from this branch to develop
+          PR_NUMBER=$(gh pr list \
+            --head "$BRANCH" \
+            --base develop \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No open PR found — creating one..."
+            gh pr create \
+              --title "feat: ${FEATURE_NAME}" \
+              --body "$BODY" \
+              --base develop \
+              --head "$BRANCH"
+          else
+            echo "PR #${PR_NUMBER} already exists — updating with latest deployment info..."
+            gh pr edit "$PR_NUMBER" --body "$BODY"
+            echo "PR #${PR_NUMBER} updated."
+          fi

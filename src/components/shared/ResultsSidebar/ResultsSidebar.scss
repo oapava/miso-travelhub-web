@@ -15,12 +15,17 @@
 		border-radius: $border-radius-lg;
 		box-shadow: $shadow-sm;
 		border: 1px solid rgba($color-neutral-black, 0.05);
+		
+		&--map{
+			position: relative;
+		}
 	}
 
 	&__filter-title {
 		@include body-text(md);
 		font-weight: $font-weight-semibold;
-		color: $color-primary-900;
+		font-size: $font-size-md;
+		color: $color-neutral-black;
 		margin-bottom: $spacing-md;
 	}
 
@@ -45,11 +50,16 @@
 		}
 	}
 
-	&__star-filters,
-	&__amenity-filters {
+	&__star-filters {
 		display: flex;
 		flex-direction: column;
 		gap: $spacing-sm;
+	}
+
+	&__amenity-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $spacing-xs;
 	}
 
 	&__checkbox-label {
@@ -77,5 +87,54 @@
 		@include body-text(sm);
 		color: $color-neutral-800;
 		font-weight: $font-weight-regular;
+	}
+
+	&__map-button {
+		display: flex;
+		position: absolute;
+		align-items: center;
+		font-size: $font-size-xs;
+		font-weight: $font-weight-semibold;
+		background-color: $color-primary-800;
+		cursor: pointer;
+		top: 50%;
+		left: 50%;
+		transform: translateX(-50%);
+
+		&:hover {
+			background-color: $color-primary-700;
+			border-color: $color-primary-700;
+		}
+	}
+
+	&__filter-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: $spacing-sm;
+
+		&__filter-header-title {
+			@include body-text(sm);
+			color: $color-neutral-600;
+			font-weight: $font-weight-semibold;
+			cursor: pointer;
+
+			&:hover {
+				color: $color-primary-700;
+			}
+
+			&--clear {
+				@include body-text(sm);
+				color: $color-neutral-600;
+				font-weight: $font-weight-semibold;
+				cursor: pointer;
+
+				&:hover {
+					color: $color-primary-700;
+				}
+			}
+		}
+
+		
 	}
 }

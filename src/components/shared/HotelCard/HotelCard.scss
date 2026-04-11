@@ -67,6 +67,14 @@
       position: relative;
       width: 100%;
       height: 34rem;
+
+      @include respond-to('tablet') {
+        height: 22rem;
+      }
+
+      @include respond-to('mobile') {
+        height: 18rem;
+      }
     }
 
     .hotel-card__content {
@@ -97,6 +105,10 @@
       font-weight: $font-weight-bold;
       text-shadow: 0 1px 3px rgba($color-neutral-black, 0.6);
       line-height: $line-height-tight;
+
+      @include respond-to('mobile') {
+        font-size: $font-size-lg;
+      }
     }
 
     // Price overlaid on image
@@ -143,6 +155,19 @@
       align-items: flex-start;
       flex-direction: column;
       width: auto;
+    }
+
+    @include respond-to('mobile') {
+      .hotel-card__footer {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .hotel-card__content {
+        padding: $spacing-xs $spacing-md;
+      }
     }
   }
 

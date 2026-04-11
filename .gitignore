@@ -32,3 +32,6 @@ npm-debug.log*
 
 # Cache
 .eslintcache
+
+.github-actions-dev-key.jsongithub-actions-dev-key.json
+*-key.json
