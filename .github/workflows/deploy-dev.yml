@@ -203,6 +203,12 @@ jobs:
           EOF
           )
 
+          # Verify that the develop branch exists before attempting to create a PR
+          if ! gh api repos/${{ github.repository }}/branches/develop --silent 2>/dev/null; then
+            echo "::warning::Branch 'develop' does not exist. Create it first: git checkout -b develop && git push origin develop"
+            exit 0
+          fi
+
           # Check if an open PR already exists from this branch to develop
           PR_NUMBER=$(gh pr list \
             --head "$BRANCH" \
