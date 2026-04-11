@@ -1,0 +1,134 @@
+name: Deploy to Sandbox
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggered on every push to the develop branch.
+# Pipeline: test → build & push (sandbox repo) → deploy (Cloud Run sandbox).
+# Completely independent from deploy-dev.yml — separate SA, registry and service.
+# ─────────────────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - develop
+
+env:
+  REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev
+  REPO_SANDBOX: miso-travel-hub-sandbox
+  SERVICE_SANDBOX: miso-travel-hub-web-sandbox
+  IMAGE_NAME: miso-travel-hub-web
+
+jobs:
+  # ── Job 1: Run tests ────────────────────────────────────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --runInBand --coverage
+
+      - name: Upload coverage report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ github.sha }}
+          path: coverage
+          retention-days: 14
+
+  # ── Job 2: Build Docker image and push to sandbox registry ──────────────────
+  build-and-push:
+    name: Build & Push (sandbox)
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_SANDBOX }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image (linux/amd64)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_SANDBOX }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_SANDBOX }}/${{ env.IMAGE_NAME }}:sandbox-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Job 3: Deploy to Cloud Run sandbox ──────────────────────────────────────
+  deploy:
+    name: Deploy to Cloud Run (sandbox)
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: sandbox
+
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_SANDBOX }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Compute image name
+        # Recalculate the image name using the same deterministic formula as
+        # the build-and-push job to avoid relying on job outputs.
+        id: image
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_SANDBOX }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "tag=${IMAGE}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_SANDBOX }} \
+            --image "${{ steps.image.outputs.tag }}" \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --labels "environment=sandbox,sha=${{ github.sha }}" \
+            --set-env-vars "VITE_AUTH_BASE_URL=${{ secrets.SANDBOX_AUTH_BASE_URL }},VITE_SEARCH_BASE_URL=${{ secrets.SANDBOX_SEARCH_BASE_URL }},VITE_ENV_NAME=sandbox" \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Print service URL
+        run: |
+          URL=$(gcloud run services describe ${{ env.SERVICE_SANDBOX }} \
+            --region ${{ env.REGION }} \
+            --project ${{ secrets.GCP_PROJECT_ID }} \
+            --format "value(status.url)")
+          echo "### Sandbox deployment successful :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **URL** | ${URL} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${GITHUB_REF_NAME}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${GITHUB_SHA::8}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Image** | \`${{ steps.image.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
