@@ -111,17 +111,26 @@ jobs:
       - name: Setup gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Compute image name
+        # Recalculate the image name using the same deterministic formula as
+        # the build-and-push job. This avoids relying on job outputs, which are
+        # empty when only failed jobs are re-run in GitHub Actions.
+        id: image
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+          BRANCH="${GITHUB_REF_NAME//\//-}"
+          IMAGE="${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_DEV }}/${{ env.IMAGE_NAME }}:${BRANCH}-${SHORT_SHA}"
+          echo "tag=${IMAGE}" >> $GITHUB_OUTPUT
+
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE_DEV }} \
-            --image "${{ needs.build-and-push.outputs.image }}" \
+            --image "${{ steps.image.outputs.tag }}" \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
             --labels "environment=dev,branch=${GITHUB_REF_NAME//\//-},sha=${GITHUB_SHA::8}" \
-            --set-env-vars "VITE_AUTH_BASE_URL=${{ secrets.DEV_AUTH_BASE_URL }},\
-          VITE_SEARCH_BASE_URL=${{ secrets.DEV_SEARCH_BASE_URL }},\
-          VITE_ENV_NAME=development" \
+            --set-env-vars "VITE_AUTH_BASE_URL=${{ secrets.DEV_AUTH_BASE_URL }},VITE_SEARCH_BASE_URL=${{ secrets.DEV_SEARCH_BASE_URL }},VITE_ENV_NAME=development" \
             --project ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Print service URL
@@ -137,4 +146,4 @@ jobs:
           echo "| **URL** | ${URL} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Branch** | \`${GITHUB_REF_NAME}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Commit** | \`${GITHUB_SHA::8}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Image** | \`${{ needs.build-and-push.outputs.image }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Image** | \`${{ steps.image.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
