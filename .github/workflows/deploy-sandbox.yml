@@ -2,7 +2,8 @@ name: Deploy to Sandbox
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Triggered on every push to the develop branch.
-# Pipeline: test → build & push (sandbox repo) → deploy (Cloud Run sandbox).
+# Pipeline: test → build & push (sandbox repo) → deploy (Cloud Run sandbox)
+#           → create/update PR to main.
 # Completely independent from deploy-dev.yml — separate SA, registry and service.
 # ─────────────────────────────────────────────────────────────────────────────
 on:
@@ -90,6 +91,9 @@ jobs:
     needs: build-and-push
     environment: sandbox
 
+    outputs:
+      url: ${{ steps.get-url.outputs.url }}
+
     steps:
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
@@ -100,8 +104,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Compute image name
-        # Recalculate the image name using the same deterministic formula as
-        # the build-and-push job to avoid relying on job outputs.
         id: image
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_SANDBOX }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
@@ -118,17 +120,97 @@ jobs:
             --set-env-vars "VITE_AUTH_BASE_URL=${{ secrets.SANDBOX_AUTH_BASE_URL }},VITE_SEARCH_BASE_URL=${{ secrets.SANDBOX_SEARCH_BASE_URL }},VITE_ENV_NAME=sandbox" \
             --project ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Print service URL
+      - name: Get service URL
+        id: get-url
         run: |
           URL=$(gcloud run services describe ${{ env.SERVICE_SANDBOX }} \
             --region ${{ env.REGION }} \
             --project ${{ secrets.GCP_PROJECT_ID }} \
             --format "value(status.url)")
+          echo "url=${URL}" >> $GITHUB_OUTPUT
+
+      - name: Print deployment summary
+        run: |
           echo "### Sandbox deployment successful :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| | |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| **URL** | ${URL} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **URL** | ${{ steps.get-url.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Branch** | \`${GITHUB_REF_NAME}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Commit** | \`${GITHUB_SHA::8}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Image** | \`${{ steps.image.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+
+  # ── Job 4: Create or update PR → main ───────────────────────────────────────
+  pull-request:
+    name: Create / Update PR → main
+    runs-on: ubuntu-latest
+    needs: deploy
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create or update PR to main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SANDBOX_URL: ${{ needs.deploy.outputs.url }}
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+
+          # Verify that main exists before attempting to create a PR
+          if ! gh api repos/${{ github.repository }}/branches/main --silent 2>/dev/null; then
+            echo "::warning::Branch 'main' does not exist."
+            exit 0
+          fi
+
+          BODY=$(cat <<EOF
+          ## develop → main
+
+          Automated PR created by the CI/CD pipeline after a successful deploy to the **sandbox** environment.
+          Each push to \`develop\` updates this PR — merge when everything looks good in sandbox.
+
+          ---
+
+          ### Last deployment
+          | | |
+          |---|---|
+          | **Sandbox URL** | ${SANDBOX_URL} |
+          | **Commit** | \`${SHORT_SHA}\` |
+          | **Deployed at** | $(date -u '+%Y-%m-%d %H:%M UTC') |
+
+          ---
+
+          ### Review checklist
+          - [ ] Tested in the sandbox environment
+          - [ ] No regressions in existing flows
+          - [ ] UI looks correct on mobile and desktop
+          - [ ] All feature PRs merged into \`develop\`
+          - [ ] Ready to merge into \`main\` and deploy to production
+          EOF
+          )
+
+          # Check if an open PR already exists from develop to main
+          PR_NUMBER=$(gh pr list \
+            --head "develop" \
+            --base "main" \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No open PR found — creating one..."
+            gh pr create \
+              --title "release: develop → main" \
+              --body "$BODY" \
+              --base main \
+              --head develop
+          else
+            echo "PR #${PR_NUMBER} already exists — updating with latest deployment info..."
+            gh pr edit "$PR_NUMBER" --body "$BODY"
+            echo "PR #${PR_NUMBER} updated."
+          fi
