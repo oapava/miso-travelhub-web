@@ -1,0 +1,138 @@
+name: Deploy to Production
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggered on every push to main (i.e. after a PR from develop is merged).
+# Pipeline: test → build & push (prod registry) → deploy (Cloud Run prod).
+# This is the production pipeline — uses dedicated prod SA, registry and service.
+# ─────────────────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev
+  REPO_PROD: miso-travel-hub
+  SERVICE_PROD: miso-travel-hub-web
+  IMAGE_NAME: miso-travel-hub-web
+
+jobs:
+  # ── Job 1: Run tests ────────────────────────────────────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --runInBand --coverage
+
+      - name: Upload coverage report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ github.sha }}
+          path: coverage
+          retention-days: 30
+
+  # ── Job 2: Build Docker image and push to prod registry ─────────────────────
+  build-and-push:
+    name: Build & Push (prod)
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_PROD }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image (linux/amd64)
+        # Tag with the full SHA for full traceability + latest for rollback reference
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_PROD }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_PROD }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Job 3: Deploy to Cloud Run production ───────────────────────────────────
+  deploy:
+    name: Deploy to Cloud Run (prod)
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: production   # can require manual approval in GitHub Environments settings
+
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_PROD }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Compute image name
+        id: image
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO_PROD }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "tag=${IMAGE}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_PROD }} \
+            --image "${{ steps.image.outputs.tag }}" \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --labels "environment=production,sha=${{ github.sha }}" \
+            --set-env-vars "VITE_AUTH_BASE_URL=${{ secrets.PROD_AUTH_BASE_URL }},VITE_SEARCH_BASE_URL=${{ secrets.PROD_SEARCH_BASE_URL }},VITE_ENV_NAME=production" \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Get service URL
+        id: get-url
+        run: |
+          URL=$(gcloud run services describe ${{ env.SERVICE_PROD }} \
+            --region ${{ env.REGION }} \
+            --project ${{ secrets.GCP_PROJECT_ID }} \
+            --format "value(status.url)")
+          echo "url=${URL}" >> $GITHUB_OUTPUT
+
+      - name: Print deployment summary
+        run: |
+          echo "### Production deployment successful :tada:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **URL** | ${{ steps.get-url.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${GITHUB_SHA::8}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Image** | \`${{ steps.image.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Deployed at** | $(date -u '+%Y-%m-%d %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY
