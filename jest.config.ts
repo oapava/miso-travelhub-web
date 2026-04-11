@@ -31,6 +31,7 @@ const config: Config = {
     '!src/main.tsx',
     '!src/vite-env.d.ts',
   ],
+  coverageReporters: ['text', 'text-summary', 'lcov'],
 };
 
 export default config;
