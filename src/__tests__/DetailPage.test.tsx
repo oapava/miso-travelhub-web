@@ -25,7 +25,7 @@ jest.mock('@/components/shared/SignUpModal/SignUpModal', () => ({
 import { useAuth } from '@/context/AuthContext';
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
-const renderPage = (isAuthenticated = false) =>
+const renderPage = () =>
   render(
     <MemoryRouter initialEntries={['/results/hotel-1']}>
       <DetailPage />
