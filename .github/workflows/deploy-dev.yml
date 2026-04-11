@@ -132,6 +132,12 @@ jobs:
             --allow-unauthenticated \
             --labels "environment=dev,branch=${GITHUB_REF_NAME//\//-},sha=${GITHUB_SHA::8}" \
             --set-env-vars "VITE_AUTH_BASE_URL=${{ secrets.DEV_AUTH_BASE_URL }},VITE_SEARCH_BASE_URL=${{ secrets.DEV_SEARCH_BASE_URL }},VITE_ENV_NAME=development" \
+            --min-instances=0 \
+            --max-instances=2 \
+            --cpu=1 \
+            --memory=256Mi \
+            --cpu-throttling \
+            --concurrency=80 \
             --project ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Get service URL

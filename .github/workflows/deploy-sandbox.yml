@@ -118,6 +118,12 @@ jobs:
             --allow-unauthenticated \
             --labels "environment=sandbox,sha=${{ github.sha }}" \
             --set-env-vars "VITE_AUTH_BASE_URL=${{ secrets.SANDBOX_AUTH_BASE_URL }},VITE_SEARCH_BASE_URL=${{ secrets.SANDBOX_SEARCH_BASE_URL }},VITE_ENV_NAME=sandbox" \
+            --min-instances=0 \
+            --max-instances=2 \
+            --cpu=1 \
+            --memory=256Mi \
+            --cpu-throttling \
+            --concurrency=80 \
             --project ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Get service URL
