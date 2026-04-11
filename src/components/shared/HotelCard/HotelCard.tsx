@@ -52,10 +52,10 @@ const HotelCard: React.FC<HotelCardProps> = ({
   imageUrl = '/img/bg-hotel.png',
   badgeText,
   badgeVariant = 'primary',
-  isFavorite = false,
+  isFavorite: _isFavorite = false,
   variant = 'horizontal',
   onDetailClick,
-  onFavoriteToggle,
+  onFavoriteToggle: _onFavoriteToggle,
   dataTestId,
   className = '',
 }) => {

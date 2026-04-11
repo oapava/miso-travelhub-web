@@ -1,51 +1,78 @@
 import React from 'react';
-import { Input } from '@/components/ui';
+import { Button, StarRating, FilterChip } from '@/components/ui';
+import PriceRangeSlider from '@/components/shared/PriceRangeSlider/PriceRangeSlider';
 import './ResultsSidebar.scss';
 
 interface ResultsSidebarProps {
-  minPrice: string;
-  maxPrice: string;
+  minPrice: number;
+  maxPrice: number;
+  absoluteMin: number;
+  absoluteMax: number;
+  prices: number[];
   selectedStars: number[];
   selectedAmenities: string[];
   amenities: string[];
-  onMinPriceChange: (value: string) => void;
-  onMaxPriceChange: (value: string) => void;
+  onPriceRangeChange: (min: number, max: number) => void;
   onStarToggle: (star: number) => void;
   onAmenityToggle: (amenity: string) => void;
+  onClear?: () => void;
 }
 
 const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   minPrice,
   maxPrice,
+  absoluteMin,
+  absoluteMax,
+  prices,
   selectedStars,
   selectedAmenities,
   amenities,
-  onMinPriceChange,
-  onMaxPriceChange,
+  onPriceRangeChange,
   onStarToggle,
   onAmenityToggle,
+  onClear,
 }) => {
   return (
     <aside className="results-page__sidebar" data-testid="results-sidebar">
+
+      {/* Map Filter */
+      <div className="results-page__filter-group results-page__filter-group--map">
+        <img src="/img/map.png" alt="show on map" />
+        <Button
+          variant="primary"
+          className="results-page__map-button"
+          size='small'
+          data-testid="filter-map-view"
+          >
+            Show on map
+        </Button>
+      </div>}
+
       {/* Price Filter */}
       <div className="results-page__filter-group">
-        <h3 className="results-page__filter-title">Price range</h3>
-        <div className="results-page__price-inputs">
-          <Input
-            type="number"
-            placeholder="Min $0"
-            value={minPrice}
-            onChange={(e) => onMinPriceChange(e.target.value)}
-            dataTestId="filter-min-price"
-          />
-          <Input
-            type="number"
-            placeholder="Max $2000"
-            value={maxPrice}
-            onChange={(e) => onMaxPriceChange(e.target.value)}
-            dataTestId="filter-max-price"
-          />
+        <div className='results-page__filter-header'>
+          <h6 className='results-page__filter-header-title'>Filter by:</h6>
+          <h6
+            className='results-page__filter-header-title--clear'
+            onClick={onClear}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && onClear?.()}
+          >
+            Clear
+          </h6>
         </div>
+        <hr />
+        <h3 className="results-page__filter-title">Price range</h3>
+        <PriceRangeSlider
+          min={absoluteMin}
+          max={absoluteMax}
+          minValue={minPrice}
+          maxValue={maxPrice}
+          prices={prices}
+          onChange={onPriceRangeChange}
+          dataTestId="filter-price-range"
+        />
       </div>
 
       {/* Property Classification */}
@@ -60,7 +87,12 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                 onChange={() => onStarToggle(star)}
                 data-testid={`filter-star-${star}`}
               />
-              <span className="results-page__checkbox-text">{star} Star</span>
+              <StarRating
+                rating={star}
+                maxStars={5}
+                size="small"
+                dataTestId={`filter-star-rating-${star}`}
+              />
             </label>
           ))}
         </div>
@@ -69,17 +101,15 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
       {/* Amenities Filter */}
       <div className="results-page__filter-group">
         <h3 className="results-page__filter-title">Amenities</h3>
-        <div className="results-page__amenity-filters">
+        <div className="results-page__amenity-chips">
           {amenities.map((amenity) => (
-            <label key={amenity} className="results-page__checkbox-label">
-              <input
-                type="checkbox"
-                checked={selectedAmenities.includes(amenity)}
-                onChange={() => onAmenityToggle(amenity)}
-                data-testid={`filter-amenity-${amenity}`}
-              />
-              <span className="results-page__checkbox-text">{amenity}</span>
-            </label>
+            <FilterChip
+              key={amenity}
+              label={amenity}
+              isActive={selectedAmenities.includes(amenity)}
+              onClick={() => onAmenityToggle(amenity)}
+              dataTestId={`filter-amenity-${amenity}`}
+            />
           ))}
         </div>
       </div>

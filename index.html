@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="TravelHub - Your travel companion for B2C and B2B solutions" />
     <title>TravelHub</title>
+    <!--
+      env-config.js is generated at container start by docker-entrypoint.sh.
+      It populates window.__ENV__ with runtime values from Cloud Run env vars.
+      In local dev, public/env-config.js is an empty placeholder (no-op).
+    -->
+    <script src="/env-config.js"></script>
   </head>
   <body>
     <div id="root"></div>

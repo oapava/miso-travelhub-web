@@ -1,0 +1,190 @@
+$thumb-size: 18px;
+$track-height: 2px;
+$active-color: $color-accent-yellow;
+$inactive-color: $color-neutral-300;
+$thumb-border: $color-neutral-400;
+
+.price-range-slider {
+  width: 100%;
+
+  // ── Histogram ──────────────────────────────────────────
+  &__histogram {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    height: 56px;
+    margin-bottom: -$spacing-xs;
+  }
+
+  &__bar {
+    flex: 1;
+    min-height: 4px;
+    max-width: 7px;
+    background-color: $inactive-color;
+    border-radius: 2px 2px 0 0;
+    transition: background-color 0.15s ease;
+
+    &--active {
+      background-color: $active-color;
+    }
+  }
+
+  // ── Dual range slider ───────────────────────────────────
+  &__track-wrapper {
+    position: relative;
+    height: $thumb-size;
+    margin-bottom: $spacing-md;
+  }
+
+  &__track-bg {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: $track-height;
+    transform: translateY(-50%);
+    background: $inactive-color;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  &__track-fill {
+    position: absolute;
+    top: 50%;
+    height: $track-height;
+    transform: translateY(-50%);
+    background: $color-primary-700;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  // Both range inputs sit on top of each other
+  &__range {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    appearance: none;
+    background: transparent;
+    pointer-events: none;
+    outline: none;
+    z-index: 2;
+
+    // Webkit thumb
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: $thumb-size;
+      height: $thumb-size;
+      border-radius: 50%;
+      background: $color-neutral-white;
+      border: 2px solid $thumb-border;
+      box-shadow: 0 1px 4px rgba($color-neutral-black, 0.18);
+      pointer-events: all;
+      cursor: grab;
+      transition: border-color 0.15s, box-shadow 0.15s;
+
+      &:active {
+        cursor: grabbing;
+      }
+    }
+
+    &:hover::-webkit-slider-thumb,
+    &:focus::-webkit-slider-thumb {
+      border-color: $color-primary-500;
+      box-shadow: 0 0 0 4px rgba($color-accent-yellow, 0.35);
+    }
+
+    // Firefox thumb
+    &::-moz-range-thumb {
+      width: $thumb-size;
+      height: $thumb-size;
+      border-radius: 50%;
+      background: $color-neutral-white;
+      border: 2px solid $thumb-border;
+      box-shadow: 0 1px 4px rgba($color-neutral-black, 0.18);
+      pointer-events: all;
+      cursor: grab;
+    }
+
+    &:hover::-moz-range-thumb {
+      border-color: $color-primary-500;
+    }
+
+    // Firefox track — must be transparent
+    &::-moz-range-track {
+      background: transparent;
+      border: none;
+    }
+
+    &--min {
+      z-index: 3;
+    }
+
+    &--max {
+      z-index: 4;
+    }
+  }
+
+  // ── Text inputs ─────────────────────────────────────────
+  &__inputs {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  &__input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xs;
+  }
+
+  &__label {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-600;
+  }
+
+  &__value-box {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: $spacing-2xs $spacing-sm;
+    border: 1.5px solid $color-primary-700;
+    border-radius: $border-radius-pill;
+    background: $color-neutral-200;
+    transition: border-color 0.15s;
+
+    &:focus-within {
+      border-color: $color-primary-500;
+    }
+  }
+
+  &__currency {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-neutral-800;
+    flex-shrink: 0;
+  }
+
+  &__number {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-neutral-800;
+    background: transparent;
+
+    // Hide native number arrows
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      appearance: none;
+      margin: 0;
+    }
+
+    -moz-appearance: textfield;
+  }
+}

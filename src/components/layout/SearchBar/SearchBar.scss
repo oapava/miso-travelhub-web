@@ -17,10 +17,26 @@
       align-items: stretch;
       border-radius: $border-radius-xl;
       padding: $spacing-md;
-      gap: $spacing-md;
+      gap: $spacing-sm;
+      height: auto;
 
       .search-bar__divider {
         display: none;
+      }
+
+      .search-bar__field {
+        padding: $spacing-xs 0;
+        border-bottom: 1px solid $color-neutral-100;
+
+        &:last-of-type {
+          border-bottom: none;
+        }
+      }
+
+      .search-bar__submit {
+        width: 100%;
+        justify-content: center;
+        margin-top: $spacing-xs;
       }
     }
   }
@@ -45,18 +61,67 @@
       padding: 0;
     }
 
-    .search-bar__places_box{
-        display: none;
+    .search-bar__places_box {
+      display: none;
     }
 
     @include respond-to('tablet') {
-      flex-direction: column;
-      align-items: stretch;
-      border-radius: $border-radius-xl;
-      padding: $spacing-sm;
+      flex-wrap: wrap;
+      align-items: center;
+      border-radius: $border-radius-lg;
+      padding: $spacing-xs $spacing-sm;
+      gap: 0;
 
       .search-bar__divider {
         display: none;
+      }
+
+      // Fila 1 — Location: ancho completo
+      .search-bar__field:nth-child(2) {
+        flex: 1 1 100%;
+        padding: $spacing-xs 0;
+        border-bottom: 1px solid $color-neutral-100;
+      }
+
+      // Fila 2 — Check In y Check Out: mitad cada uno
+      .search-bar__field:nth-child(4) {
+        flex: 1 1 50%;
+        padding: $spacing-xs $spacing-xs $spacing-xs 0;
+        border-bottom: 1px solid $color-neutral-100;
+        border-right: 1px solid $color-neutral-100;
+        min-width: 0;
+      }
+
+      .search-bar__field:nth-child(6) {
+        flex: 1 1 50%;
+        padding: $spacing-xs 0 $spacing-xs $spacing-xs;
+        border-bottom: 1px solid $color-neutral-100;
+        min-width: 0;
+      }
+
+      // Fila 3 — Guests: crece, deja espacio al botón
+      .search-bar__field--guests {
+        flex: 1 1 auto;
+        padding: $spacing-xs 0;
+        min-width: 0;
+      }
+
+      .search-bar__guests-summary {
+        font-size: $font-size-xs;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .search-bar__guests-dropdown {
+        left: auto;
+        right: 0;
+      }
+
+      // Botón alineado a la derecha en la fila 3
+      .search-bar__submit {
+        flex-shrink: 0;
+        margin-left: $spacing-xs;
       }
     }
   }
@@ -66,6 +131,7 @@
     gap: 2px;
     flex: 1;
     min-width: 0;
+    position: relative;
   }
 
   &__label {
@@ -108,6 +174,82 @@
     color: $color-neutral-600;
     white-space: nowrap;
     padding: $spacing-2xs 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+
+    &:hover {
+      color: $color-primary-800;
+    }
+  }
+
+  &__guests-dropdown {
+    position: absolute;
+    top: calc(100% + $spacing-xs);
+    left: 0;
+    z-index: 100;
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-lg;
+    box-shadow: $shadow-lg;
+    padding: $spacing-md;
+    min-width: 14rem;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &__guests-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+  }
+
+  &__guests-label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $color-primary-800;
+  }
+
+  &__guests-counter {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &__guests-value {
+    font-size: $font-size-sm;
+    color: $color-neutral-800;
+    min-width: 1.5rem;
+    text-align: center;
+  }
+
+  &__guests-btn {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    border: 1px solid $color-neutral-200;
+    background: $color-neutral-white;
+    color: $color-primary-800;
+    font-size: $font-size-base;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color $transition-base, border-color $transition-base;
+
+    &:hover:not(:disabled) {
+      background-color: $color-primary-800;
+      color: $color-neutral-white;
+      border-color: $color-primary-800;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
   }
 
   &__places_box {
