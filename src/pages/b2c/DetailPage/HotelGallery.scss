@@ -1,0 +1,225 @@
+.hotel-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  width: 100%;
+
+  $gallery-height: 420px;
+  $gallery-height-tablet: 280px;
+
+  // ── Grid: imagen grande + thumbnails ──
+  &__grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    grid-template-rows: $gallery-height;
+    gap: $spacing-xs;
+    width: 100%;
+    border-radius: $border-radius-lg;
+    overflow: hidden;
+
+    @include respond-to('tablet') {
+      grid-template-columns: 1fr;
+      grid-template-rows: $gallery-height-tablet;
+    }
+  }
+
+  // ── Imagen principal ──
+  &__main {
+    width: 100%;
+    height: $gallery-height;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    overflow: hidden;
+
+    &:focus-visible {
+      @include focus-visible-outline;
+    }
+
+    &:hover .hotel-gallery__img {
+      transform: scale(1.03);
+    }
+
+    @include respond-to('tablet') {
+      height: $gallery-height-tablet;
+    }
+  }
+
+  // ── Grid de thumbnails 2×2 ──
+  &__thumbnails {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: $spacing-xs;
+    height: $gallery-height;
+
+    @include respond-to('tablet') {
+      display: none;
+    }
+  }
+
+  // ── Cada thumbnail ──
+  &__thumbnail {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: $color-neutral-200;
+    cursor: pointer;
+    overflow: hidden;
+    min-height: 0;
+
+    &:focus-visible {
+      @include focus-visible-outline;
+    }
+
+    &:hover .hotel-gallery__img {
+      transform: scale(1.05);
+    }
+  }
+
+  // ── Imagen compartida (main + thumbnail) ──
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    @include transition(transform);
+
+    &--fade {
+      animation: gallery-fade-in 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+  }
+
+  @keyframes gallery-fade-in {
+    from {
+      opacity: 0;
+      transform: scale(1.04);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  // ── Bullets de navegación ──
+  &__bullets {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs 0;
+  }
+
+  &__bullet {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    background: $color-neutral-300;
+    cursor: pointer;
+    padding: 0;
+    @include transition(background-color, transform);
+
+    &:hover {
+      background: $color-neutral-500;
+    }
+
+    &:focus-visible {
+      @include focus-visible-outline;
+    }
+
+    &--active {
+      background: $color-primary-700;
+      transform: scale(1.35);
+    }
+  }
+
+  // ── Lightbox ──
+  &__lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba($color-neutral-black, 0.92);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-lg;
+    padding: $spacing-2xl;
+  }
+
+  &__lightbox-close {
+    position: absolute;
+    top: $spacing-lg;
+    right: $spacing-lg;
+    background: rgba($color-neutral-white, 0.15);
+    border: none;
+    color: $color-neutral-white;
+    font-size: $font-size-xl;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include transition(background-color);
+
+    &:hover {
+      background: rgba($color-neutral-white, 0.3);
+    }
+
+    &:focus-visible {
+      @include focus-visible-outline;
+    }
+  }
+
+  &__lightbox-arrow {
+    background: rgba($color-neutral-white, 0.15);
+    border: none;
+    color: $color-neutral-white;
+    font-size: 2.5rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    @include transition(background-color);
+    z-index: 1;
+
+    &:hover {
+      background: rgba($color-neutral-white, 0.3);
+    }
+
+    &:focus-visible {
+      @include focus-visible-outline;
+    }
+  }
+
+  &__lightbox-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-md;
+    max-width: calc(100vw - 200px);
+    max-height: calc(100vh - $spacing-5xl);
+  }
+
+  &__lightbox-img {
+    max-width: 100%;
+    max-height: calc(100vh - 160px);
+    object-fit: contain;
+    border-radius: $border-radius-md;
+    display: block;
+  }
+
+  &__lightbox-counter {
+    @include body-text(sm);
+    color: rgba($color-neutral-white, 0.7);
+    margin: 0;
+  }
+}

@@ -4,6 +4,7 @@ import { Header, Footer } from '@/components/layout';
 import { Breadcrumb, Badge, StarRating, Button, Input, AmenityTag, PriceDisplay } from '@/components/ui';
 import { searchParamsStorage } from '@/services/search-params.storage';
 import { useAuth } from '@/context/AuthContext';
+import HotelGallery from './HotelGallery';
 import './DetailPage.scss';
 
 interface HotelDetail {
@@ -145,14 +146,7 @@ const DetailPage: React.FC = () => {
 
         <div className="detail-page__content">
           {/* Gallery — full width */}
-          <div className="detail-page__gallery" data-testid="detail-gallery">
-            <div className="detail-page__main-image" />
-            <div className="detail-page__thumbnails">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="detail-page__thumbnail" />
-              ))}
-            </div>
-          </div>
+          <HotelGallery dataTestId="detail-gallery" />
 
           {/* Body: description + booking side by side */}
           <div className="detail-page__body">
