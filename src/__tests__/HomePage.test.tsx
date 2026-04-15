@@ -25,7 +25,7 @@ describe('HomePage', () => {
     );
 
     expect(screen.getByTestId('home-page')).toBeInTheDocument();
-    expect(screen.getByText(/Your Trip Starts Here/i)).toBeInTheDocument();
+    expect(screen.getByText(/Your Journey Starts Here/i)).toBeInTheDocument();
     expect(screen.getByRole('search')).toBeInTheDocument();
   });
 
