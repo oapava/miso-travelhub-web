@@ -106,7 +106,7 @@ const HomePage: React.FC = () => {
         <div className="home-page__hero-background" />
         <div className="home-page__hero-overlay" />
         <div className="home-page__hero-content">
-          <h1 className="home-page__hero-title">Your Trip Starts Here</h1>
+          <h1 className="home-page__hero-title">Your Journey Starts Here</h1>
           <p className="home-page__hero-subtitle">
             Find unique across hotels, villas and more.
           </p>
