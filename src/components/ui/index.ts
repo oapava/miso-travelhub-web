@@ -11,3 +11,5 @@ export { Breadcrumb } from './Breadcrumb';
 export { Logo } from './Logo';
 export { Input } from './Input';
 export { Select } from './Select';
+export { DateRangePicker } from './DateRangePicker';
+export type { DateRangePickerProps } from './DateRangePicker';

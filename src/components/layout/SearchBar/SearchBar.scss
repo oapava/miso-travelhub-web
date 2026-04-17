@@ -49,7 +49,7 @@
     min-height: 3rem;
 
     .search-bar__field {
-      padding: $spacing-2xs $spacing-xs;
+      padding: $spacing-sm $spacing-xs;
     }
 
     .search-bar__label {
@@ -77,26 +77,22 @@
       }
 
       // Fila 1 — Location: ancho completo
-      .search-bar__field:nth-child(2) {
+      .search-bar__field:not(.search-bar__field--guests) {
         flex: 1 1 100%;
         padding: $spacing-xs 0;
         border-bottom: 1px solid $color-neutral-100;
       }
 
-      // Fila 2 — Check In y Check Out: mitad cada uno
-      .search-bar__field:nth-child(4) {
-        flex: 1 1 50%;
-        padding: $spacing-xs $spacing-xs $spacing-xs 0;
+      // Fila 2 — DateRangePicker: ancho completo, sus triggers internos se reparten
+      .search-bar__date-range {
+        flex: 1 1 100%;
+        padding: $spacing-xs 0;
         border-bottom: 1px solid $color-neutral-100;
-        border-right: 1px solid $color-neutral-100;
-        min-width: 0;
-      }
 
-      .search-bar__field:nth-child(6) {
-        flex: 1 1 50%;
-        padding: $spacing-xs 0 $spacing-xs $spacing-xs;
-        border-bottom: 1px solid $color-neutral-100;
-        min-width: 0;
+        // The internal triggers split 50/50 on tablet
+        .drp__trigger {
+          flex: 1 1 50%;
+        }
       }
 
       // Fila 3 — Guests: crece, deja espacio al botón
@@ -157,11 +153,36 @@
     }
   }
 
+  // City select — inherits __input styles, removes native arrow appearance
+  &__select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    color: $color-neutral-800;
+
+    // Show placeholder option in muted style
+    &:invalid,
+    option[value=''] {
+      color: $color-neutral-400;
+    }
+
+    option {
+      color: $color-neutral-800;
+    }
+  }
+
+  // DateRangePicker wrapper inside the search bar
+  &__date-range {
+    flex: 2;   // takes the space the two former date fields occupied
+    min-width: 0;
+  }
+
   &__divider {
     width: 1px;
     height: 2rem;
     background-color: $color-neutral-200;
     flex-shrink: 0;
+    margin: .35rem 0;
 
     @include respond-to('tablet') {
       width: 100%;

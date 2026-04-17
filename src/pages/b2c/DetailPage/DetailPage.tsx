@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Header, Footer } from '@/components/layout';
-import { Breadcrumb, Badge, StarRating, Button, Input, AmenityTag, PriceDisplay } from '@/components/ui';
+import { Breadcrumb, Badge, StarRating, Button, AmenityTag, PriceDisplay, DateRangePicker } from '@/components/ui';
 import { searchParamsStorage } from '@/services/search-params.storage';
 import { useAuth } from '@/context/AuthContext';
 import './DetailPage.scss';
@@ -50,6 +50,13 @@ const DetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'amenities' | 'location'>('overview');
   const [startDate, setStartDate] = useState(lastSearch?.checkIn ?? '');
   const [endDate, setEndDate] = useState(lastSearch?.checkOut ?? '');
+
+  // Earliest selectable check-in is tomorrow
+  const tomorrow = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
   const [rooms, setRooms] = useState(String(lastSearch?.rooms ?? 1));
   const [guests, setGuests] = useState(String(lastSearch?.adults ?? 2));
 
@@ -203,27 +210,21 @@ const DetailPage: React.FC = () => {
           {/* Booking Sidebar */}
           <aside className="detail-page__sidebar" data-testid="detail-sidebar">
             <div className="detail-page__booking-card">
-              {/* Dates — side by side */}
-              <div className="detail-page__date-row">
-                <div className="detail-page__form-group">
-                  <label className="detail-page__form-label">Start</label>
-                  <Input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    dataTestId="detail-start-date"
-                  />
-                </div>
-                <div className="detail-page__form-group">
-                  <label className="detail-page__form-label">End</label>
-                  <Input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    dataTestId="detail-end-date"
-                  />
-                </div>
-              </div>
+              {/* Date range picker — replaces the two native date inputs */}
+              <DateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                minDate={tomorrow}
+                onChange={(start, end) => {
+                  setStartDate(start);
+                  setEndDate(end);
+                }}
+                startLabel="Start"
+                endLabel="End"
+                startTestId="detail-start-date"
+                endTestId="detail-end-date"
+                className="detail-page__date-picker"
+              />
 
               {/* Rooms & guests + price on the same row */}
               <div className="detail-page__rooms-guests" data-testid="detail-rooms-guests">

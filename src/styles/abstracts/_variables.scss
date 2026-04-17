@@ -121,3 +121,11 @@ $border-radius-pill: 9999px;
 
 
 $gradient-gray: linear-gradient(178deg,rgba(193, 193, 193, 100) 38%, rgba(185, 185, 185, 100) 70%, rgba(255, 255, 255, 100) 96%);
+
+// --- DateRangePicker ---
+$drp-range-bg:   rgba(255, 193, 7, 0.30);   // amber band for in-range days
+$drp-range-edge: rgba(255, 193, 7, 0.30);   // same colour used on edge half-cells
+$drp-sel-bg:     $color-primary-900;         // filled circle on selected day
+$drp-sel-fg:     $color-neutral-white;       // number colour on selected day
+$drp-hover-bg:   $color-primary-100;         // hover circle fill
+$drp-cell:       2.25rem;                    // day cell width & height
