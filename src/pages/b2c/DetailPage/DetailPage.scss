@@ -91,11 +91,24 @@
     font-weight: $font-weight-medium;
   }
 
-  &__date-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: $spacing-sm;
+  // DateRangePicker inside the booking sidebar card
+  &__date-picker {
     margin-bottom: $spacing-md;
+    // Triggers fill the full card width side by side
+    width: 100%;
+    flex: unset;
+
+    // The internal triggers have labels; show them
+    .drp__trigger-label {
+      display: block;
+    }
+
+    // Popup opens downward; ensure it's not clipped by the card
+    .drp__popup {
+      min-width: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
   }
 
   &__rooms-guests {
@@ -295,5 +308,6 @@
     font-weight: $font-weight-bold;
     color: $color-primary-800;
   }
+
 
 }
