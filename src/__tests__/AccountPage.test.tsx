@@ -133,6 +133,20 @@ describe('AccountPage', () => {
     expect(nameInput.value).toBe('Jane Doe');
   });
 
+  it('updates username input when user types', () => {
+    renderPage();
+    const usernameInput = screen.getByTestId('account-username') as HTMLInputElement;
+    fireEvent.change(usernameInput, { target: { value: 'newuser' } });
+    expect(usernameInput.value).toBe('newuser');
+  });
+
+  it('updates phone input when user types', () => {
+    renderPage();
+    const phoneInput = screen.getByTestId('account-phone') as HTMLInputElement;
+    fireEvent.change(phoneInput, { target: { value: '+12345678' } });
+    expect(phoneInput.value).toBe('+12345678');
+  });
+
   it('renders with empty fields when user is null', () => {
     mockUseAuth.mockReturnValue({
       isAuthenticated: false,

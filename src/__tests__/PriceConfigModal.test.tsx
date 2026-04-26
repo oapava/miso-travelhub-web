@@ -114,4 +114,25 @@ describe('PriceConfigModal', () => {
     expect(screen.getByTestId('custom-price')).toBeInTheDocument();
     expect(screen.getByTestId('custom-price-save-btn')).toBeInTheDocument();
   });
+
+  it('updates offer percent when input changes', () => {
+    render(<PriceConfigModal isOpen={true} onClose={jest.fn()} />);
+    const offerInput = screen.getByTestId('price-config-modal-offer-input') as HTMLInputElement;
+    fireEvent.change(offerInput, { target: { value: '25' } });
+    expect(offerInput.value).toBe('25');
+  });
+
+  it('updates offer start date when input changes', () => {
+    render(<PriceConfigModal isOpen={true} onClose={jest.fn()} />);
+    const startInput = screen.getByTestId('price-config-modal-start-date') as HTMLInputElement;
+    fireEvent.change(startInput, { target: { value: '2026-07-01' } });
+    expect(startInput.value).toBe('2026-07-01');
+  });
+
+  it('updates offer end date when input changes', () => {
+    render(<PriceConfigModal isOpen={true} onClose={jest.fn()} />);
+    const endInput = screen.getByTestId('price-config-modal-end-date') as HTMLInputElement;
+    fireEvent.change(endInput, { target: { value: '2026-07-31' } });
+    expect(endInput.value).toBe('2026-07-31');
+  });
 });

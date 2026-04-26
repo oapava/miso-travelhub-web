@@ -1,0 +1,121 @@
+.add-review-modal {
+  &__container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 0.5rem 0;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4a4a68;
+    margin-bottom: 0.5rem;
+  }
+
+  &__star-row {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  &__star {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #d1d5db;
+    cursor: pointer;
+    padding: 0.125rem;
+    transition: color 0.15s, transform 0.1s;
+    line-height: 1;
+
+    &--active {
+      color: #f59e0b;
+    }
+
+    &:hover {
+      transform: scale(1.15);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #6366f1;
+      border-radius: 4px;
+    }
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #1a1a2e;
+    resize: vertical;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+  }
+
+  &__char-count {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    display: block;
+    text-align: right;
+    margin-top: 0.25rem;
+  }
+
+  &__error {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    background: #fef2f2;
+    border-radius: 6px;
+    border-left: 3px solid #ef4444;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  &__success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 0;
+    text-align: center;
+    color: #059669;
+
+    p {
+      font-weight: 600;
+      font-size: 1rem;
+      margin: 0;
+    }
+  }
+
+  &__success-icon {
+    font-size: 2.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    background: #d1fae5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
