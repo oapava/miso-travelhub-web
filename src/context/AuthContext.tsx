@@ -80,16 +80,9 @@ function clearSession() {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    const session = loadSession();
-    if (session) {
-      setUser(session.user);
-      setAccessToken(session.accessToken);
-    }
-  }, []);
+  // Initialize synchronously from localStorage so ProtectedRoute sees auth state on first render
+  const [user, setUser] = useState<AuthUser | null>(() => loadSession()?.user ?? null);
+  const [accessToken, setAccessToken] = useState<string | null>(() => loadSession()?.accessToken ?? null);
 
   const login = (token: TokenResponse, userResponse: UserResponse) => {
     const session = saveSession(token, userResponse);

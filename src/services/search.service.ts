@@ -78,5 +78,21 @@ export const searchService = {
     const query = new URLSearchParams({ habitacionId, checkin, checkout });
     const response = await fetch(`${SEARCH_BASE_URL}/search/detail_room?${query.toString()}`);
     return handleResponse<RoomDetail>(response);
+  
+  },
+
+  async searchCities(): Promise<string[]> {
+    const response = await fetch(`${SEARCH_BASE_URL}/search/search_cities`);
+    const data = await handleResponse<unknown>(response);
+    if (!Array.isArray(data)) return [];
+    return data.map((item) => {
+      if (typeof item === 'string') return item;
+      // Handle possible object formats: { ciudad } | { name } | { city }
+      if (item && typeof item === 'object') {
+        const obj = item as Record<string, unknown>;
+        return String(obj['ciudad'] ?? obj['name'] ?? obj['city'] ?? JSON.stringify(item));
+      }
+      return String(item);
+    });
   },
 };

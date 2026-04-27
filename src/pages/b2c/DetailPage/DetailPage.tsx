@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Header, Footer } from '@/components/layout';
-import { Breadcrumb, Badge, StarRating, Button, Input, AmenityTag, PriceDisplay } from '@/components/ui';
+import { Breadcrumb, Badge, StarRating, Button, AmenityTag, PriceDisplay, DateRangePicker } from '@/components/ui';
 import { searchParamsStorage } from '@/services/search-params.storage';
 import { searchService } from '@/services/search.service';
 import { bookingService, ReviewHotel, BookingResponse } from '@/services/booking.service';
@@ -9,7 +9,8 @@ import { useAuth } from '@/context/AuthContext';
 import BookingModal from '@/components/shared/BookingModal/BookingModal';
 import BookingConfirmModal from '@/components/shared/BookingConfirmModal/BookingConfirmModal';
 import AddReviewModal from '@/components/shared/AddReviewModal/AddReviewModal';
-import HotelGallery from '@/components/shared/HotelGallery/HotelGallery';
+import HotelGallery from './HotelGallery';
+import HotelReviews from './HotelReviews';
 import './DetailPage.scss';
 
 interface HotelDetail {
@@ -61,17 +62,50 @@ const DetailPage: React.FC = () => {
   const { isAuthenticated, accessToken } = useAuth();
 
   const lastSearch = searchParamsStorage.load();
-  const [activeTab, setActiveTab] = useState<'overview' | 'amenities' | 'location' | 'reviews'>('overview');
 
-  // Section refs for smooth scroll
-  const sectionRefs = {
-    overview:  useRef<HTMLElement>(null),
-    amenities: useRef<HTMLElement>(null),
-    location:  useRef<HTMLElement>(null),
-    reviews:   useRef<HTMLElement>(null),
-  };
+  // ── Tab anchors ───────────────────────────────────────────────────────────
+  const TABS = [
+    { label: 'Overview',  anchor: 'section-overview'  },
+    { label: 'Amenities', anchor: 'section-amenities' },
+    { label: 'Location',  anchor: 'section-location'  },
+    { label: 'Reviews',   anchor: 'section-reviews'   },
+  ] as const;
+
+  type TabAnchor = typeof TABS[number]['anchor'];
+
+  const [activeTab, setActiveTab] = useState<TabAnchor>('section-overview');
+
+  // Update active tab as the user scrolls (IntersectionObserver)
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+
+    TABS.forEach(({ anchor }) => {
+      const el = document.getElementById(anchor);
+      if (!el) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) setActiveTab(anchor);
+        },
+        { rootMargin: '-80px 0px -65% 0px', threshold: 0 },
+      );
+
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    return () => observers.forEach((o) => o.disconnect());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [startDate, setStartDate] = useState(lastSearch?.checkIn ?? '');
   const [endDate, setEndDate] = useState(lastSearch?.checkOut ?? '');
+
+  // Earliest selectable check-in is tomorrow
+  const tomorrow = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
   const [rooms, setRooms] = useState(String(lastSearch?.rooms ?? 1));
   const [guests, setGuests] = useState(String(lastSearch?.adults ?? 2));
 
@@ -90,7 +124,7 @@ const DetailPage: React.FC = () => {
   // Booking modal state
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [, setBookingResult] = useState<BookingResponse | null>(null);
+  const [bookingResult, setBookingResult] = useState<BookingResponse | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
 
   // Add review modal state
@@ -134,10 +168,11 @@ const DetailPage: React.FC = () => {
   }, [fetchRoomDetail]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  const handleTabClick = (tab: typeof activeTab) => {
-    setActiveTab(tab);
-    const ref = sectionRefs[tab];
-    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleTabClick = (anchor: TabAnchor) => {
+    setActiveTab(anchor);
+    const el = document.getElementById(anchor);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const handleSearch = (params: { checkIn?: string; checkOut?: string; rooms?: number; adults?: number }) => {
@@ -246,22 +281,22 @@ const DetailPage: React.FC = () => {
           )}
         </div>
 
-        {/* Tabs */}
+        {/* Tabs — each scrolls to its corresponding section anchor */}
         <div className="detail-page__tabs" data-testid="detail-tabs">
-          {tabs.map((tab) => (
+          {TABS.map(({ label, anchor }) => (
             <button
-              key={tab}
-              className={`detail-page__tab ${activeTab === tab.toLowerCase() ? 'detail-page__tab--active' : ''}`}
-              onClick={() => handleTabClick(tab.toLowerCase() as typeof activeTab)}
-              data-testid={`tab-${tab.toLowerCase()}`}
+              key={anchor}
+              className={`detail-page__tab${activeTab === anchor ? ' detail-page__tab--active' : ''}`}
+              onClick={() => handleTabClick(anchor)}
+              data-testid={`tab-${label.toLowerCase()}`}
             >
-              {tab}
+              {label}
             </button>
           ))}
         </div>
 
         <div className="detail-page__content">
-          {/* Gallery */}
+          {/* Gallery — full width */}
           <div className="detail-page__gallery" data-testid="detail-gallery">
             <HotelGallery
               images={roomDetailImages}
@@ -273,10 +308,9 @@ const DetailPage: React.FC = () => {
           {/* Body */}
           <div className="detail-page__body">
             <div className="detail-page__main-content">
-
-              {/* Description — always visible */}
+              {/* ── Overview ── */}
               <section
-                ref={sectionRefs.overview}
+                id="section-overview"
                 className="detail-page__section"
                 data-testid="detail-description"
               >
@@ -290,9 +324,9 @@ const DetailPage: React.FC = () => {
                 </p>
               </section>
 
-              {/* Amenities — always visible */}
+              {/* ── Amenities ── */}
               <section
-                ref={sectionRefs.amenities}
+                id="section-amenities"
                 className="detail-page__section"
                 data-testid="detail-amenities"
               >
@@ -304,178 +338,124 @@ const DetailPage: React.FC = () => {
                 </div>
                 <div className="detail-page__amenities-list">
                   {hotelAmenities.map((amenity) => (
-                    <AmenityTag key={amenity} label={amenity} dataTestId={`amenity-${amenity}`} />
+                    <AmenityTag key={amenity} label={amenity} />
                   ))}
                 </div>
-                <Button variant="dark" size="small" dataTestId="detail-amenities-book-btn">
-                  Show all amenities
-                </Button>
               </section>
 
-              {/* Location — always visible */}
+              {/* ── Location ── */}
               <section
-                ref={sectionRefs.location}
+                id="section-location"
                 className="detail-page__section"
                 data-testid="detail-location"
               >
                 <h2 className="detail-page__section-title">Location</h2>
-                <div className="detail-page__map-placeholder" data-testid="detail-map">Map</div>
-              </section>
-
-              {/* Reviews — always visible */}
-              <section
-                ref={sectionRefs.reviews}
-                className="detail-page__section"
-                data-testid="detail-reviews"
-              >
-                <div className="detail-page__reviews-header">
-                  <h2 className="detail-page__section-title">Reviews</h2>
-                  <Button
-                    variant="outline"
-                    size="small"
-                    disabled={!isAuthenticated}
-                    title={!isAuthenticated ? 'Log in to write a review' : undefined}
-                    onClick={() => setIsAddReviewOpen(true)}
-                    dataTestId="add-review-btn"
-                  >
-                    + Add Review
-                  </Button>
+                <div className="detail-page__map-placeholder" data-testid="detail-map">
+                  Map
                 </div>
-
-                {reviewsError && (
-                  <p className="detail-page__reviews-error" data-testid="reviews-error">
-                    {reviewsError}
-                  </p>
-                )}
-
-                {isLoadingReviews ? (
-                  <p className="detail-page__reviews-loading" data-testid="reviews-loading">
-                    Loading reviews...
-                  </p>
-                ) : reviews.length === 0 && !reviewsError ? (
-                  <p className="detail-page__reviews-empty" data-testid="reviews-empty">
-                    No reviews yet. Be the first to share your experience!
-                  </p>
-                ) : (
-                  <div className="detail-page__reviews-list" data-testid="reviews-list">
-                    {reviews.map((review) => (
-                      <div
-                        key={review.id}
-                        className="detail-page__review-card"
-                        data-testid={`review-card-${review.id}`}
-                      >
-                        <div className="detail-page__review-header">
-                          <StarRating
-                            rating={review.calificacion}
-                            size="small"
-                            dataTestId={`review-rating-${review.id}`}
-                          />
-                          {review.verificada && (
-                            <Badge
-                              label="Verified"
-                              variant="success"
-                              dataTestId={`review-verified-${review.id}`}
-                            />
-                          )}
-                          <span
-                            className="detail-page__review-date"
-                            data-testid={`review-date-${review.id}`}
-                          >
-                            {formatReviewDate(review.fecha)}
-                          </span>
-                        </div>
-                        <p
-                          className="detail-page__review-comment"
-                          data-testid={`review-comment-${review.id}`}
-                        >
-                          {review.comentario}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </section>
+
+              {/* ── Reviews ── */}
+              <div className="detail-page__reviews-header">
+                <button
+                  className="detail-page__icon-btn"
+                  data-testid="add-review-btn"
+                  disabled={!isAuthenticated}
+                  onClick={() => setIsAddReviewOpen(true)}
+                >
+                  + Add Review
+                </button>
+              </div>
+              <HotelReviews
+                id="section-reviews"
+                dataTestId="detail-reviews"
+                reviews={reviews.map(r => ({
+                  id: r.id,
+                  author: `Traveler ${r.viajeroId.substring(0, 8)}`,
+                  date: r.fecha,
+                  rating: r.calificacion,
+                  text: r.comentario,
+                  verified: r.verificada,
+                }))}
+                isLoading={isLoadingReviews}
+                error={reviewsError}
+                onReviewAdded={() => {
+                  if (hotelId) {
+                    bookingService.getHotelReviews(hotelId).then(setReviews).catch(() => {
+                      setReviews([]);
+                    });
+                  }
+                }}
+              />
             </div>
 
-            {/* Booking Sidebar */}
-            <aside className="detail-page__sidebar" data-testid="detail-sidebar">
-              <div className="detail-page__booking-card">
-                {/* Dates */}
-                <div className="detail-page__date-row">
-                  <div className="detail-page__form-group">
-                    <label className="detail-page__form-label">Start</label>
-                    <Input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      dataTestId="detail-start-date"
-                    />
-                  </div>
-                  <div className="detail-page__form-group">
-                    <label className="detail-page__form-label">End</label>
-                    <Input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      dataTestId="detail-end-date"
-                    />
-                  </div>
-                </div>
+          {/* Booking Sidebar */}
+          <aside className="detail-page__sidebar" data-testid="detail-sidebar">
+            <div className="detail-page__booking-card">
+              {/* Date range picker — replaces the two native date inputs */}
+              <DateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                minDate={tomorrow}
+                onChange={(start, end) => {
+                  setStartDate(start);
+                  setEndDate(end);
+                }}
+                startLabel="Start"
+                endLabel="End"
+                startTestId="detail-start-date"
+                endTestId="detail-end-date"
+                className="detail-page__date-picker"
+              />
 
-                {/* Rooms & guests + price */}
-                <div className="detail-page__rooms-guests" data-testid="detail-rooms-guests">
-                  <div className="detail-page__rooms-guests-header">
-                    <span className="detail-page__form-label">Rooms and guests</span>
-                    <div className="detail-page__price-wrapper">
-                      {isPriceLoading && (
-                        <span className="detail-page__price-loading" data-testid="price-loading">
-                          Updating…
-                        </span>
-                      )}
-                      <PriceDisplay
-                        originalPrice={hotelOriginalPrice}
-                        finalPrice={hotelPrice}
-                        discountPercentage={hotelDiscount}
-                        size="small"
-                        dataTestId="detail-price"
-                      />
-                    </div>
-                  </div>
-                  <p className="detail-page__rooms-guests-text">
-                    {rooms} room{Number(rooms) !== 1 ? 's' : ''}
-                  </p>
-                  <p className="detail-page__rooms-guests-text">
-                    {nights > 0 ? `${nights} night${nights !== 1 ? 's' : ''}, ` : ''}
-                    {guests} adult{Number(guests) !== 1 ? 's' : ''}
-                  </p>
+              {/* Rooms & guests + price on the same row */}
+              <div className="detail-page__rooms-guests" data-testid="detail-rooms-guests">
+                <div className="detail-page__rooms-guests-header">
+                  <span className="detail-page__form-label">Rooms and guests</span>
+                  <PriceDisplay
+                    originalPrice={hotelOriginalPrice}
+                    finalPrice={hotelPrice}
+                    discountPercentage={hotelDiscount}
+                    size="small"
+                    dataTestId="detail-price"
+                  />
                 </div>
-
                 {priceError && (
                   <p className="detail-page__price-error" data-testid="detail-price-error">
                     {priceError}
                   </p>
                 )}
-
-                {bookingError && (
-                  <p className="detail-page__booking-error" data-testid="detail-booking-error">
-                    {bookingError}
-                  </p>
-                )}
-
-                {/* Booking button */}
-                <div className="detail-page__booking-actions">
-                  <Button
-                    variant="primary"
-                    disabled={!isAuthenticated}
-                    title={!isAuthenticated ? 'Log in to book this room' : undefined}
-                    onClick={() => setIsBookingModalOpen(true)}
-                    dataTestId="detail-booking-btn"
-                  >
-                    BOOKING
-                  </Button>
-                </div>
+                <p className="detail-page__rooms-guests-text">
+                  {rooms} room{Number(rooms) !== 1 ? 's' : ''}
+                </p>
+                <p className="detail-page__rooms-guests-text">
+                  {nights > 0
+                    ? `${nights} night${nights !== 1 ? 's' : ''}, `
+                    : ''}
+                  {guests} adult{Number(guests) !== 1 ? 's' : ''}
+                </p>
               </div>
-            </aside>
+
+              {bookingError && (
+                <p className="detail-page__booking-error" data-testid="detail-booking-error">
+                  {bookingError}
+                </p>
+              )}
+
+              {/* Booking action — right-aligned, only active when logged in */}
+              <div className="detail-page__booking-actions">
+                <Button
+                  variant="primary"
+                  disabled={!isAuthenticated}
+                  title={!isAuthenticated ? 'Log in to book this room' : undefined}
+                  onClick={() => setIsBookingModalOpen(true)}
+                  dataTestId="detail-booking-btn"
+                >
+                  BOOKING
+                </Button>
+              </div>
+            </div>
+          </aside>
           </div>
         </div>
       </div>
@@ -497,10 +477,7 @@ const DetailPage: React.FC = () => {
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         destination={hotelName}
-        checkIn={startDate}
-        checkOut={endDate}
-        guests={parseInt(guests, 10)}
-        rooms={parseInt(rooms, 10)}
+        bookingResult={bookingResult ?? undefined}
         dataTestId="detail-confirm-modal"
       />
 

@@ -17,7 +17,35 @@ jest.mock('@/components/shared/LoginModal/LoginModal', () => ({ __esModule: true
 jest.mock('@/components/shared/SignUpModal/SignUpModal', () => ({ __esModule: true, default: () => null }));
 
 jest.mock('@/services/search.service', () => ({
-  searchService: { searchRooms: jest.fn(), getDetailRoom: jest.fn() },
+  searchService: { searchRooms: jest.fn(), getDetailRoom: jest.fn(), searchCities: jest.fn() },
+}));
+
+jest.mock('@/components/ui/DateRangePicker/DateRangePicker', () => ({
+  __esModule: true,
+  default: ({
+    startDate, endDate, onChange, startTestId, endTestId,
+  }: {
+    startDate: string; endDate: string;
+    onChange: (s: string, e: string) => void;
+    startTestId?: string; endTestId?: string;
+  }) => (
+    <>
+      <input
+        type="date"
+        data-testid={startTestId}
+        value={startDate}
+        onChange={(ev) => onChange(ev.target.value, endDate)}
+        readOnly={false}
+      />
+      <input
+        type="date"
+        data-testid={endTestId}
+        value={endDate}
+        onChange={(ev) => onChange(startDate, ev.target.value)}
+        readOnly={false}
+      />
+    </>
+  ),
 }));
 
 jest.mock('@/services/booking.service', () => ({
@@ -104,6 +132,7 @@ describe('DetailPage', () => {
     mockGetReviews.mockResolvedValue([]);
     mockBookRoom.mockResolvedValue(mockBookingResult);
     mockPostReview.mockResolvedValue({});
+    (searchService.searchCities as jest.Mock).mockResolvedValue([]);
   });
 
   // ── Structural rendering ─────────────────────────────────────────────────
@@ -114,9 +143,11 @@ describe('DetailPage', () => {
 
   it('renders all four tabs including Reviews', () => {
     renderPage();
-    ['tab-overview', 'tab-amenities', 'tab-location', 'tab-reviews'].forEach((t) =>
-      expect(screen.getByTestId(t)).toBeInTheDocument(),
-    );
+    expect(screen.getByTestId('detail-tabs')).toBeInTheDocument();
+    expect(screen.getByTestId('tab-overview')).toBeInTheDocument();
+    expect(screen.getByTestId('tab-amenities')).toBeInTheDocument();
+    expect(screen.getByTestId('tab-location')).toBeInTheDocument();
+    expect(screen.getByTestId('tab-reviews')).toBeInTheDocument();
   });
 
   it('renders gallery and booking sidebar', () => {
@@ -326,24 +357,22 @@ describe('DetailPage', () => {
     expect(screen.getByTestId('detail-price')).toBeInTheDocument();
   });
 
-  it('shows price-loading indicator while fetching price', async () => {
-    sessionStorage.setItem(LAST_SEARCH_KEY, JSON.stringify(mockLastSearch));
-    let resolve!: (v: typeof mockRoomDetail) => void;
-    mockGetDetail.mockReturnValueOnce(new Promise((res) => { resolve = res; }));
+  it('marks the Amenities tab as active when clicked and keeps all sections visible', () => {
     renderPage();
-    expect(screen.getByTestId('price-loading')).toBeInTheDocument();
-    await act(async () => resolve(mockRoomDetail));
-    await waitFor(() =>
-      expect(screen.queryByTestId('price-loading')).not.toBeInTheDocument(),
-    );
+    fireEvent.click(screen.getByTestId('tab-amenities'));
+    expect(screen.getByTestId('tab-amenities')).toHaveClass('detail-page__tab--active');
+    // All sections remain in the DOM — tabs are now anchor links, not show/hide toggles
+    expect(screen.getByTestId('detail-amenities')).toBeInTheDocument();
+    expect(screen.getByTestId('detail-location')).toBeInTheDocument();
   });
 
-  // ── Booking modal flow ───────────────────────────────────────────────────
-  it('opens booking modal when BOOKING is clicked', () => {
-    mockUseAuth.mockReturnValue(authUser);
+  it('marks the Location tab as active when clicked and keeps all sections visible', () => {
     renderPage();
-    fireEvent.click(screen.getByTestId('detail-booking-btn'));
-    expect(screen.getByTestId('detail-booking-modal')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tab-location'));
+    expect(screen.getByTestId('tab-location')).toHaveClass('detail-page__tab--active');
+    // All sections remain in the DOM — tabs are now anchor links, not show/hide toggles
+    expect(screen.getByTestId('detail-location')).toBeInTheDocument();
+    expect(screen.getByTestId('detail-amenities')).toBeInTheDocument();
   });
 
   it('closes booking modal on close button', () => {

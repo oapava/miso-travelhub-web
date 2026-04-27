@@ -1,4 +1,4 @@
-import { SEARCH_BASE_URL } from '@/config/env';
+import { AUTH_BASE_URL, SEARCH_BASE_URL } from '@/config/env';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -130,7 +130,7 @@ export const bookingService = {
   },
 
   async bookRoom(request: BookingRequest, accessToken: string): Promise<BookingResponse> {
-    const response = await fetch(`${SEARCH_BASE_URL}/api/v1/booking/booking_room`, {
+    const response = await fetch(`${AUTH_BASE_URL}/api/v1/booking/booking_room`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -149,5 +149,13 @@ export const bookingService = {
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
     return handleResponse<HotelBooking[]>(response);
+  },
+
+  /** Fetch all bookings for the authenticated traveler user */
+  async getMyBookings(accessToken: string): Promise<BookingResponse[]> {
+    const response = await fetch(`${SEARCH_BASE_URL}/api/v1/booking/get_bookings`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return handleResponse<BookingResponse[]>(response);
   },
 };

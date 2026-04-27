@@ -40,8 +40,8 @@ const B2BLoginPage: React.FC = () => {
     <div className="b2b-login-page" data-testid="b2b-login-page">
       <div className="b2b-login-page__left">
         <div className="b2b-login-page__container">
-          <div className="b2b-login-page__logo-wrapper">
-            <Logo size="medium" dataTestId="b2b-login-logo" />
+          <div className="b2b-login-page__logo-wrapper b2b-login-page__logo-wrapper--left">
+            <Logo size="large" variant='icon' dataTestId="b2b-login-logo" />
           </div>
 
           <h1 className="b2b-login-page__heading">
@@ -90,9 +90,9 @@ const B2BLoginPage: React.FC = () => {
             </div>
 
             <Button
+              className='b2b-login-page__right-button'
               variant="primary"
-              size="medium"
-              fullWidth
+              size="small"
               type="submit"
               disabled={isLoading}
               dataTestId="b2b-login-submit"
@@ -103,7 +103,9 @@ const B2BLoginPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="b2b-login-page__right" data-testid="b2b-login-image-placeholder" aria-hidden="true" />
+      <div className="b2b-login-page__right" data-testid="b2b-login-image-placeholder" aria-hidden="true">
+        
+      </div>
     </div>
   );
 };
