@@ -55,6 +55,7 @@ describe('DetailPage', () => {
     expect(screen.getByTestId('tab-overview')).toBeInTheDocument();
     expect(screen.getByTestId('tab-amenities')).toBeInTheDocument();
     expect(screen.getByTestId('tab-location')).toBeInTheDocument();
+    expect(screen.getByTestId('tab-reviews')).toBeInTheDocument();
   });
 
   it('renders overview tab content by default', () => {
@@ -118,18 +119,22 @@ describe('DetailPage', () => {
     expect(screen.getByTestId('detail-price')).toBeInTheDocument();
   });
 
-  it('switches to amenities-only tab when Amenities tab is clicked', () => {
+  it('marks the Amenities tab as active when clicked and keeps all sections visible', () => {
     renderPage();
     fireEvent.click(screen.getByTestId('tab-amenities'));
+    expect(screen.getByTestId('tab-amenities')).toHaveClass('detail-page__tab--active');
+    // All sections remain in the DOM — tabs are now anchor links, not show/hide toggles
     expect(screen.getByTestId('detail-amenities')).toBeInTheDocument();
-    expect(screen.queryByTestId('detail-location')).not.toBeInTheDocument();
+    expect(screen.getByTestId('detail-location')).toBeInTheDocument();
   });
 
-  it('switches to location-only tab when Location tab is clicked', () => {
+  it('marks the Location tab as active when clicked and keeps all sections visible', () => {
     renderPage();
     fireEvent.click(screen.getByTestId('tab-location'));
+    expect(screen.getByTestId('tab-location')).toHaveClass('detail-page__tab--active');
+    // All sections remain in the DOM — tabs are now anchor links, not show/hide toggles
     expect(screen.getByTestId('detail-location')).toBeInTheDocument();
-    expect(screen.queryByTestId('detail-amenities')).not.toBeInTheDocument();
+    expect(screen.getByTestId('detail-amenities')).toBeInTheDocument();
   });
 
   it('renders fallback amenities when no hotel state is passed', () => {

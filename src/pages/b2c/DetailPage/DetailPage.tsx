@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Header, Footer } from '@/components/layout';
-import { Breadcrumb, Badge, StarRating, Button, Input, AmenityTag, PriceDisplay } from '@/components/ui';
+import { Breadcrumb, Badge, StarRating, Button, AmenityTag, PriceDisplay, DateRangePicker } from '@/components/ui';
 import { searchParamsStorage } from '@/services/search-params.storage';
 import { useAuth } from '@/context/AuthContext';
+import HotelGallery from './HotelGallery';
+import HotelReviews from './HotelReviews';
 import './DetailPage.scss';
 
 interface HotelDetail {
@@ -47,9 +49,61 @@ const DetailPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   const lastSearch = searchParamsStorage.load();
-  const [activeTab, setActiveTab] = useState<'overview' | 'amenities' | 'location'>('overview');
+
+  // ── Tab anchors ───────────────────────────────────────────────────────────
+  const TABS = [
+    { label: 'Overview',  anchor: 'section-overview'  },
+    { label: 'Amenities', anchor: 'section-amenities' },
+    { label: 'Location',  anchor: 'section-location'  },
+    { label: 'Reviews',   anchor: 'section-reviews'   },
+  ] as const;
+
+  type TabAnchor = typeof TABS[number]['anchor'];
+
+  const [activeTab, setActiveTab] = useState<TabAnchor>('section-overview');
+
+  // Update active tab as the user scrolls (IntersectionObserver)
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+
+    TABS.forEach(({ anchor }) => {
+      const el = document.getElementById(anchor);
+      if (!el) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) setActiveTab(anchor);
+        },
+        // Section becomes "active" when its top enters the upper 35 % of the viewport
+        { rootMargin: '-80px 0px -65% 0px', threshold: 0 },
+      );
+
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    return () => observers.forEach((o) => o.disconnect());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Smooth-scroll to section, offsetting for the fixed header (~80 px)
+  const handleTabClick = (anchor: TabAnchor) => {
+    setActiveTab(anchor);
+    const el = document.getElementById(anchor);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 100;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+
   const [startDate, setStartDate] = useState(lastSearch?.checkIn ?? '');
   const [endDate, setEndDate] = useState(lastSearch?.checkOut ?? '');
+
+  // Earliest selectable check-in is tomorrow
+  const tomorrow = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
   const [rooms, setRooms] = useState(String(lastSearch?.rooms ?? 1));
   const [guests, setGuests] = useState(String(lastSearch?.adults ?? 2));
 
@@ -86,8 +140,6 @@ const DetailPage: React.FC = () => {
   const hotelCategory = starLabel[hotelRating] ?? 'Hotel';
   const roomInfoLine = [hotelRoomType, hotelBedType, hotelRoomSize].filter(Boolean).join(' · ');
   const amenitiesSubtitle = [hotelCategory, roomInfoLine].filter(Boolean).join(' | ');
-
-  const tabs = ['Overview', 'Amenities', 'Location'] as const;
 
   return (
     <div className="detail-page" data-testid="detail-page">
@@ -129,101 +181,102 @@ const DetailPage: React.FC = () => {
           )}
         </div>
 
-        {/* Tabs */}
+        {/* Tabs — each scrolls to its corresponding section anchor */}
         <div className="detail-page__tabs" data-testid="detail-tabs">
-          {tabs.map((tab) => (
+          {TABS.map(({ label, anchor }) => (
             <button
-              key={tab}
-              className={`detail-page__tab ${activeTab === tab.toLowerCase() ? 'detail-page__tab--active' : ''}`}
-              onClick={() => setActiveTab(tab.toLowerCase() as 'overview' | 'amenities' | 'location')}
-              data-testid={`tab-${tab.toLowerCase()}`}
+              key={anchor}
+              className={`detail-page__tab${activeTab === anchor ? ' detail-page__tab--active' : ''}`}
+              onClick={() => handleTabClick(anchor)}
+              data-testid={`tab-${label.toLowerCase()}`}
             >
-              {tab}
+              {label}
             </button>
           ))}
         </div>
 
         <div className="detail-page__content">
           {/* Gallery — full width */}
-          <div className="detail-page__gallery" data-testid="detail-gallery">
-            <div className="detail-page__main-image" />
-            <div className="detail-page__thumbnails">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="detail-page__thumbnail" />
-              ))}
-            </div>
-          </div>
+          <HotelGallery dataTestId="detail-gallery" />
 
           {/* Body: description + booking side by side */}
           <div className="detail-page__body">
             <div className="detail-page__main-content">
-              {/* Description */}
-              <section className="detail-page__section" data-testid="detail-description">
+              {/* ── Overview ── */}
+              <section
+                id="section-overview"
+                className="detail-page__section"
+                data-testid="detail-description"
+              >
                 <h2 className="detail-page__section-title">Description</h2>
                 <p className="detail-page__description-text">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                  exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+                  irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+                  pariatur.
                 </p>
               </section>
 
-              {/* Amenities */}
-              {(activeTab === 'overview' || activeTab === 'amenities') && (
-                <section className="detail-page__section" data-testid="detail-amenities">
-                  <div className="detail-page__amenities-header">
-                    <h2 className="detail-page__section-title">Amenities</h2>
-                    {amenitiesSubtitle && (
-                      <p className="detail-page__amenities-subtitle">{amenitiesSubtitle}</p>
-                    )}
-                  </div>
-                  <div className="detail-page__amenities-list">
-                    {hotelAmenities.map((amenity) => (
-                      <AmenityTag
-                        key={amenity}
-                        label={amenity}
-                        dataTestId={`amenity-${amenity}`}
-                      />
-                    ))}
-                  </div>
-                  <Button variant="dark" size='small' dataTestId="detail-amenities-book-btn">
-                    Show all amenities
-                  </Button>
-                </section>
-              )}
+              {/* ── Amenities ── */}
+              <section
+                id="section-amenities"
+                className="detail-page__section"
+                data-testid="detail-amenities"
+              >
+                <div className="detail-page__amenities-header">
+                  <h2 className="detail-page__section-title">Amenities</h2>
+                  {amenitiesSubtitle && (
+                    <p className="detail-page__amenities-subtitle">{amenitiesSubtitle}</p>
+                  )}
+                </div>
+                <div className="detail-page__amenities-list">
+                  {hotelAmenities.map((amenity) => (
+                    <AmenityTag key={amenity} label={amenity} dataTestId={`amenity-${amenity}`} />
+                  ))}
+                </div>
+                <Button variant="dark" size="small" dataTestId="detail-amenities-book-btn">
+                  Show all amenities
+                </Button>
+              </section>
 
-              {/* Location */}
-              {(activeTab === 'overview' || activeTab === 'location') && (
-                <section className="detail-page__section" data-testid="detail-location">
-                  <h2 className="detail-page__section-title">Location</h2>
-                  <div className="detail-page__map-placeholder" data-testid="detail-map">
-                    Map
-                  </div>
-                </section>
-              )}
+              {/* ── Location ── */}
+              <section
+                id="section-location"
+                className="detail-page__section"
+                data-testid="detail-location"
+              >
+                <h2 className="detail-page__section-title">Location</h2>
+                <div className="detail-page__map-placeholder" data-testid="detail-map">
+                  Map
+                </div>
+              </section>
+
+              {/* ── Reviews ── */}
+              <HotelReviews
+                id="section-reviews"
+                dataTestId="detail-reviews"
+              />
             </div>
 
           {/* Booking Sidebar */}
           <aside className="detail-page__sidebar" data-testid="detail-sidebar">
             <div className="detail-page__booking-card">
-              {/* Dates — side by side */}
-              <div className="detail-page__date-row">
-                <div className="detail-page__form-group">
-                  <label className="detail-page__form-label">Start</label>
-                  <Input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    dataTestId="detail-start-date"
-                  />
-                </div>
-                <div className="detail-page__form-group">
-                  <label className="detail-page__form-label">End</label>
-                  <Input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    dataTestId="detail-end-date"
-                  />
-                </div>
-              </div>
+              {/* Date range picker — replaces the two native date inputs */}
+              <DateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                minDate={tomorrow}
+                onChange={(start, end) => {
+                  setStartDate(start);
+                  setEndDate(end);
+                }}
+                startLabel="Start"
+                endLabel="End"
+                startTestId="detail-start-date"
+                endTestId="detail-end-date"
+                className="detail-page__date-picker"
+              />
 
               {/* Rooms & guests + price on the same row */}
               <div className="detail-page__rooms-guests" data-testid="detail-rooms-guests">

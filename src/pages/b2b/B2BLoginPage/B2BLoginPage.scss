@@ -2,37 +2,40 @@
   @include flex-between;
   height: 100vh;
   width: 100%;
-
-  @include respond-to('tablet') {
-    flex-direction: column;
-  }
+  overflow: hidden;
 
   &__left {
     @include flex-center;
-    flex: 1;
+    flex: 1.4;
     background-color: $color-neutral-white;
-    padding: $spacing-4xl;
+    padding: $spacing-2xl $spacing-3xl;
+    height: 100%;
 
     @include respond-to('tablet') {
-      padding: $spacing-2xl;
-      min-height: 100vh;
+      padding: $spacing-xl $spacing-2xl;
+      flex: 1;
+      width: 100%;
     }
   }
 
   &__container {
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
+    @include respond-to('mobile') {
+      max-width: 100%;
+    }
   }
 
   &__logo-wrapper {
-    margin-bottom: $spacing-3xl;
-    text-align: center;
+    margin-bottom: $spacing-lg;
+    text-align: left;
   }
 
   &__heading {
-    @include heading('2xl');
-    margin-bottom: $spacing-md;
-    text-align: center;
+    @include heading($font-size-2xl);
+    font-weight: $font-weight-light;
+    margin-bottom: $spacing-sm;
+    text-align: left;
     color: $color-neutral-black;
 
     strong {
@@ -41,10 +44,10 @@
   }
 
   &__subtitle {
-    @include body-text('md');
-    margin-bottom: $spacing-3xl;
-    text-align: center;
-    color: $color-neutral-600;
+    @include body-text($font-size-lg);
+    margin-bottom: $spacing-xl;
+    text-align: left;
+    color: $color-neutral-700;
 
     strong {
       font-weight: $font-weight-semibold;
@@ -60,15 +63,15 @@
   &__links-row {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     flex-wrap: wrap;
-    gap: $spacing-sm;
-    font-size: $font-size-sm;
-    text-align: center;
+    gap: $spacing-2xs;
+    font-size: $font-size-xs;
+    text-align: center
   }
 
   &__link {
-    color: $color-primary-700;
+    color: $color-primary-900;
     text-decoration: none;
     transition: color 0.2s ease;
 
@@ -90,13 +93,31 @@
     color: $color-neutral-400;
   }
 
+  &__image-label {
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.55);
+    color: $color-neutral-white;
+    font-size: $font-size-xs;
+    padding: $spacing-xs $spacing-sm;
+    margin: $spacing-sm;
+    border-radius: $border-radius-sm;
+  }
+
   &__right {
-    flex: 1;
-    background: linear-gradient(135deg, $color-primary-700 0%, $color-accent-green 100%);
-    display: none;
+    flex: 1.2;
+    display: block;
+    background-image: url('/img/login-bg-b2b.png');
+    background-size: cover;
+    background-position: center;
+    height: 100%;
+    border: 8px solid #fff;
 
     @include respond-to('tablet') {
       display: none;
     }
+  }
+
+  &__right-button {
+    align-self: flex-end;
   }
 }

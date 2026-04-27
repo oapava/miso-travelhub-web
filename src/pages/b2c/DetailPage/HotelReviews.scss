@@ -1,0 +1,300 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// HotelReviews — .hotel-reviews
+//
+// Structure:
+//   __header        → title + avg score summary
+//   __list          → preview cards (max 3)
+//   __card          → single review card
+//     __card-header → avatar + author/date + star display
+//   __see-more      → "See all N reviews" button wrapper
+//   __write         → write-a-review block
+//     __form        → star selector + textarea + submit (logged-in users)
+//     __login-prompt → locked state for guests
+//   __modal-list    → scrollable list inside the Modal
+//
+// All token variables come from src/styles/abstracts/_variables.scss
+// ─────────────────────────────────────────────────────────────────────────────
+
+.hotel-reviews {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+
+  // ── Section header ────────────────────────────────────────────────────────
+
+  &__header {
+    display: flex;
+    align-items: baseline;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    @include heading(lg);
+    color: $color-primary-900;
+    font-weight: $font-weight-semibold;
+    margin: 0;
+  }
+
+  &__summary {
+    display: flex;
+    align-items: baseline;
+    gap: $spacing-xs;
+  }
+
+  &__avg {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $color-primary-900;
+    line-height: 1;
+  }
+
+  &__total {
+    @include body-text(sm);
+    color: $color-neutral-500;
+  }
+
+  // ── Review list ───────────────────────────────────────────────────────────
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  // ── Review card ───────────────────────────────────────────────────────────
+
+  &__card {
+    background: $color-neutral-50;
+    border: 1px solid $color-neutral-200;
+    border-radius: $border-radius-lg;
+    padding: $spacing-md;
+    @include transition(box-shadow);
+
+    &:hover {
+      box-shadow: $shadow-sm;
+    }
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  // Coloured circle with the author's initial
+  &__avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: $color-primary-800;
+    color: $color-neutral-white;
+    @include flex-center;
+    font-weight: $font-weight-bold;
+    font-size: $font-size-base;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  &__card-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__author {
+    @include body-text(sm);
+    font-weight: $font-weight-semibold;
+    color: $color-neutral-800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__date {
+    font-size: $font-size-xs;
+    color: $color-neutral-500;
+  }
+
+  // Read-only star display on each card
+  &__stars {
+    display: flex;
+    gap: 1px;
+    flex-shrink: 0;
+  }
+
+  &__star {
+    font-size: $font-size-md;
+    color: $color-neutral-300;
+
+    &--filled {
+      color: $color-accent-yellow;
+    }
+  }
+
+  &__text {
+    @include body-text(sm);
+    color: $color-neutral-700;
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  // ── "See all" button wrapper ───────────────────────────────────────────────
+
+  &__see-more {
+    display: flex;
+  }
+
+  // ── Write a review ────────────────────────────────────────────────────────
+
+  &__write {
+    border-top: 1px solid $color-neutral-200;
+    padding-top: $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &__write-title {
+    @include heading(sm);
+    color: $color-primary-900;
+    font-weight: $font-weight-semibold;
+    margin: 0;
+  }
+
+  // ── Form (authenticated users) ────────────────────────────────────────────
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  // Interactive star selector
+  &__star-input {
+    display: flex;
+    gap: $spacing-2xs;
+  }
+
+  &__star-btn {
+    font-size: $font-size-2xl;
+    color: $color-neutral-300;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    @include transition(color, transform);
+
+    &--active {
+      color: $color-accent-yellow;
+    }
+
+    &:hover {
+      transform: scale(1.2);
+    }
+
+    &:focus-visible {
+      @include focus-visible-outline;
+      border-radius: $border-radius-sm;
+    }
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: $spacing-sm;
+    border: 1px solid $color-neutral-300;
+    border-radius: $border-radius-md;
+    font-size: $font-size-sm;
+    font-family: inherit;
+    color: $color-neutral-800;
+    background: $color-neutral-white;
+    resize: vertical;
+    min-height: 6rem;
+    box-sizing: border-box;
+    @include transition(border-color, box-shadow);
+
+    &::placeholder {
+      color: $color-neutral-400;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary-500;
+      box-shadow: 0 0 0 3px rgba($color-primary-500, 0.15);
+    }
+
+    &:disabled {
+      background: $color-neutral-100;
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+
+  &__success {
+    @include body-text(sm);
+    color: $color-success;
+    font-weight: $font-weight-medium;
+    margin: 0;
+  }
+
+  &__form-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  // ── Login prompt (guest users) ────────────────────────────────────────────
+
+  &__login-prompt {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    background: $color-neutral-50;
+    border: 1px dashed $color-neutral-300;
+    border-radius: $border-radius-md;
+    padding: $spacing-md $spacing-lg;
+  }
+
+  &__login-icon {
+    font-size: $font-size-xl;
+    flex-shrink: 0;
+  }
+
+  &__login-text {
+    @include body-text(sm);
+    color: $color-neutral-600;
+    margin: 0;
+
+    strong {
+      color: $color-primary-800;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  // ── Modal: scrollable list ────────────────────────────────────────────────
+
+  &__modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: $spacing-xs; // space for scrollbar
+
+    // Tidy scrollbar on modern browsers
+    scrollbar-width: thin;
+    scrollbar-color: $color-neutral-300 transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $color-neutral-300;
+      border-radius: $border-radius-pill;
+    }
+  }
+}
