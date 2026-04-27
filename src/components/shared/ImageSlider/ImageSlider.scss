@@ -1,0 +1,163 @@
+.image-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+
+  // ── Empty placeholder ──────────────────────────────────────────────────────
+  &--empty {
+    min-height: 240px;
+    background: #f3f4f6;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #9ca3af;
+  }
+
+  &__placeholder-icon {
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  &__placeholder-text {
+    font-size: 0.875rem;
+    margin: 0;
+  }
+
+  // ── Main track ─────────────────────────────────────────────────────────────
+  &__track {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #e5e7eb;
+
+    @media (max-width: 768px) {
+      height: 220px;
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.3s ease;
+
+    &--broken {
+      opacity: 0;
+    }
+  }
+
+  // ── Prev / Next buttons ────────────────────────────────────────────────────
+  &__btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.5rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #6366f1;
+    }
+
+    &--prev { left: 0.75rem; }
+    &--next { right: 0.75rem; }
+  }
+
+  // ── Counter ────────────────────────────────────────────────────────────────
+  &__counter {
+    position: absolute;
+    bottom: 0.625rem;
+    right: 0.75rem;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    pointer-events: none;
+  }
+
+  // ── Dots ───────────────────────────────────────────────────────────────────
+  &__dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.375rem;
+  }
+
+  &__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #d1d5db;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+
+    &--active {
+      background: #6366f1;
+      transform: scale(1.25);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #6366f1;
+    }
+  }
+
+  // ── Thumbnail strip ────────────────────────────────────────────────────────
+  &__thumbnails {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  &__thumb-btn {
+    flex: 0 0 auto;
+    width: 4rem;
+    height: 3rem;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    overflow: hidden;
+    padding: 0;
+    cursor: pointer;
+    background: #e5e7eb;
+    transition: border-color 0.2s;
+
+    &--active {
+      border-color: #6366f1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #6366f1;
+    }
+  }
+
+  &__thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}

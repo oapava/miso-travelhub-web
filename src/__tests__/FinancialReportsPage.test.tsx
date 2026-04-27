@@ -82,4 +82,16 @@ describe('FinancialReportsPage', () => {
     renderPage();
     expect(screen.getByText('Booking places table')).toBeInTheDocument();
   });
+
+  it('updates end date when input changes', () => {
+    renderPage();
+    const endInput = screen.getByTestId('financial-reports-end-date') as HTMLInputElement;
+    fireEvent.change(endInput, { target: { value: '2026-12-31' } });
+    expect(endInput.value).toBe('2026-12-31');
+  });
+
+  it('logout button is clickable without throwing', () => {
+    renderPage();
+    expect(() => fireEvent.click(screen.getByTestId('b2b-sidebar-logout'))).not.toThrow();
+  });
 });

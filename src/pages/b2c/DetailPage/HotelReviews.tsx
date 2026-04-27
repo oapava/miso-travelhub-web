@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal, Button } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import './HotelReviews.scss';
@@ -11,6 +11,7 @@ interface Review {
   date: string;   // "YYYY-MM-DD"
   rating: number; // 1-5
   text: string;
+  verified?: boolean;
 }
 
 // ─── Mock data (replace with API call when endpoint is ready) ─────────────────
@@ -130,6 +131,14 @@ function ReviewCard({ review }: ReviewCardProps) {
         <div className="hotel-reviews__card-meta">
           <span className="hotel-reviews__author">{review.author}</span>
           <span className="hotel-reviews__date">{formatDate(review.date)}</span>
+          {review.verified && (
+            <span
+              className="hotel-reviews__verified"
+              data-testid={`review-verified-${review.id}`}
+            >
+              ✓ Verified
+            </span>
+          )}
         </div>
         <div className="hotel-reviews__stars" aria-label={`Rating: ${review.rating} out of 5`}>
           {Array.from({ length: 5 }, (_, i) => (
@@ -153,17 +162,36 @@ function ReviewCard({ review }: ReviewCardProps) {
 interface HotelReviewsProps {
   id?: string;
   dataTestId?: string;
+  reviews?: Review[];
+  onReviewAdded?: (review: Review) => void;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
-const HotelReviews: React.FC<HotelReviewsProps> = ({ id, dataTestId }) => {
+const HotelReviews: React.FC<HotelReviewsProps> = ({ 
+  id, 
+  dataTestId,
+  reviews: initialReviews,
+  onReviewAdded,
+  isLoading = false,
+  error = null,
+}) => {
   const { isAuthenticated, user } = useAuth();
 
-  const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
+  // Use provided reviews or fallback to MOCK
+  const [reviews, setReviews] = useState<Review[]>(initialReviews ?? MOCK_REVIEWS);
   const [showAllModal, setShowAllModal] = useState(false);
   const [newRating, setNewRating] = useState(0);
   const [newText, setNewText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Sync reviews when initialReviews changes
+  useEffect(() => {
+    if (initialReviews) {
+      setReviews(initialReviews);
+    }
+  }, [initialReviews]);
 
   const previewReviews = reviews.slice(0, PREVIEW_COUNT);
   const hasMore = reviews.length > PREVIEW_COUNT;
@@ -196,6 +224,11 @@ const HotelReviews: React.FC<HotelReviewsProps> = ({ id, dataTestId }) => {
     setSuccess(true);
     setSubmitting(false);
 
+    // Notify parent component
+    if (onReviewAdded) {
+      onReviewAdded(newReview);
+    }
+
     // Auto-hide success message after 4 s
     setTimeout(() => setSuccess(false), 4000);
   };
@@ -214,25 +247,47 @@ const HotelReviews: React.FC<HotelReviewsProps> = ({ id, dataTestId }) => {
         </div>
       </div>
 
-      {/* ── Preview: first 3 reviews ── */}
-      <div className="hotel-reviews__list" data-testid="reviews-preview-list">
-        {previewReviews.map((review) => (
-          <ReviewCard key={review.id} review={review} />
-        ))}
-      </div>
-
-      {/* ── "See all" button — only shown when there are more than 3 ── */}
-      {hasMore && (
-        <div className="hotel-reviews__see-more">
-          <Button
-            variant="dark"
-            size="small"
-            onClick={() => setShowAllModal(true)}
-            dataTestId="reviews-see-all-btn"
-          >
-            See all {reviews.length} reviews
-          </Button>
+      {/* ── Loading state ── */}
+      {isLoading && (
+        <div className="hotel-reviews__loading" data-testid="reviews-loading">
+          <p>Loading reviews...</p>
         </div>
+      )}
+
+      {/* ── Error state ── */}
+      {error && (
+        <div className="hotel-reviews__error" data-testid="reviews-error">
+          <p>{error}</p>
+        </div>
+      )}
+
+      {/* ── Preview: first 3 reviews ── */}
+      {!isLoading && !error && (
+        <>
+          <div className="hotel-reviews__list" data-testid="reviews-list">
+            {reviews.length === 0 ? (
+              <p className="hotel-reviews__empty" data-testid="reviews-empty">No reviews yet. Be the first to share your experience!</p>
+            ) : (
+              previewReviews.map((review) => (
+                <ReviewCard key={review.id} review={review} />
+              ))
+            )}
+          </div>
+
+          {/* ── "See all" button — only shown when there are more than 3 ── */}
+          {hasMore && (
+            <div className="hotel-reviews__see-more">
+              <Button
+                variant="dark"
+                size="small"
+                onClick={() => setShowAllModal(true)}
+                dataTestId="reviews-see-all-btn"
+              >
+                See all {reviews.length} reviews
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* ── Write a review ── */}

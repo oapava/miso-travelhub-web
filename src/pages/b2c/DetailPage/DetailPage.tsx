@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Header, Footer } from '@/components/layout';
 import { Breadcrumb, Badge, StarRating, Button, AmenityTag, PriceDisplay, DateRangePicker } from '@/components/ui';
 import { searchParamsStorage } from '@/services/search-params.storage';
+import { searchService } from '@/services/search.service';
+import { bookingService, ReviewHotel, BookingResponse } from '@/services/booking.service';
 import { useAuth } from '@/context/AuthContext';
+import BookingModal from '@/components/shared/BookingModal/BookingModal';
+import BookingConfirmModal from '@/components/shared/BookingConfirmModal/BookingConfirmModal';
+import AddReviewModal from '@/components/shared/AddReviewModal/AddReviewModal';
 import HotelGallery from './HotelGallery';
 import HotelReviews from './HotelReviews';
 import './DetailPage.scss';
@@ -42,11 +47,12 @@ function calcNights(checkIn: string, checkOut: string): number {
   return nights > 0 ? nights : 0;
 }
 
+
 const DetailPage: React.FC = () => {
   const { hotelId } = useParams<{ hotelId: string }>();
   const location = useLocation();
   const hotel = (location.state as { hotel?: HotelDetail } | null)?.hotel ?? null;
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, accessToken } = useAuth();
 
   const lastSearch = searchParamsStorage.load();
 
@@ -74,7 +80,6 @@ const DetailPage: React.FC = () => {
         (entries) => {
           if (entries[0]?.isIntersecting) setActiveTab(anchor);
         },
-        // Section becomes "active" when its top enters the upper 35 % of the viewport
         { rootMargin: '-80px 0px -65% 0px', threshold: 0 },
       );
 
@@ -85,16 +90,6 @@ const DetailPage: React.FC = () => {
     return () => observers.forEach((o) => o.disconnect());
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Smooth-scroll to section, offsetting for the fixed header (~80 px)
-  const handleTabClick = (anchor: TabAnchor) => {
-    setActiveTab(anchor);
-    const el = document.getElementById(anchor);
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - 100;
-    window.scrollTo({ top, behavior: 'smooth' });
-  };
-
   const [startDate, setStartDate] = useState(lastSearch?.checkIn ?? '');
   const [endDate, setEndDate] = useState(lastSearch?.checkOut ?? '');
 
@@ -107,7 +102,72 @@ const DetailPage: React.FC = () => {
   const [rooms, setRooms] = useState(String(lastSearch?.rooms ?? 1));
   const [guests, setGuests] = useState(String(lastSearch?.adults ?? 2));
 
-  // Sync sidebar fields whenever the SearchBar in the Header fires
+  // Room detail state
+  const [roomDetailAmenities, setRoomDetailAmenities] = useState<string[] | null>(null);
+  const [roomDetailPrice, setRoomDetailPrice] = useState<number | null>(null);
+  const [roomDetailImages, setRoomDetailImages] = useState<string[]>([]);
+  const [, setIsPriceLoading] = useState(false);
+  const [priceError, setPriceError] = useState<string | null>(null);
+
+  // Reviews state
+  const [reviews, setReviews] = useState<ReviewHotel[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
+
+  // Booking modal state
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [bookingResult, setBookingResult] = useState<BookingResponse | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+
+  // Add review modal state
+  const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
+
+  // ── Load reviews once on mount ────────────────────────────────────────────
+  useEffect(() => {
+    if (!hotelId) return;
+    setIsLoadingReviews(true);
+    setReviewsError(null);
+    bookingService
+      .getHotelReviews(hotelId)
+      .then((data) => setReviews(data))
+      .catch(() => {
+        setReviews([]);
+        setReviewsError('Could not load reviews. Please try again later.');
+      })
+      .finally(() => setIsLoadingReviews(false));
+  }, [hotelId]);
+
+  // ── Refresh room detail (price + amenities) when dates change ─────────────
+  const fetchRoomDetail = useCallback(() => {
+    if (!hotelId || !startDate || !endDate) return;
+    setIsPriceLoading(true);
+    setPriceError(null);
+    searchService
+      .getDetailRoom(hotelId, startDate, endDate)
+      .then((detail) => {
+        if (detail.amenidades?.length) setRoomDetailAmenities(detail.amenidades);
+        if (detail.precio) setRoomDetailPrice(detail.precio);
+        if (detail.imagenes?.length) setRoomDetailImages(detail.imagenes);
+      })
+      .catch(() => {
+        setPriceError('Could not refresh price. Showing last known price.');
+      })
+      .finally(() => setIsPriceLoading(false));
+  }, [hotelId, startDate, endDate]);
+
+  useEffect(() => {
+    fetchRoomDetail();
+  }, [fetchRoomDetail]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const handleTabClick = (anchor: TabAnchor) => {
+    setActiveTab(anchor);
+    const el = document.getElementById(anchor);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const handleSearch = (params: { checkIn?: string; checkOut?: string; rooms?: number; adults?: number }) => {
     if (params.checkIn !== undefined) setStartDate(params.checkIn);
     if (params.checkOut !== undefined) setEndDate(params.checkOut);
@@ -115,30 +175,64 @@ const DetailPage: React.FC = () => {
     if (params.adults !== undefined) setGuests(String(params.adults));
   };
 
-  // Computed reactively from the selected dates
+  const handleBookingContinue = async () => {
+    if (!hotelId || !accessToken) return;
+    setBookingError(null);
+    try {
+      const result = await bookingService.bookRoom(
+        {
+          habitacionId: hotelId,
+          checkin: startDate,
+          checkout: endDate,
+          numHuespedes: parseInt(guests, 10),
+        },
+        accessToken,
+      );
+      setBookingResult(result);
+      setIsConfirmModalOpen(true);
+    } catch (err) {
+      setBookingError(err instanceof Error ? err.message : 'Booking failed. Please try again.');
+    }
+  };
+
+  const handleReviewSubmit = async (calificacion: number, comentario: string) => {
+    if (!hotelId || !accessToken) return;
+    await bookingService.postReview(
+      { habitacionId: hotelId, calificacion, comentario },
+      accessToken,
+    );
+    // Refresh reviews after successful post
+    const fresh = await bookingService.getHotelReviews(hotelId);
+    setReviews(fresh);
+  };
+
+  // ── Derived values ────────────────────────────────────────────────────────
   const nights = calcNights(startDate, endDate);
 
-  const hotelName = hotel?.hotelName ?? `Hotel ${hotelId}`;
-  const hotelAddress = hotel?.location ?? '';
-  const hotelDistance = hotel?.distance ?? '';
-  const hotelAccess = hotel?.access ?? '';
-  const hotelRating = hotel?.rating ?? 4;
-  const hotelScore = hotel?.reviewScore ?? 8.0;
+  const hotelName      = hotel?.hotelName    ?? `Hotel ${hotelId}`;
+  const hotelAddress   = hotel?.location     ?? '';
+  const hotelDistance  = hotel?.distance     ?? '';
+  const hotelAccess    = hotel?.access       ?? '';
+  const hotelRating    = hotel?.rating       ?? 4;
+  const hotelScore     = hotel?.reviewScore  ?? 8.0;
   const hotelReviewCount = hotel?.reviewCount ?? 0;
   const hotelReviewLabel = hotel?.reviewLabel ?? '';
-  const hotelRoomType = hotel?.roomType ?? '';
-  const hotelBedType = hotel?.bedType ?? '';
-  const hotelRoomSize = hotel?.roomSize ?? '';
-  const hotelAmenities = hotel?.amenities?.length ? hotel.amenities : FALLBACK_AMENITIES;
-  const hotelPrice = hotel?.finalPrice ?? 1500;
+  const hotelRoomType  = hotel?.roomType     ?? '';
+  const hotelBedType   = hotel?.bedType      ?? '';
+  const hotelRoomSize  = hotel?.roomSize     ?? '';
+  const hotelAmenities = roomDetailAmenities ?? (hotel?.amenities?.length ? hotel.amenities : FALLBACK_AMENITIES);
+  const hotelPrice     = roomDetailPrice     ?? hotel?.finalPrice ?? 1500;
   const hotelOriginalPrice = hotel?.originalPrice;
-  const hotelDiscount = hotel?.discountPercentage;
+  const hotelDiscount      = hotel?.discountPercentage;
 
   const locationLine = [hotelAddress, hotelDistance, hotelAccess].filter(Boolean).join(' · ');
 
-  const starLabel: Record<number, string> = { 5: 'Luxury Hotel', 4: 'Superior Hotel', 3: 'Standard Hotel', 2: 'Economy Hotel', 1: 'Budget Hotel' };
-  const hotelCategory = starLabel[hotelRating] ?? 'Hotel';
-  const roomInfoLine = [hotelRoomType, hotelBedType, hotelRoomSize].filter(Boolean).join(' · ');
+  const starLabel: Record<number, string> = {
+    5: 'Luxury Hotel', 4: 'Superior Hotel', 3: 'Standard Hotel',
+    2: 'Economy Hotel', 1: 'Budget Hotel',
+  };
+  const hotelCategory    = starLabel[hotelRating] ?? 'Hotel';
+  const roomInfoLine     = [hotelRoomType, hotelBedType, hotelRoomSize].filter(Boolean).join(' · ');
   const amenitiesSubtitle = [hotelCategory, roomInfoLine].filter(Boolean).join(' | ');
 
   return (
@@ -154,6 +248,7 @@ const DetailPage: React.FC = () => {
           ]}
         />
 
+        {/* Hotel header */}
         <div className="detail-page__header-info">
           <div className="detail-page__title-section">
             <h1 className="detail-page__title">{hotelName}</h1>
@@ -165,12 +260,8 @@ const DetailPage: React.FC = () => {
                   {hotelReviewLabel} · {hotelReviewCount} reviews
                 </span>
               )}
-              <button className="detail-page__icon-btn" data-testid="favorite-btn">
-                ♡
-              </button>
-              <button className="detail-page__icon-btn" data-testid="share-btn">
-                ⬈
-              </button>
+              <button className="detail-page__icon-btn" data-testid="favorite-btn">♡</button>
+              <button className="detail-page__icon-btn" data-testid="share-btn">⬈</button>
             </div>
           </div>
 
@@ -197,9 +288,14 @@ const DetailPage: React.FC = () => {
 
         <div className="detail-page__content">
           {/* Gallery — full width */}
-          <HotelGallery dataTestId="detail-gallery" />
+          <div className="detail-page__gallery" data-testid="detail-gallery">
+            <HotelGallery
+              images={roomDetailImages}
+              dataTestId="detail-hotel-gallery"
+            />
+          </div>
 
-          {/* Body: description + booking side by side */}
+          {/* Body */}
           <div className="detail-page__body">
             <div className="detail-page__main-content">
               {/* ── Overview ── */}
@@ -232,12 +328,9 @@ const DetailPage: React.FC = () => {
                 </div>
                 <div className="detail-page__amenities-list">
                   {hotelAmenities.map((amenity) => (
-                    <AmenityTag key={amenity} label={amenity} dataTestId={`amenity-${amenity}`} />
+                    <AmenityTag key={amenity} label={amenity} />
                   ))}
                 </div>
-                <Button variant="dark" size="small" dataTestId="detail-amenities-book-btn">
-                  Show all amenities
-                </Button>
               </section>
 
               {/* ── Location ── */}
@@ -253,9 +346,36 @@ const DetailPage: React.FC = () => {
               </section>
 
               {/* ── Reviews ── */}
+              <div className="detail-page__reviews-header">
+                <button
+                  className="detail-page__icon-btn"
+                  data-testid="add-review-btn"
+                  disabled={!isAuthenticated}
+                  onClick={() => setIsAddReviewOpen(true)}
+                >
+                  + Add Review
+                </button>
+              </div>
               <HotelReviews
                 id="section-reviews"
                 dataTestId="detail-reviews"
+                reviews={reviews.map(r => ({
+                  id: r.id,
+                  author: `Traveler ${r.viajeroId.substring(0, 8)}`,
+                  date: r.fecha,
+                  rating: r.calificacion,
+                  text: r.comentario,
+                  verified: r.verificada,
+                }))}
+                isLoading={isLoadingReviews}
+                error={reviewsError}
+                onReviewAdded={() => {
+                  if (hotelId) {
+                    bookingService.getHotelReviews(hotelId).then(setReviews).catch(() => {
+                      setReviews([]);
+                    });
+                  }
+                }}
               />
             </div>
 
@@ -290,6 +410,11 @@ const DetailPage: React.FC = () => {
                     dataTestId="detail-price"
                   />
                 </div>
+                {priceError && (
+                  <p className="detail-page__price-error" data-testid="detail-price-error">
+                    {priceError}
+                  </p>
+                )}
                 <p className="detail-page__rooms-guests-text">
                   {rooms} room{Number(rooms) !== 1 ? 's' : ''}
                 </p>
@@ -301,12 +426,19 @@ const DetailPage: React.FC = () => {
                 </p>
               </div>
 
+              {bookingError && (
+                <p className="detail-page__booking-error" data-testid="detail-booking-error">
+                  {bookingError}
+                </p>
+              )}
+
               {/* Booking action — right-aligned, only active when logged in */}
               <div className="detail-page__booking-actions">
                 <Button
                   variant="primary"
                   disabled={!isAuthenticated}
                   title={!isAuthenticated ? 'Log in to book this room' : undefined}
+                  onClick={() => setIsBookingModalOpen(true)}
                   dataTestId="detail-booking-btn"
                 >
                   BOOKING
@@ -314,9 +446,37 @@ const DetailPage: React.FC = () => {
               </div>
             </div>
           </aside>
-          </div>{/* end detail-page__body */}
+          </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        onContinue={handleBookingContinue}
+        destination={hotelName}
+        checkIn={startDate}
+        checkOut={endDate}
+        guests={parseInt(guests, 10)}
+        rooms={parseInt(rooms, 10)}
+        dataTestId="detail-booking-modal"
+      />
+
+      <BookingConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        destination={hotelName}
+        bookingResult={bookingResult ?? undefined}
+        dataTestId="detail-confirm-modal"
+      />
+
+      <AddReviewModal
+        isOpen={isAddReviewOpen}
+        onClose={() => setIsAddReviewOpen(false)}
+        onSubmit={handleReviewSubmit}
+        dataTestId="detail-add-review-modal"
+      />
 
       <Footer />
     </div>

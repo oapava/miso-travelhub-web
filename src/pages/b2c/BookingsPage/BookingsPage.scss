@@ -40,6 +40,19 @@
     margin-bottom: $spacing-lg;
   }
 
+  &__loading,
+  &__error,
+  &__empty {
+    @include body-text(md);
+    color: $color-neutral-600;
+    padding: $spacing-2xl 0;
+    text-align: center;
+  }
+
+  &__error {
+    color: $color-error;
+  }
+
   &__bookings-list {
     display: flex;
     flex-direction: column;
@@ -53,11 +66,8 @@
   }
 
   &__group-header {
-    display: flex;
-    align-items: center;
-    gap: $spacing-md;
-    padding-bottom: $spacing-md;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: $spacing-sm;
+    border-bottom: 2px solid $color-neutral-200;
   }
 
   &__group-date {
@@ -73,21 +83,102 @@
   }
 
   &__booking-item {
-    position: relative;
-    padding: $spacing-lg;
     background: $color-neutral-white;
     border-radius: $border-radius-lg;
-    border: 1px solid rgba($color-neutral-black, 0.06);
+    border: 1px solid rgba($color-neutral-black, 0.08);
     @include card-shadow;
+    overflow: hidden;
+  }
+}
 
-    > :first-child {
-      margin-bottom: $spacing-md;
+// ── Booking card (inside booking-item) ──────────────────────────────────────
+
+.booking-card {
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: $spacing-lg $spacing-lg $spacing-md;
+    border-bottom: 1px solid $color-neutral-100;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xs;
+  }
+
+  &__code {
+    @include heading(md);
+    color: $color-primary-900;
+    font-weight: $font-weight-semibold;
+    margin: 0;
+  }
+
+  &__room {
+    @include body-text(sm);
+    color: $color-neutral-500;
+    margin: 0;
+  }
+
+  &__dates {
+    display: flex;
+    gap: $spacing-2xl;
+    padding: $spacing-md $spacing-lg;
+    background: $color-neutral-50;
+    border-bottom: 1px solid $color-neutral-100;
+
+    @include respond-to('mobile') {
+      flex-wrap: wrap;
+      gap: $spacing-md;
     }
+  }
 
-    > :last-child {
-      position: absolute;
-      top: $spacing-lg;
-      right: $spacing-lg;
+  &__date-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xs;
+  }
+
+  &__label {
+    @include body-text(xs);
+    color: $color-neutral-500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__date-group p {
+    @include body-text(sm);
+    color: $color-primary-900;
+    font-weight: $font-weight-medium;
+    margin: 0;
+  }
+
+  &__price {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    padding: $spacing-md $spacing-lg $spacing-lg;
+  }
+
+  &__price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    @include body-text(sm);
+    color: $color-neutral-600;
+
+    &--total {
+      margin-top: $spacing-xs;
+      padding-top: $spacing-xs;
+      border-top: 1px solid $color-neutral-200;
+      @include body-text(md);
+      font-weight: $font-weight-bold;
+      color: $color-primary-900;
     }
   }
 }

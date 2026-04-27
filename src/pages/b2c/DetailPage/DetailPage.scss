@@ -144,6 +144,11 @@
     gap: $spacing-lg;
     border-bottom: 2px solid $color-neutral-200;
     margin-bottom: $spacing-2xl;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: $color-neutral-white;
+    padding-top: $spacing-sm;
   }
 
   &__tab {
@@ -186,6 +191,11 @@
     flex-direction: column;
     gap: $spacing-2xl;
     margin-bottom: $spacing-3xl;
+  }
+
+  // ── Gallery wrapper — the HotelGallery component handles its own layout ──
+  &__gallery {
+    width: 100%;
   }
 
   // ── Body: description + booking side by side ──
@@ -281,9 +291,13 @@
   &__sidebar {
     width: 420px;
     flex-shrink: 0;
+    position: sticky;
+    top: 4rem;        // clear sticky tabs bar
+    align-self: flex-start;
 
     @include respond-to('tablet') {
       width: 100%;
+      position: static;
     }
   }
 

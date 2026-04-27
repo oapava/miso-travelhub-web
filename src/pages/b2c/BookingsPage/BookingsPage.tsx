@@ -1,63 +1,94 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Header, SearchBar, AccountSidebar, Footer } from '@/components/layout';
 import { Breadcrumb, Badge } from '@/components/ui';
-import { HotelCard } from '@/components/shared/HotelCard';
+import { bookingService, BookingResponse } from '@/services/booking.service';
+import { useAuth } from '@/context/AuthContext';
 import './BookingsPage.scss';
 
-const BookingsPage: React.FC = () => {
+interface BookingGroup {
+  date: string;
+  bookings: BookingResponse[];
+}
 
-  const bookingGroups = [
-    {
-      date: 'Aug. 2025',
-      bookings: [
-        {
-          id: '1',
-          hotelName: 'Luxury Paris Hotel',
-          location: 'Paris, France',
-          distance: '1.8km from center',
-          access: 'Metro access',
-          rating: 4,
-          reviewScore: 9.2,
-          reviewCount: 128,
-          reviewLabel: 'Excellent',
-          roomType: 'Deluxe Room',
-          bedType: 'King Bed',
-          roomSize: '35m²',
-          amenities: ['Wifi', 'Air Conditioning', 'Mini Bar', 'Room Service'],
-          finalPrice: 1800,
-          originalPrice: 2000,
-          nightsCount: 3,
-          guestsCount: 2,
-          status: 'Active',
-        },
-      ],
-    },
-    {
-      date: 'Sep. 2024',
-      bookings: [
-        {
-          id: '2',
-          hotelName: 'Boutique Parisian Villa',
-          location: 'Paris, France',
-          distance: '2.5km from center',
-          access: 'Bus access',
-          rating: 5,
-          reviewScore: 9.6,
-          reviewCount: 256,
-          reviewLabel: 'Exceptional',
-          roomType: 'Suite',
-          bedType: 'Queen Bed',
-          roomSize: '50m²',
-          amenities: ['Wifi', 'Pool', 'Spa', 'Restaurant'],
-          finalPrice: 1500,
-          originalPrice: 1800,
-          nightsCount: 5,
-          guestsCount: 2,
-          status: 'Completed',
-        },
-      ],
-    },
-  ];
+const BookingsPage: React.FC = () => {
+  const { user, accessToken } = useAuth();
+  const [bookings, setBookings] = useState<BookingResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadBookings = async () => {
+      if (!accessToken) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await bookingService.getMyBookings(accessToken);
+        setBookings(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load bookings');
+        console.error('Error loading bookings:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBookings();
+  }, [accessToken]);
+
+  const groupBookingsByMonth = (bookings: BookingResponse[]): BookingGroup[] => {
+    const groups: Record<string, BookingResponse[]> = {};
+
+    bookings.forEach((booking) => {
+      const date = new Date(booking.fechaCheckIn);
+      const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+
+      if (!groups[monthKey]) {
+        groups[monthKey] = [];
+      }
+      groups[monthKey].push(booking);
+    });
+
+    return Object.entries(groups)
+      .map(([date, bookings]) => ({ date, bookings }))
+      .reverse();
+  };
+
+  const formatDate = (dateStr: string): string => {
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatPrice = (price: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price);
+  };
+
+  const getStatusBadgeVariant = (status: string): 'success' | 'info' | 'warning' => {
+    switch (status.toUpperCase()) {
+      case 'CONFIRMADA':
+        return 'success';
+      case 'CANCELADA':
+      case 'PENDIENTE':
+        return 'warning';
+      default:
+        return 'info';
+    }
+  };
+
+  const bookingGroups = groupBookingsByMonth(bookings);
 
   return (
     <div className="bookings-page" data-testid="bookings-page">
@@ -77,63 +108,93 @@ const BookingsPage: React.FC = () => {
 
         <div className="bookings-page__content">
           <AccountSidebar
-            userName="John Doe"
-            userEmail="johndoe@example.com"
+            userName={user?.nombre || 'User'}
+            userEmail={user?.email || ''}
             dataTestId="bookings-sidebar"
           />
 
           <main className="bookings-page__main" data-testid="bookings-main">
             <h1 className="bookings-page__title">Booking History</h1>
 
-            <div className="bookings-page__bookings-list">
-              {bookingGroups.map((group, groupIndex) => (
-                <section
-                  key={groupIndex}
-                  className="bookings-page__booking-group"
-                  data-testid={`booking-group-${groupIndex}`}
-                >
-                  <div className="bookings-page__group-header">
-                    <h2 className="bookings-page__group-date">{group.date}</h2>
-                  </div>
+            {loading && <div className="bookings-page__loading">Loading bookings...</div>}
 
-                  <div className="bookings-page__group-bookings">
-                    {group.bookings.map((booking) => (
-                      <div
-                        key={booking.id}
-                        className="bookings-page__booking-item"
-                        data-testid={`booking-item-${booking.id}`}
-                      >
-                        <HotelCard
-                          hotelName={booking.hotelName}
-                          location={booking.location}
-                          distance={booking.distance}
-                          access={booking.access}
-                          rating={booking.rating}
-                          reviewScore={booking.reviewScore}
-                          reviewCount={booking.reviewCount}
-                          reviewLabel={booking.reviewLabel}
-                          roomType={booking.roomType}
-                          bedType={booking.bedType}
-                          roomSize={booking.roomSize}
-                          amenities={booking.amenities}
-                          finalPrice={booking.finalPrice}
-                          originalPrice={booking.originalPrice}
-                          nightsCount={booking.nightsCount}
-                          guestsCount={booking.guestsCount}
-                          variant="horizontal"
-                          dataTestId={`booking-card-${booking.id}`}
-                        />
-                        <Badge
-                          label={booking.status}
-                          variant={booking.status === 'Active' ? 'success' : 'info'}
-                          dataTestId={`booking-status-${booking.id}`}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
+            {error && <div className="bookings-page__error">Error: {error}</div>}
+
+            {!loading && !error && bookings.length === 0 && (
+              <div className="bookings-page__empty">
+                <p>You have no bookings yet.</p>
+              </div>
+            )}
+
+            {!loading && !error && bookings.length > 0 && (
+              <div className="bookings-page__bookings-list">
+                {bookingGroups.map((group, groupIndex) => (
+                  <section
+                    key={groupIndex}
+                    className="bookings-page__booking-group"
+                    data-testid={`booking-group-${groupIndex}`}
+                  >
+                    <div className="bookings-page__group-header">
+                      <h2 className="bookings-page__group-date">{group.date}</h2>
+                    </div>
+
+                    <div className="bookings-page__group-bookings">
+                      {group.bookings.map((booking) => (
+                        <div
+                          key={booking.id}
+                          className="bookings-page__booking-item"
+                          data-testid={`booking-item-${booking.id}`}
+                        >
+                          <div className="booking-card">
+                            <div className="booking-card__header">
+                              <div className="booking-card__info">
+                                <h3 className="booking-card__code">Code: {booking.codigo}</h3>
+                                <p className="booking-card__room">Habitación ID: {booking.habitacionId}</p>
+                              </div>
+                              <Badge
+                                label={booking.estado}
+                                variant={getStatusBadgeVariant(booking.estado)}
+                                dataTestId={`booking-status-${booking.id}`}
+                              />
+                            </div>
+
+                            <div className="booking-card__dates">
+                              <div className="booking-card__date-group">
+                                <span className="booking-card__label">Check-in</span>
+                                <p>{formatDate(booking.fechaCheckIn)}</p>
+                              </div>
+                              <div className="booking-card__date-group">
+                                <span className="booking-card__label">Check-out</span>
+                                <p>{formatDate(booking.fechaCheckOut)}</p>
+                              </div>
+                              <div className="booking-card__date-group">
+                                <span className="booking-card__label">Guests</span>
+                                <p>{booking.numHuespedes}</p>
+                              </div>
+                            </div>
+
+                            <div className="booking-card__price">
+                              <div className="booking-card__price-row">
+                                <span>Subtotal</span>
+                                <span>{formatPrice(booking.subtotal)} {booking.moneda}</span>
+                              </div>
+                              <div className="booking-card__price-row">
+                                <span>Taxes</span>
+                                <span>{formatPrice(booking.impuestos)} {booking.moneda}</span>
+                              </div>
+                              <div className="booking-card__price-row booking-card__price-row--total">
+                                <span>Total</span>
+                                <span>{formatPrice(booking.total)} {booking.moneda}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            )}
           </main>
         </div>
       </div>
