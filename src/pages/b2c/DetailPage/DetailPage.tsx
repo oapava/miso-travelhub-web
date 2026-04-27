@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Header, Footer } from '@/components/layout';
 import { Breadcrumb, Badge, StarRating, Button, AmenityTag, PriceDisplay, DateRangePicker } from '@/components/ui';
@@ -47,13 +47,6 @@ function calcNights(checkIn: string, checkOut: string): number {
   return nights > 0 ? nights : 0;
 }
 
-function formatReviewDate(dateStr: string): string {
-  try {
-    return new Date(dateStr).toLocaleDateString();
-  } catch {
-    return dateStr;
-  }
-}
 
 const DetailPage: React.FC = () => {
   const { hotelId } = useParams<{ hotelId: string }>();
@@ -113,7 +106,7 @@ const DetailPage: React.FC = () => {
   const [roomDetailAmenities, setRoomDetailAmenities] = useState<string[] | null>(null);
   const [roomDetailPrice, setRoomDetailPrice] = useState<number | null>(null);
   const [roomDetailImages, setRoomDetailImages] = useState<string[]>([]);
-  const [isPriceLoading, setIsPriceLoading] = useState(false);
+  const [, setIsPriceLoading] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
 
   // Reviews state
@@ -242,8 +235,6 @@ const DetailPage: React.FC = () => {
   const roomInfoLine     = [hotelRoomType, hotelBedType, hotelRoomSize].filter(Boolean).join(' · ');
   const amenitiesSubtitle = [hotelCategory, roomInfoLine].filter(Boolean).join(' | ');
 
-  const tabs = ['Overview', 'Amenities', 'Location', 'Reviews'] as const;
-
   return (
     <div className="detail-page" data-testid="detail-page">
       <Header searchInitialValues={lastSearch ?? undefined} onSearch={handleSearch} />
@@ -300,7 +291,6 @@ const DetailPage: React.FC = () => {
           <div className="detail-page__gallery" data-testid="detail-gallery">
             <HotelGallery
               images={roomDetailImages}
-              alt={hotelName}
               dataTestId="detail-hotel-gallery"
             />
           </div>

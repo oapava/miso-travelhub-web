@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { B2BHeader, B2BSidebar } from '@/components/layout';
 import { DataTable } from '@/components/shared';
-import { Button, Input, Select, Pagination } from '@/components/ui';
+import { Input, Select, Pagination } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { bookingService, getHotelIdFromToken, HotelBooking } from '@/services/booking.service';
 import './BookingManagerPage.scss';

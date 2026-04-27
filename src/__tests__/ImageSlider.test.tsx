@@ -202,7 +202,7 @@ describe('ImageSlider', () => {
     render(<ImageSlider images={IMAGES} />);
     // The thumbnail img is inside the thumb button
     const thumbBtns = screen.getAllByRole('button', { name: /Thumbnail/i });
-    const thumbImg = thumbBtns[0].querySelector('img')!;
+    const thumbImg = thumbBtns[0]?.querySelector('img') as HTMLImageElement;
     fireEvent.error(thumbImg);
     expect(thumbImg.className).toContain('image-slider__image--broken');
   });

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 // jsdom does not implement scrollIntoView — stub it so tab-click tests don't throw
 window.HTMLElement.prototype.scrollIntoView = jest.fn();

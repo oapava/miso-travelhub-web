@@ -36,7 +36,7 @@ const unauthUser = {
 };
 const authUser = {
   isAuthenticated: true,
-  user: { nombre: 'Test User', email: 'test@test.com' } as Parameters<typeof mockUseAuth>[0]['user'],
+  user: { nombre: 'Test User', email: 'test@test.com' } as ReturnType<typeof useAuth>['user'],
   accessToken: 'my-token',
   login: jest.fn(), logout: jest.fn(),
 };

@@ -76,14 +76,13 @@ const BookingsPage: React.FC = () => {
     }).format(price);
   };
 
-  const getStatusBadgeVariant = (status: string): 'success' | 'info' | 'warning' | 'error' => {
+  const getStatusBadgeVariant = (status: string): 'success' | 'info' | 'warning' => {
     switch (status.toUpperCase()) {
       case 'CONFIRMADA':
         return 'success';
+      case 'CANCELADA':
       case 'PENDIENTE':
         return 'warning';
-      case 'CANCELADA':
-        return 'error';
       default:
         return 'info';
     }
