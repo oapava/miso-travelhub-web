@@ -1,6 +1,41 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import B2BLoginPage from '@/pages/b2b/B2BLoginPage/B2BLoginPage';
+
+// ── Mocks ────────────────────────────────────────────────────────────────────
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
+
+jest.mock('@/services/auth.service', () => ({
+  authService: {
+    login: jest.fn(),
+    getCurrentUser: jest.fn(),
+    register: jest.fn(),
+  },
+}));
+
+jest.mock('@/context/AuthContext', () => ({ useAuth: jest.fn() }));
+
+import { authService } from '@/services/auth.service';
+import { useAuth } from '@/context/AuthContext';
+
+const mockLogin        = authService.login as jest.Mock;
+const mockGetUser      = authService.getCurrentUser as jest.Mock;
+const mockUseAuth      = useAuth as jest.MockedFunction<typeof useAuth>;
+const mockContextLogin = jest.fn();
+
+const mockToken = {
+  access_token: 'access-abc', refresh_token: 'refresh-xyz',
+  token_type: 'bearer', expires_in: 900,
+};
+const mockUser = {
+  id: 'u1', email: 'admin@hotel.com', username: 'admin', nombre: 'Admin',
+  telefono: '', pais: 'CO', idioma: 'es', moneda_preferida: 'USD',
+  mfa_activo: false, rol: 'hotel_admin', fecha_registro: '2025-01-01',
+};
 
 const renderPage = () =>
   render(
@@ -10,6 +45,17 @@ const renderPage = () =>
   );
 
 describe('B2BLoginPage', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: false, user: null, accessToken: null,
+      login: mockContextLogin, logout: jest.fn(),
+    });
+    mockLogin.mockResolvedValue(mockToken);
+    mockGetUser.mockResolvedValue(mockUser);
+  });
+
+  // ── Rendering ────────────────────────────────────────────────────────────
   it('renders the page container', () => {
     renderPage();
     expect(screen.getByTestId('b2b-login-page')).toBeInTheDocument();
@@ -31,55 +77,251 @@ describe('B2BLoginPage', () => {
     expect(screen.getByText(/We are happy to see you/i)).toBeInTheDocument();
   });
 
-  it('renders email input', () => {
+  it('renders email and password inputs', () => {
     renderPage();
     expect(screen.getByTestId('b2b-login-email')).toBeInTheDocument();
-  });
-
-  it('renders password input', () => {
-    renderPage();
     expect(screen.getByTestId('b2b-login-password')).toBeInTheDocument();
   });
 
-  it('renders the login submit button', () => {
+  it('renders the LOGIN submit button', () => {
     renderPage();
-    expect(screen.getByTestId('b2b-login-submit')).toBeInTheDocument();
-    expect(screen.getByTestId('b2b-login-submit')).toHaveTextContent('LOGIN');
+    const btn = screen.getByTestId('b2b-login-submit');
+    expect(btn).toBeInTheDocument();
+    expect(btn).toHaveTextContent('LOGIN');
   });
 
-  it('renders the forgot password link', () => {
+  it('renders forgot password and sign-up links', () => {
     renderPage();
     expect(screen.getByText(/Forgot your password/i)).toBeInTheDocument();
-  });
-
-  it('renders the sign up link', () => {
-    renderPage();
     expect(screen.getByText(/Sign up for free/i)).toBeInTheDocument();
   });
 
+  it('renders the image placeholder', () => {
+    renderPage();
+    expect(screen.getByTestId('b2b-login-image-placeholder')).toBeInTheDocument();
+  });
+
+  // ── Field interaction ────────────────────────────────────────────────────
   it('updates email field when user types', () => {
     renderPage();
-    const emailInput = screen.getByTestId('b2b-login-email') as HTMLInputElement;
-    fireEvent.change(emailInput, { target: { value: 'admin@hotel.com' } });
-    expect(emailInput.value).toBe('admin@hotel.com');
+    const input = screen.getByTestId('b2b-login-email') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'admin@hotel.com' } });
+    expect(input.value).toBe('admin@hotel.com');
   });
 
   it('updates password field when user types', () => {
     renderPage();
-    const passwordInput = screen.getByTestId('b2b-login-password') as HTMLInputElement;
-    fireEvent.change(passwordInput, { target: { value: 'secret123' } });
-    expect(passwordInput.value).toBe('secret123');
+    const input = screen.getByTestId('b2b-login-password') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'secret123' } });
+    expect(input.value).toBe('secret123');
   });
 
-  it('does not navigate when form is submitted with empty fields', () => {
+  // ── Submit with empty fields ─────────────────────────────────────────────
+  it('does not call authService when form is submitted with empty fields', () => {
     renderPage();
     fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
-    // Page should still be rendered (no navigation occurred)
+    expect(mockLogin).not.toHaveBeenCalled();
+  });
+
+  it('page is still rendered after submitting empty form', () => {
+    renderPage();
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
     expect(screen.getByTestId('b2b-login-page')).toBeInTheDocument();
   });
 
-  it('renders the image placeholder section', () => {
+  // ── Successful login ─────────────────────────────────────────────────────
+  it('calls authService.login with email and password', async () => {
     renderPage();
-    expect(screen.getByTestId('b2b-login-image-placeholder')).toBeInTheDocument();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'admin@hotel.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() =>
+      expect(mockLogin).toHaveBeenCalledWith('admin@hotel.com', 'password123'),
+    );
+  });
+
+  it('calls authService.getCurrentUser with the access token', async () => {
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'admin@hotel.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() => expect(mockGetUser).toHaveBeenCalledWith('access-abc'));
+  });
+
+  it('calls context login with token and user on success', async () => {
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'admin@hotel.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() =>
+      expect(mockContextLogin).toHaveBeenCalledWith(mockToken, mockUser),
+    );
+  });
+
+  it('navigates to /business after successful login', async () => {
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'admin@hotel.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/business'));
+  });
+
+  // ── Error handling ───────────────────────────────────────────────────────
+  it('shows error message when login fails', async () => {
+    mockLogin.mockRejectedValueOnce(new Error('Invalid credentials'));
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'wrong@email.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'wrong' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() =>
+      expect(screen.getByTestId('b2b-login-error')).toHaveTextContent('Invalid credentials'),
+    );
+  });
+
+  it('shows generic error when login rejects with non-Error value', async () => {
+    mockLogin.mockRejectedValueOnce('unexpected');
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'a@b.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'pass' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() =>
+      expect(screen.getByTestId('b2b-login-error')).toHaveTextContent(
+        'Login failed. Please check your credentials.',
+      ),
+    );
+  });
+
+  it('does not navigate when login fails', async () => {
+    mockLogin.mockRejectedValueOnce(new Error('Bad request'));
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'a@b.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'pass' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() => expect(mockLogin).toHaveBeenCalled());
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  // ── Role guard ───────────────────────────────────────────────────────────
+  it('shows access-denied error when logged-in user has traveler role', async () => {
+    const travelerUser = { ...mockUser, rol: 'traveler' };
+    mockGetUser.mockResolvedValueOnce(travelerUser);
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'traveler@email.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'pass123' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() =>
+      expect(screen.getByTestId('b2b-login-error')).toHaveTextContent(
+        'Access denied. This portal is for hotel administrators only.',
+      ),
+    );
+  });
+
+  it('does not call contextLogin when user has traveler role', async () => {
+    const travelerUser = { ...mockUser, rol: 'traveler' };
+    mockGetUser.mockResolvedValueOnce(travelerUser);
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'traveler@email.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'pass123' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() => expect(mockGetUser).toHaveBeenCalled());
+    expect(mockContextLogin).not.toHaveBeenCalled();
+  });
+
+  it('does not navigate when user has traveler role', async () => {
+    const travelerUser = { ...mockUser, rol: 'traveler' };
+    mockGetUser.mockResolvedValueOnce(travelerUser);
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'traveler@email.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'pass123' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() => expect(mockGetUser).toHaveBeenCalled());
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('allows login for hotel_admin role', async () => {
+    const adminUser = { ...mockUser, rol: 'hotel_admin' };
+    mockGetUser.mockResolvedValueOnce(adminUser);
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'admin@hotel.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/business'));
+  });
+
+  it('allows login for platform_admin role', async () => {
+    const platformAdmin = { ...mockUser, rol: 'platform_admin' };
+    mockGetUser.mockResolvedValueOnce(platformAdmin);
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'admin@platform.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/business'));
+  });
+
+  // ── Loading state ────────────────────────────────────────────────────────
+  it('shows LOGGING IN… and disables button while in flight', async () => {
+    let resolve!: (v: typeof mockToken) => void;
+    mockLogin.mockReturnValueOnce(new Promise((res) => { resolve = res; }));
+    renderPage();
+    fireEvent.change(screen.getByTestId('b2b-login-email'), {
+      target: { value: 'a@b.com' },
+    });
+    fireEvent.change(screen.getByTestId('b2b-login-password'), {
+      target: { value: 'pass' },
+    });
+    fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
+    await waitFor(() => {
+      expect(screen.getByTestId('b2b-login-submit')).toHaveTextContent('LOGGING IN...');
+      expect(screen.getByTestId('b2b-login-submit')).toBeDisabled();
+    });
+    await waitFor(async () => resolve(mockToken));
   });
 });

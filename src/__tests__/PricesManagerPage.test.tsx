@@ -94,4 +94,23 @@ describe('PricesManagerPage', () => {
       'pagination__button--active',
     );
   });
+
+  it('logout button is clickable without throwing', () => {
+    renderPage();
+    expect(() => fireEvent.click(screen.getByTestId('b2b-sidebar-logout'))).not.toThrow();
+  });
+
+  it('updates price input when changed', () => {
+    renderPage();
+    const priceInput = screen.getByTestId('prices-manager-price-input-1') as HTMLInputElement;
+    fireEvent.change(priceInput, { target: { value: '250' } });
+    expect(priceInput.value).toBe('250');
+  });
+
+  it('updates discount input when changed', () => {
+    renderPage();
+    const discountInput = screen.getByTestId('prices-manager-discount-input-1') as HTMLInputElement;
+    fireEvent.change(discountInput, { target: { value: '15' } });
+    expect(discountInput.value).toBe('15');
+  });
 });

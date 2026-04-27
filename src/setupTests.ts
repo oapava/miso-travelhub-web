@@ -13,3 +13,26 @@ if (!global.TextDecoder) {
 	global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder;
 }
 
+// Mock IntersectionObserver — jsdom does not implement this browser API.
+// Components that use it (e.g. scroll-spy tabs) work fine in the browser
+// but would throw ReferenceError in the Jest/jsdom environment without this stub.
+class IntersectionObserverMock implements IntersectionObserver {
+  readonly root: Element | Document | null = null;
+  readonly rootMargin: string = '';
+  readonly thresholds: ReadonlyArray<number> = [];
+
+  observe    = jest.fn();
+  unobserve  = jest.fn();
+  disconnect = jest.fn();
+  takeRecords = jest.fn((): IntersectionObserverEntry[] => []);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(_callback: IntersectionObserverCallback, _options?: IntersectionObserverInit) {}
+}
+
+Object.defineProperty(window, 'IntersectionObserver', {
+  writable: true,
+  configurable: true,
+  value: IntersectionObserverMock,
+});
+

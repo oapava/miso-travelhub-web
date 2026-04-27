@@ -1,0 +1,296 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// DateRangePicker — .drp
+//
+// Visual design:
+//   • In-range days   → amber/yellow background spanning full cell width
+//   • Start / end     → $drp-sel-bg filled circle on top of the range bg
+//   • Range edges     → half-cell amber bg so the band looks continuous
+//   • Disabled/other  → faded, non-interactive
+//
+// All design tokens are declared in src/styles/abstracts/_variables.scss
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Wrapper ──────────────────────────────────────────────────────────────────
+
+.drp {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+
+  // ─── Trigger fields ──────────────────────────────────────────────────────
+
+  &__trigger {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+    padding: $spacing-2xs 0;
+    border-radius: $border-radius-md;
+    @include transition(background-color, outline-color);
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+
+    // Range highlight on the trigger area
+    &--has-range {
+      //background-color: $drp-range-bg;
+      padding: $spacing-2xs $spacing-xs;
+    }
+
+    // Active (currently focused field in the popup)
+    &--active {
+      outline-color: $color-primary-500;
+    }
+
+    &:focus-visible {
+      outline-color: $color-primary-500;
+    }
+  }
+
+  &__trigger-label {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $color-primary-800;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  &__trigger-value {
+    font-size: $font-size-sm;
+    color: $color-neutral-800;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--placeholder {
+      color: $color-neutral-400;
+      font-weight: $font-weight-regular;
+    }
+  }
+
+  // Internal separator between the two triggers
+  &__sep {
+    width: 1px;
+    height: 2rem;
+    background-color: $color-neutral-200;
+    flex-shrink: 0;
+    margin: 0 $spacing-2xs;
+    @include transition(background-color);
+
+    &--range {
+      //background-color: rgba(255, 193, 7, 0.6);
+    }
+  }
+
+  // ─── Calendar popup ──────────────────────────────────────────────────────
+
+  &__popup {
+    position: absolute;
+    // Positioned below the component; left-aligned by default.
+    // Override with class modifiers if the calendar clips the right edge.
+    top: calc(100% + 0.5rem);
+    left: 0;
+    z-index: 300;
+    background: $color-neutral-white;
+    border-radius: $border-radius-xl;
+    box-shadow: $shadow-lg;
+    padding: $spacing-md;
+    min-width: 20rem;
+    user-select: none;
+
+    // On mobile: anchor to right edge instead
+    @include respond-to('tablet') {
+      left: auto;
+      right: 0;
+    }
+  }
+
+  // Month navigation row
+  &__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__nav-title {
+    @include body-text(sm);
+    font-weight: $font-weight-bold;
+    color: $color-primary-900;
+  }
+
+  &__nav-btn {
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    background: $color-neutral-100;
+    border-radius: 50%;
+    font-size: $font-size-lg;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-primary-800;
+    @include transition(background-color);
+
+    &:hover {
+      background: $color-primary-100;
+      color: $color-primary-900;
+    }
+
+    &:focus-visible {
+      @include focus-visible-outline;
+    }
+  }
+
+  // Day-of-week header
+  &__weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, $drp-cell);
+    margin-bottom: $spacing-2xs;
+  }
+
+  &__weekday {
+    text-align: center;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-400;
+    padding-bottom: $spacing-2xs;
+  }
+
+  // Day grid — 7 columns, each cell exactly $drp-cell × $drp-cell
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(7, $drp-cell);
+  }
+
+  // ─── Day cell ─────────────────────────────────────────────────────────────
+  //
+  // Layout layers (back → front):
+  //   1. cell background  (amber band for in-range / half-amber for edges)
+  //   2. .drp__day-num    (the number itself, or the filled circle for sel)
+  //
+  // We keep the cell background spanning the full width so the amber band
+  // looks continuous across an entire row, and the circle sits on top.
+
+  &__day {
+    position: relative;
+    width: $drp-cell;
+    height: $drp-cell;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // ── Other-month filler days ──
+    &--other {
+      opacity: 0.2;
+      pointer-events: none;
+      cursor: default;
+    }
+
+    // ── Disabled (before minDate) ──
+    &--disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    // ── Hover (interactive, not selected) ──
+    &:not(&--disabled):not(&--other):not(&--sel-start):not(&--sel-end):hover {
+      .drp__day-num {
+        background: $drp-hover-bg;
+        border-radius: 50%;
+      }
+    }
+
+    // ── In-range: full-width amber band ──
+    &--in-range {
+      background-color: $drp-range-bg;
+    }
+
+    // ── Left edge of the range (= start day):
+    //    right half is amber, left half is transparent,
+    //    so the band visually connects to the next cell.
+    &--range-start {
+      background: linear-gradient(to right, transparent 50%, $drp-range-edge 50%);
+    }
+
+    // ── Right edge of the range (= end day):
+    //    left half is amber, right half transparent.
+    &--range-end {
+      background: linear-gradient(to left, transparent 50%, $drp-range-edge 50%);
+    }
+
+    // ── Selected start ──
+    &--sel-start {
+      // Keep the range-start background if part of a range
+      &.drp__day--range-start {
+        background: linear-gradient(to right, transparent 50%, $drp-range-edge 50%);
+      }
+      // Standalone selection
+      &:not(.drp__day--range-start) {
+        background: transparent;
+      }
+
+      .drp__day-num {
+        background: $drp-sel-bg;
+        color: $drp-sel-fg;
+        border-radius: 50%;
+        font-weight: $font-weight-bold;
+      }
+    }
+
+    // ── Selected end ──
+    &--sel-end {
+      &.drp__day--range-end {
+        background: linear-gradient(to left, transparent 50%, $drp-range-edge 50%);
+      }
+      &:not(.drp__day--range-end) {
+        background: transparent;
+      }
+
+      .drp__day-num {
+        background: $drp-sel-bg;
+        color: $drp-sel-fg;
+        border-radius: 50%;
+        font-weight: $font-weight-bold;
+      }
+    }
+  }
+
+  // Day number — always centred inside the cell
+  &__day-num {
+    width: calc($drp-cell - 4px);
+    height: calc($drp-cell - 4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $font-size-sm;
+    color: $color-neutral-800;
+    border-radius: 50%;
+    @include transition(background-color, color);
+    position: relative;
+    z-index: 1; // sits above the cell background
+  }
+
+  // ─── Hint text ────────────────────────────────────────────────────────────
+
+  &__hint {
+    margin-top: $spacing-sm;
+    padding-top: $spacing-xs;
+    border-top: 1px solid $color-neutral-100;
+    text-align: center;
+    font-size: $font-size-xs;
+    color: $color-neutral-500;
+  }
+}

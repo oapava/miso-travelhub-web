@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import DashboardPage from '@/pages/b2b/DashboardPage/DashboardPage';
 
@@ -81,5 +81,11 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Guests')).toBeInTheDocument();
     expect(screen.getByText('Start')).toBeInTheDocument();
     expect(screen.getByText('End')).toBeInTheDocument();
+  });
+
+  it('logout button is present and clickable without throwing', () => {
+    renderPage();
+    const logoutBtn = screen.getByTestId('b2b-sidebar-logout');
+    expect(() => fireEvent.click(logoutBtn)).not.toThrow();
   });
 });
