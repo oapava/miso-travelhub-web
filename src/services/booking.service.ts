@@ -1,4 +1,4 @@
-import { AUTH_BASE_URL, BOOKING_BASE_URL, SEARCH_BASE_URL } from '@/config/env';
+import { BOOKING_BASE_URL, SEARCH_BASE_URL } from '@/config/env';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

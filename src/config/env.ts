@@ -24,5 +24,5 @@ function runtimeVar(key: keyof RuntimeEnv): string {
 
 export const AUTH_BASE_URL   = runtimeVar('VITE_AUTH_BASE_URL');
 export const SEARCH_BASE_URL = runtimeVar('VITE_SEARCH_BASE_URL');
-export const BOOKING_BASE_URL = runtimeVar('VITE_BOOKING_BASE_URL');
+export const BOOKING_BASE_URL = runtimeVar('VITE_SEARCH_BASE_URL');
 export const ENV_NAME        = runtimeVar('VITE_ENV_NAME');
