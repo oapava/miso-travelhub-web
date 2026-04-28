@@ -460,6 +460,10 @@ const DetailPage: React.FC = () => {
         checkOut={endDate}
         guests={parseInt(guests, 10)}
         rooms={parseInt(rooms, 10)}
+        imageUrl={roomDetailImages[0]}
+        originalPrice={hotelOriginalPrice}
+        finalPrice={hotelPrice}
+        discountPercentage={hotelDiscount}
         dataTestId="detail-booking-modal"
       />
 
@@ -468,6 +472,7 @@ const DetailPage: React.FC = () => {
         onClose={() => setIsConfirmModalOpen(false)}
         destination={hotelName}
         bookingResult={bookingResult ?? undefined}
+        imageUrl={roomDetailImages[0]}
         dataTestId="detail-confirm-modal"
       />
 

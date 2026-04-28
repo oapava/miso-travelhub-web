@@ -126,26 +126,25 @@
 
   &__language-toggle {
     padding: $spacing-2xs $spacing-xs;
-    border: 1px solid $color-neutral-300;
+    border: none;
     border-radius: $border-radius-pill;
     background: none;
     font-size: $font-size-sm;
-    font-weight: $font-weight-semibold;
-    color: $color-neutral-700;
+    font-weight: $font-weight-bold;
+    color: $color-primary-700;
     cursor: pointer;
     @include focus-visible-outline;
-    @include transition(color, border-color);
+    @include transition(color);
 
     &:hover {
-      color: $color-primary-700;
-      border-color: $color-primary-700;
+      color: $color-primary-900;
     }
   }
 
   &__currency {
     font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    color: $color-neutral-700;
+    font-weight: $font-weight-bold;
+    color: $color-primary-700;
   }
 
   &__auth-buttons {
@@ -162,25 +161,17 @@
 
   &__user-avatar {
     @include flex-center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 3rem;
+    height: 3rem;
     border-radius: $border-radius-full;
-    background-color: $color-primary-700;
-    overflow: hidden;
+    background-color: $color-primary-600;
     flex-shrink: 0;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
   }
 
-  &__user-avatar-placeholder {
-    font-size: $font-size-sm;
-    font-weight: $font-weight-bold;
+  &__user-avatar-icon {
+    width: 1.75rem;
+    height: 1.75rem;
     color: $color-neutral-white;
-    text-transform: uppercase;
   }
 
   &__user-info {
@@ -191,14 +182,14 @@
   &__user-name {
     font-size: $font-size-sm;
     font-weight: $font-weight-bold;
-    color: $color-neutral-900;
+    color: $color-primary-700;
     line-height: $line-height-tight;
   }
 
   &__account-link {
     font-size: $font-size-xs;
     font-weight: $font-weight-medium;
-    color: $color-primary-700;
+    color: $color-primary-600;
     line-height: $line-height-tight;
     text-decoration: none;
     @include transition(color);
@@ -209,10 +200,17 @@
     }
   }
 
+  &__user-divider {
+    color: $color-neutral-400;
+    font-size: $font-size-xs;
+    line-height: $line-height-tight;
+    user-select: none;
+  }
+
   &__logout-link {
     font-size: $font-size-xs;
     font-weight: $font-weight-medium;
-    color: $color-primary-700;
+    color: $color-neutral-500;
     background: none;
     border: none;
     cursor: pointer;
@@ -222,8 +220,7 @@
     @include transition(color);
 
     &:hover {
-      color: $color-primary-900;
-      text-decoration: underline;
+      color: $color-neutral-800;
     }
   }
 

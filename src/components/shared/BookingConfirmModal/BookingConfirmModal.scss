@@ -1,95 +1,85 @@
 .booking-confirm-modal {
   &__container {
-    @include flex-column;
+    display: flex;
+    flex-direction: column;
     gap: $spacing-lg;
-    padding: $spacing-2xl;
     width: 100%;
+  }
+
+  // ── Top section: image + info ───────────────────────────────────────────────
+
+  &__top {
+    display: flex;
+    gap: $spacing-lg;
+    align-items: flex-start;
+  }
+
+  &__image-wrapper {
+    flex: 0 0 180px;
+    height: 180px;
+    border-radius: $border-radius-lg;
+    overflow: hidden;
+    background-color: $color-neutral-300;
+
+    @include respond-to('mobile') {
+      flex: 0 0 120px;
+      height: 120px;
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   &__image-placeholder {
     width: 100%;
-    aspect-ratio: 16 / 9;
-    background-color: $color-neutral-200;
-    border-radius: $border-radius-md;
-    @include flex-center;
+    height: 100%;
+    background-color: $color-neutral-300;
   }
 
-  &__image-content {
-    font-size: $font-size-4xl;
-    color: $color-neutral-400;
-  }
-
-  &__header {
-    @include flex-column;
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     gap: $spacing-xs;
+    padding-top: $spacing-2xs;
   }
 
   &__title {
-    font-size: $font-size-2xl;
+    font-size: $font-size-lg;
     font-weight: $font-weight-bold;
     color: $color-neutral-black;
     margin: 0;
   }
 
-  &__code {
-    font-size: $font-size-sm;
-    color: $color-neutral-600;
-    margin: 0;
-
-    strong {
-      font-weight: $font-weight-bold;
-      color: $color-primary-600;
-      font-family: monospace;
-      letter-spacing: 1px;
-    }
-  }
-
-  &__details {
-    @include flex-column;
-    gap: $spacing-md;
-  }
-
   &__destination {
     font-size: $font-size-md;
-    color: $color-primary-600;
-    text-decoration: none;
-    font-weight: $font-weight-medium;
-
-    &:hover {
-      text-decoration: underline;
-      color: $color-primary-700;
-    }
-
-    &:focus-visible {
-      @include focus-visible-outline;
-    }
+    color: $color-primary-700;
+    font-weight: $font-weight-bold;
   }
 
   &__trip-info {
-    @include flex-column;
-    gap: $spacing-xs;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xs;
   }
 
-  &__dates {
-    font-size: $font-size-md;
-    color: $color-neutral-700;
-    font-weight: $font-weight-regular;
-  }
-
+  &__dates,
   &__guests {
     font-size: $font-size-md;
     color: $color-neutral-700;
-    font-weight: $font-weight-regular;
   }
 
+  // ── Success section ────────────────────────────────────────────────────────
+
   &__success-section {
-    @include flex-column;
-    @include flex-center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: $spacing-lg;
-    padding: $spacing-2xl $spacing-lg;
-    background-color: rgba($color-accent-green, 0.08);
-    border-radius: $border-radius-md;
-    margin-top: $spacing-lg;
+    padding: $spacing-xl 0 $spacing-md;
   }
 
   &__checkmark-circle {
@@ -97,64 +87,22 @@
     height: 80px;
     border-radius: $border-radius-full;
     background-color: $color-accent-green;
-    @include flex-center;
-    @include transition(transform);
-
-    &:hover {
-      transform: scale(1.05);
-    }
-  }
-
-  &__checkmark {
-    font-size: $font-size-4xl;
-    color: $color-neutral-white;
-    font-weight: $font-weight-bold;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
+  &__checkmark-icon {
+    width: 40px;
+    height: 40px;
+    color: $color-neutral-white;
+  }
+
   &__success-text {
     font-size: $font-size-xl;
     font-weight: $font-weight-bold;
-    color: $color-accent-green;
+    color: $color-neutral-black;
     margin: 0;
     text-align: center;
-  }
-
-  &__price-breakdown {
-    background-color: $color-neutral-50;
-    border-radius: $border-radius-md;
-    padding: $spacing-md;
-    @include flex-column;
-    gap: $spacing-sm;
-  }
-
-  &__price-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: $font-size-sm;
-    color: $color-neutral-700;
-    padding: $spacing-xs 0;
-
-    &--total {
-      border-top: 2px solid $color-neutral-200;
-      padding-top: $spacing-md;
-      font-size: $font-size-md;
-      font-weight: $font-weight-bold;
-      color: $color-neutral-black;
-
-      span:last-child {
-        color: $color-accent-green;
-        font-weight: $font-weight-bold;
-      }
-    }
-  }
-
-  @include respond-to('tablet') {
-    &__container {
-      padding: $spacing-xl;
-    }
   }
 }

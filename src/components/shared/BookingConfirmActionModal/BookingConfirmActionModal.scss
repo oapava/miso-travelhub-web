@@ -8,12 +8,12 @@
 
   &__content {
     @include flex-column;
-    gap: $spacing-md;
-    text-align: center;
+    gap: $spacing-sm;
+    // Left-aligned (design)
   }
 
   &__title {
-    font-size: $font-size-lg;
+    font-size: $font-size-md;
     font-weight: $font-weight-medium;
     color: $color-neutral-black;
     margin: 0;
@@ -28,13 +28,11 @@
     font-size: $font-size-sm;
     color: $color-neutral-600;
     margin: 0;
-    font-weight: $font-weight-regular;
   }
 
   &__actions {
-    @include flex-column;
-    gap: $spacing-md;
-    margin-top: $spacing-lg;
+    display: flex;
+    justify-content: flex-end;
   }
 
   @include respond-to('tablet') {

@@ -1,14 +1,10 @@
+// ── Page shell ────────────────────────────────────────────────────────────────
+
 .bookings-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: $color-page-bg;
-
-  &__search-bar-wrapper {
-    background: $color-neutral-white;
-    padding: $spacing-sm $spacing-lg;
-    box-shadow: 0 2px 6px rgba($color-neutral-black, 0.06);
-  }
+  background: $color-neutral-white;
 
   &__container {
     @include container;
@@ -18,9 +14,9 @@
 
   &__content {
     display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: $spacing-3xl;
-    margin-top: $spacing-xl;
+    grid-template-columns: 260px 1fr;
+    gap: $spacing-xl;
+    margin-top: $spacing-lg;
 
     @include respond-to('tablet') {
       grid-template-columns: 1fr;
@@ -30,20 +26,20 @@
   &__main {
     display: flex;
     flex-direction: column;
-    gap: $spacing-2xl;
+    gap: $spacing-xl;
   }
 
   &__title {
-    @include heading(2xl);
-    color: $color-primary-900;
+    font-size: $font-size-2xl;
     font-weight: $font-weight-bold;
-    margin-bottom: $spacing-lg;
+    color: $color-primary-700;
+    margin: 0 0 $spacing-xs;
   }
 
   &__loading,
   &__error,
   &__empty {
-    @include body-text(md);
+    font-size: $font-size-base;
     color: $color-neutral-600;
     padding: $spacing-2xl 0;
     text-align: center;
@@ -67,13 +63,14 @@
 
   &__group-header {
     padding-bottom: $spacing-sm;
-    border-bottom: 2px solid $color-neutral-200;
+    border-bottom: 2px solid $color-neutral-100;
   }
 
   &__group-date {
-    @include heading(lg);
-    color: $color-primary-900;
+    font-size: $font-size-lg;
     font-weight: $font-weight-semibold;
+    color: $color-primary-700;
+    margin: 0;
   }
 
   &__group-bookings {
@@ -81,104 +78,214 @@
     flex-direction: column;
     gap: $spacing-lg;
   }
-
-  &__booking-item {
-    background: $color-neutral-white;
-    border-radius: $border-radius-lg;
-    border: 1px solid rgba($color-neutral-black, 0.08);
-    @include card-shadow;
-    overflow: hidden;
-  }
 }
 
-// ── Booking card (inside booking-item) ──────────────────────────────────────
+// ── Booking card — mirrors hotel-card--horizontal layout ──────────────────────
 
 .booking-card {
   display: flex;
-  flex-direction: column;
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+  border: 1px solid $color-neutral-100;
+  padding: 0.5rem;
+  @include card-shadow;
+  @include transition(box-shadow);
+
+  &:hover {
+    box-shadow: $shadow-xl;
+  }
+
+  // ── Image side ──────────────────────────────────────────────────────────────
+
+  &__image-container {
+    position: relative;
+    width: 16rem;
+    min-height: 11rem;
+    flex-shrink: 0;
+
+    @include respond-to('tablet') {
+      width: 100%;
+      min-height: 12rem;
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    background-image: url('/img/bg-hotel.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: $color-neutral-200;
+    border-radius: $border-radius-xl;
+  }
+
+  &__badge {
+    position: absolute;
+    top: $spacing-xs;
+    left: $spacing-xs;
+    z-index: 2;
+  }
+
+  // ── Content side ────────────────────────────────────────────────────────────
+
+  &__content {
+    flex: 1;
+    padding: $spacing-md $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    justify-content: space-between;
+    background-color: $color-neutral-white;
+
+    @include respond-to('tablet') {
+      padding: $spacing-md;
+    }
+  }
 
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: $spacing-lg $spacing-lg $spacing-md;
-    border-bottom: 1px solid $color-neutral-100;
-  }
-
-  &__info {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-2xs;
-  }
-
-  &__code {
-    @include heading(md);
-    color: $color-primary-900;
-    font-weight: $font-weight-semibold;
-    margin: 0;
-  }
-
-  &__room {
-    @include body-text(sm);
-    color: $color-neutral-500;
-    margin: 0;
-  }
-
-  &__dates {
-    display: flex;
-    gap: $spacing-2xl;
-    padding: $spacing-md $spacing-lg;
-    background: $color-neutral-50;
-    border-bottom: 1px solid $color-neutral-100;
-
-    @include respond-to('mobile') {
-      flex-wrap: wrap;
-      gap: $spacing-md;
-    }
-  }
-
-  &__date-group {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-2xs;
-  }
-
-  &__label {
-    @include body-text(xs);
-    color: $color-neutral-500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: $font-weight-semibold;
-  }
-
-  &__date-group p {
-    @include body-text(sm);
-    color: $color-primary-900;
-    font-weight: $font-weight-medium;
-    margin: 0;
-  }
-
-  &__price {
-    display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: $spacing-xs;
-    padding: $spacing-md $spacing-lg $spacing-lg;
   }
 
-  &__price-row {
+  &__title-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    @include body-text(sm);
-    color: $color-neutral-600;
+    gap: $spacing-xs;
+  }
 
-    &--total {
-      margin-top: $spacing-xs;
-      padding-top: $spacing-xs;
-      border-top: 1px solid $color-neutral-200;
-      @include body-text(md);
-      font-weight: $font-weight-bold;
-      color: $color-primary-900;
+  &__name {
+    font-size: $font-size-md;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-900;
+    line-height: $line-height-tight;
+    margin: 0;
+  }
+
+  &__review {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+    font-size: $font-size-xs;
+  }
+
+  &__review-label-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  &__review-label {
+    color: $color-primary-700;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-xs;
+  }
+
+  &__review-count {
+    color: $color-neutral-500;
+    font-size: $font-size-xs;
+  }
+
+  // ── Date / location row ──────────────────────────────────────────────────────
+
+  &__location {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+    font-size: $font-size-sm;
+    color: $color-neutral-900;
+    flex-wrap: wrap;
+  }
+
+  &__location-pin {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+  }
+
+  &__location-name {
+    color: $color-primary-700;
+    font-weight: $font-weight-medium;
+  }
+
+  &__distance,
+  &__access {
+    color: $color-neutral-600;
+    font-size: $font-size-sm;
+  }
+
+  // ── Room details row ────────────────────────────────────────────────────────
+
+  &__details {
+    font-size: $font-size-xs;
+    color: $color-neutral-600;
+    line-height: $line-height-base;
+  }
+
+  // ── Amenities + price row (mirrors hotel-card__ammenities-price-box) ────────
+
+  &__ammenities-price-box {
+    display: flex;
+    margin-top: auto;
+  }
+
+  &__amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-2xs;
+    width: 60%;
+    align-content: flex-start;
+  }
+
+  &__footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: $spacing-xs;
+    width: 40%;
+    padding-top: $spacing-xs;
+  }
+
+  &__pricing {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-end;
+  }
+
+  &__price-final {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-900;
+  }
+
+  &__stay-info {
+    font-size: $font-size-xs;
+    color: $color-neutral-500;
+  }
+
+  // ── Tablet: stack vertically ─────────────────────────────────────────────────
+
+  @include respond-to('tablet') {
+    flex-direction: column;
+
+    &__ammenities-price-box {
+      flex-wrap: wrap;
+    }
+
+    &__amenities {
+      width: 100%;
+    }
+
+    &__footer {
+      width: 100%;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
     }
   }
 }
