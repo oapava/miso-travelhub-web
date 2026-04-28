@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Header, SearchBar, AccountSidebar, Footer } from '@/components/layout';
+import { Header, AccountSidebar, Footer } from '@/components/layout';
 import { Breadcrumb, Toggle } from '@/components/ui';
+import { useAuth } from '@/context/AuthContext';
 import './NotificationsPage.scss';
 
 const NotificationsPage: React.FC = () => {
+  const { user } = useAuth();
+
   const [notifications, setNotifications] = useState({
     whatsapp: true,
     email: false,
@@ -35,9 +38,6 @@ const NotificationsPage: React.FC = () => {
   return (
     <div className="notifications-page" data-testid="notifications-page">
       <Header />
-      <div className="notifications-page__search-bar-wrapper">
-        <SearchBar variant="compact" />
-      </div>
 
       <div className="notifications-page__container">
         <Breadcrumb
@@ -50,8 +50,8 @@ const NotificationsPage: React.FC = () => {
 
         <div className="notifications-page__content">
           <AccountSidebar
-            userName="John Doe"
-            userEmail="johndoe@example.com"
+            userName={user?.nombre ?? ''}
+            userEmail={user?.email ?? ''}
             dataTestId="notifications-sidebar"
           />
 

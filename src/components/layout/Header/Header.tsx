@@ -25,6 +25,7 @@ interface HeaderProps {
   onSearch?: (params: SearchValues) => void;
 }
 
+
 const Header: React.FC<HeaderProps> = ({ dataTestId, searchInitialValues, onSearch }) => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
@@ -33,7 +34,8 @@ const Header: React.FC<HeaderProps> = ({ dataTestId, searchInitialValues, onSear
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
 
-  const showSearchBar = location.pathname !== B2CRoutes.HOME;
+  // Show compact search bar on all internal pages — only hide on Home and B2B
+  const showSearchBar = location.pathname !== B2CRoutes.HOME && !location.pathname.startsWith('/business');
 
   const handleLanguageToggle = () => {
     const nextLanguage = i18n.language === 'es' ? 'en' : 'es';
@@ -54,7 +56,7 @@ const Header: React.FC<HeaderProps> = ({ dataTestId, searchInitialValues, onSear
     <header className={`header ${isMobileMenuOpen ? 'header--menu-open' : ''}`} data-testid={dataTestId}>
       <div className="header__container">
         <Link to={B2CRoutes.HOME} className="header__logo-link" aria-label="TravelHub Home">
-          <Logo size="large" variant="icon" />
+          <Logo size="medium" variant="full" />
         </Link>
 
         {showSearchBar && <SearchBar variant="compact" initialValues={searchInitialValues} onSearch={onSearch} />}
@@ -86,10 +88,11 @@ const Header: React.FC<HeaderProps> = ({ dataTestId, searchInitialValues, onSear
 
           {isAuthenticated ? (
             <div className="header__user">
-              <div className="header__user-avatar">
-                <span className="header__user-avatar-placeholder">
-                  {user?.nombre?.charAt(0) || user?.username?.charAt(0) || 'U'}
-                </span>
+              <div className="header__user-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" className="header__user-avatar-icon">
+                  <circle cx="12" cy="8" r="4" fill="currentColor" />
+                  <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+                </svg>
               </div>
               <div className="header__user-info">
                 <span className="header__user-name">{user?.nombre}</span>

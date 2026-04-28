@@ -27,14 +27,19 @@ describe('BookingConfirmModal', () => {
     expect(screen.queryByTestId('booking-confirm-modal')).not.toBeInTheDocument();
   });
 
-  it('renders "Booking Confirmed!" heading', () => {
+  it('renders "Booking confirmation" heading', () => {
     render(<BookingConfirmModal isOpen={true} onClose={jest.fn()} />);
-    expect(screen.getByText('Booking Confirmed!')).toBeInTheDocument();
+    expect(screen.getByText('Booking confirmation')).toBeInTheDocument();
   });
 
-  it('renders "Your booking is confirmed!" success text', () => {
+  it('renders "Booking Success!" success text', () => {
     render(<BookingConfirmModal isOpen={true} onClose={jest.fn()} />);
-    expect(screen.getByText('Your booking is confirmed!')).toBeInTheDocument();
+    expect(screen.getByText('Booking Success!')).toBeInTheDocument();
+  });
+
+  it('renders the success checkmark circle', () => {
+    render(<BookingConfirmModal isOpen={true} onClose={jest.fn()} />);
+    expect(screen.getByTestId('booking-confirm-modal-checkmark')).toBeInTheDocument();
   });
 
   it('renders default destination when not provided', () => {
@@ -87,23 +92,28 @@ describe('BookingConfirmModal', () => {
     expect(screen.getByTestId('booking-confirm-modal-trip-info')).toHaveTextContent('1 Guest');
   });
 
-  it('renders confirmation code from bookingResult', () => {
+  it('renders a hotel image when imageUrl is provided', () => {
     render(
       <BookingConfirmModal
         isOpen={true}
         onClose={jest.fn()}
-        bookingResult={mockBookingResult}
+        imageUrl="https://example.com/hotel.jpg"
+        destination="Hotel Test"
       />,
     );
-    expect(screen.getByTestId('booking-confirm-modal-code')).toHaveTextContent('CODE123');
+    const img = screen.getByRole('img', { name: 'Hotel Test' });
+    expect(img).toHaveAttribute('src', 'https://example.com/hotel.jpg');
   });
 
-  it('renders N/A code when no bookingResult provided', () => {
+  it('renders image placeholder when no imageUrl is provided', () => {
     render(<BookingConfirmModal isOpen={true} onClose={jest.fn()} />);
-    expect(screen.getByTestId('booking-confirm-modal-code')).toHaveTextContent('N/A');
+    const wrapper = screen.getByTestId('booking-confirm-modal-image');
+    expect(
+      wrapper.querySelector('.booking-confirm-modal__image-placeholder'),
+    ).toBeInTheDocument();
   });
 
-  it('calls onClose when the close button (X) is clicked', () => {
+  it('calls onClose when the modal close button is clicked', () => {
     const onClose = jest.fn();
     render(<BookingConfirmModal isOpen={true} onClose={onClose} />);
     fireEvent.click(screen.getByLabelText('Close modal'));

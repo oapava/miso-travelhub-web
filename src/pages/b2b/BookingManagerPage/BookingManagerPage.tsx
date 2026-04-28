@@ -1,16 +1,28 @@
 import { useState, useEffect } from 'react';
 import { B2BHeader, B2BSidebar } from '@/components/layout';
 import { DataTable } from '@/components/shared';
-import { Input, Select, Pagination } from '@/components/ui';
+import BookingDetailModal from '@/components/shared/BookingDetailModal/BookingDetailModal';
+import BookingConfirmActionModal from '@/components/shared/BookingConfirmActionModal/BookingConfirmActionModal';
+import BookingCancelModal from '@/components/shared/BookingCancelModal/BookingCancelModal';
+import { Input, Select, Pagination, Button } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
-import { bookingService, getHotelIdFromToken, HotelBooking } from '@/services/booking.service';
+import {
+  bookingService,
+  getHotelIdFromToken,
+  HotelBooking,
+  BookingResponse,
+} from '@/services/booking.service';
 import './BookingManagerPage.scss';
 
 const ITEMS_PER_PAGE = 10;
 
-function formatDate(dateStr: string): string {
+function formatDateDDMMYY(dateStr: string): string {
   try {
-    return new Date(dateStr).toLocaleDateString();
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = String(d.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
   } catch {
     return dateStr;
   }
@@ -27,16 +39,28 @@ function calcDaysNights(checkIn: string, checkOut: string): string {
   }
 }
 
+function calcNights(checkIn: string, checkOut: string): number {
+  const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
+  return Math.max(1, Math.round(diff / (1000 * 60 * 60 * 24)));
+}
+
 function normalizeEstado(estado: string): string {
   return estado.charAt(0).toUpperCase() + estado.slice(1).toLowerCase();
 }
 
 function estadoCssModifier(estado: string): string {
   const lower = estado.toLowerCase();
-  if (lower === 'confirmado' || lower === 'activo') return 'active';
+  if (lower === 'confirmado' || lower === 'confirmada' || lower === 'activo' || lower === 'active') return 'active';
   if (lower === 'pendiente') return 'pending';
-  if (lower === 'cancelado') return 'cancelled';
+  if (lower === 'cancelado' || lower === 'cancelada') return 'cancelled';
   return lower;
+}
+
+function getStatusVariant(estado: string): 'success' | 'info' | 'warning' {
+  const lower = estado.toLowerCase();
+  if (lower === 'confirmado' || lower === 'confirmada' || lower === 'active' || lower === 'activo') return 'success';
+  if (lower === 'cancelado' || lower === 'cancelada' || lower === 'pendiente') return 'warning';
+  return 'info';
 }
 
 const BookingManagerPage: React.FC = () => {
@@ -46,22 +70,37 @@ const BookingManagerPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Pagination & filters
   const [currentPage, setCurrentPage] = useState(1);
+  const [clientFilter, setClientFilter] = useState('');
   const [stateFilter, setStateFilter] = useState('');
   const [startDateFilter, setStartDateFilter] = useState('');
   const [endDateFilter, setEndDateFilter] = useState('');
 
+  // Modal state
+  const [selectedBooking, setSelectedBooking] = useState<HotelBooking | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isCancelOpen, setIsCancelOpen] = useState(false);
+
   // ── Load bookings on mount ───────────────────────────────────────────────
   useEffect(() => {
     if (!accessToken) return;
-    const hotelId = getHotelIdFromToken(accessToken);
-    if (!hotelId) return;
 
     setIsLoading(true);
     setLoadError(null);
-    bookingService
-      .getHotelBookings(hotelId, accessToken)
-      .then((data) => setBookings(data))
+
+    const hotelId = getHotelIdFromToken(accessToken);
+
+    // Use hotel-specific endpoint when hotel_id is present in the JWT,
+    // otherwise fall back to the traveler endpoint (development / tokens
+    // without a hotel_id claim).
+    const request: Promise<HotelBooking[] | BookingResponse[]> = hotelId
+      ? bookingService.getHotelBookings(hotelId, accessToken)
+      : bookingService.getMyBookings(accessToken);
+
+    request
+      .then((data) => setBookings(data as HotelBooking[]))
       .catch((err: unknown) => {
         setLoadError(err instanceof Error ? err.message : 'Could not load bookings.');
       })
@@ -70,75 +109,108 @@ const BookingManagerPage: React.FC = () => {
 
   // ── Client-side filtering ────────────────────────────────────────────────
   const filtered = bookings.filter((b) => {
-    if (stateFilter && b.estado.toLowerCase() !== stateFilter.toLowerCase()) return false;
-    if (startDateFilter && b.fechaCheckIn.slice(0, 10) < startDateFilter) return false;
-    if (endDateFilter && b.fechaCheckOut.slice(0, 10) > endDateFilter) return false;
+    if (clientFilter) {
+      const haystack = `${b.viajeroId ?? ''} ${b.codigo ?? ''}`.toLowerCase();
+      if (!haystack.includes(clientFilter.toLowerCase())) return false;
+    }
+    if (stateFilter && (b.estado ?? '').toLowerCase() !== stateFilter.toLowerCase()) return false;
+    if (startDateFilter && (b.fechaCheckIn ?? '').slice(0, 10) < startDateFilter) return false;
+    if (endDateFilter && (b.fechaCheckOut ?? '').slice(0, 10) > endDateFilter) return false;
     return true;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
-  const handleStateFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setStateFilter(e.target.value);
-    setCurrentPage(1);
+  // ── Modal helpers ────────────────────────────────────────────────────────
+  const openDetail = (booking: HotelBooking) => {
+    setSelectedBooking(booking);
+    setIsDetailOpen(true);
   };
 
-  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStartDateFilter(e.target.value);
-    setCurrentPage(1);
+  const openConfirm = (booking: HotelBooking) => {
+    setSelectedBooking(booking);
+    setIsDetailOpen(false);
+    setIsConfirmOpen(true);
   };
 
-  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEndDateFilter(e.target.value);
-    setCurrentPage(1);
+  const openCancel = (booking: HotelBooking) => {
+    setSelectedBooking(booking);
+    setIsDetailOpen(false);
+    setIsCancelOpen(true);
   };
+
+  const closeAll = () => {
+    setIsDetailOpen(false);
+    setIsConfirmOpen(false);
+    setIsCancelOpen(false);
+  };
+
+  const detailClientName = selectedBooking
+    ? (selectedBooking.viajeroId ?? selectedBooking.codigo ?? '—').slice(0, 8)
+    : undefined;
+
+  const detailHotelName = selectedBooking
+    ? (selectedBooking.nombreHabitacion ?? selectedBooking.habitacionId ?? '—')
+    : undefined;
 
   return (
     <div className="booking-manager-page" data-testid="booking-manager-page">
       <B2BHeader breadcrumbText="Travelhub/Booking Manager" dataTestId="booking-manager-header" />
 
       <div className="booking-manager-page__container">
-        <B2BSidebar
-          onLogout={logout}
-          dataTestId="booking-manager-sidebar"
-        />
+        <B2BSidebar onLogout={logout} dataTestId="booking-manager-sidebar" />
 
         <main className="booking-manager-page__main">
           <div className="booking-manager-page__content">
-            <h1 className="booking-manager-page__title">
-              <strong>Booking Manager</strong>
-            </h1>
 
-            <div className="booking-manager-page__filters">
-              <Select
-                label="State"
-                options={[
-                  { value: '', label: 'All States' },
-                  { value: 'PENDIENTE', label: 'Pending' },
-                  { value: 'CONFIRMADO', label: 'Confirmed' },
-                  { value: 'CANCELADO', label: 'Cancelled' },
-                ]}
-                value={stateFilter}
-                onChange={handleStateFilterChange}
-                dataTestId="booking-manager-state-filter"
-              />
+            {/* ── Page header: title + filters ── */}
+            <div className="booking-manager-page__page-header">
+              <h1 className="booking-manager-page__title">
+                <strong>Booking Manager</strong>
+              </h1>
 
-              <Input
-                label="Start Date"
-                type="date"
-                value={startDateFilter}
-                onChange={handleStartDateChange}
-                dataTestId="booking-manager-start-date"
-              />
+              <div className="booking-manager-page__filters">
+                <Input
+                  label=""
+                  placeholder="Client"
+                  value={clientFilter}
+                  onChange={(e) => { setClientFilter(e.target.value); setCurrentPage(1); }}
+                  dataTestId="booking-manager-client-filter"
+                />
 
-              <Input
-                label="End Date"
-                type="date"
-                value={endDateFilter}
-                onChange={handleEndDateChange}
-                dataTestId="booking-manager-end-date"
-              />
+                <Select
+                  label=""
+                  options={[
+                    { value: '', label: 'State' },
+                    { value: 'PENDIENTE', label: 'Pending' },
+                    { value: 'CONFIRMADO', label: 'Confirmed' },
+                    { value: 'CANCELADO', label: 'Cancelled' },
+                  ]}
+                  value={stateFilter}
+                  onChange={(e) => { setStateFilter(e.target.value); setCurrentPage(1); }}
+                  dataTestId="booking-manager-state-filter"
+                />
+
+                <Input
+                  label=""
+                  type="date"
+                  value={startDateFilter}
+                  onChange={(e) => { setStartDateFilter(e.target.value); setCurrentPage(1); }}
+                  dataTestId="booking-manager-start-date"
+                />
+
+                <Input
+                  label=""
+                  type="date"
+                  value={endDateFilter}
+                  onChange={(e) => { setEndDateFilter(e.target.value); setCurrentPage(1); }}
+                  dataTestId="booking-manager-end-date"
+                />
+              </div>
             </div>
 
             <h3 className="booking-manager-page__subtitle">Last Bookings</h3>
@@ -165,28 +237,37 @@ const BookingManagerPage: React.FC = () => {
               <div className="booking-manager-page__table-wrapper">
                 <DataTable
                   columns={[
+                    // Client
                     {
                       key: 'viajeroId',
                       header: 'Client',
-                      render: (item: HotelBooking) => (
-                        <div className="booking-manager-page__client-cell">
-                          <div className="booking-manager-page__client-avatar">
-                            {item.viajeroId.charAt(0).toUpperCase()}
+                      render: (item: HotelBooking) => {
+                        const clientId = item.viajeroId ?? item.codigo ?? '—';
+                        const initial  = clientId.charAt(0).toUpperCase();
+                        const label    = clientId.length > 8
+                          ? `${clientId.slice(0, 8)}…`
+                          : clientId;
+                        return (
+                          <div className="booking-manager-page__client-cell">
+                            <div className="booking-manager-page__client-avatar">
+                              {initial}
+                            </div>
+                            <div className="booking-manager-page__client-info">
+                              <span
+                                className="booking-manager-page__client-name"
+                                data-testid={`booking-client-${item.id}`}
+                              >
+                                {label}
+                              </span>
+                              <span className="booking-manager-page__client-reservation">
+                                {item.codigo ?? '—'}
+                              </span>
+                            </div>
                           </div>
-                          <div className="booking-manager-page__client-info">
-                            <span
-                              className="booking-manager-page__client-name"
-                              data-testid={`booking-client-${item.id}`}
-                            >
-                              {item.viajeroId.slice(0, 8)}…
-                            </span>
-                            <span className="booking-manager-page__client-reservation">
-                              {item.codigo}
-                            </span>
-                          </div>
-                        </div>
-                      ),
+                        );
+                      },
                     },
+                    // Days/Nights
                     {
                       key: 'daysNights',
                       header: 'Days/Nights',
@@ -196,6 +277,7 @@ const BookingManagerPage: React.FC = () => {
                         </span>
                       ),
                     },
+                    // Guests
                     {
                       key: 'numHuespedes',
                       header: 'Guests',
@@ -205,6 +287,7 @@ const BookingManagerPage: React.FC = () => {
                         </span>
                       ),
                     },
+                    // Start date
                     {
                       key: 'fechaCheckIn',
                       header: 'Start',
@@ -213,10 +296,11 @@ const BookingManagerPage: React.FC = () => {
                           className="booking-manager-page__date"
                           data-testid={`booking-start-${item.id}`}
                         >
-                          {formatDate(item.fechaCheckIn)}
+                          {formatDateDDMMYY(item.fechaCheckIn)}
                         </span>
                       ),
                     },
+                    // End date
                     {
                       key: 'fechaCheckOut',
                       header: 'End',
@@ -225,10 +309,11 @@ const BookingManagerPage: React.FC = () => {
                           className="booking-manager-page__date"
                           data-testid={`booking-end-${item.id}`}
                         >
-                          {formatDate(item.fechaCheckOut)}
+                          {formatDateDDMMYY(item.fechaCheckOut)}
                         </span>
                       ),
                     },
+                    // State
                     {
                       key: 'estado',
                       header: 'State',
@@ -241,20 +326,50 @@ const BookingManagerPage: React.FC = () => {
                         </span>
                       ),
                     },
+                    // Confirm action
                     {
-                      key: 'total',
-                      header: 'Total',
+                      key: 'confirm',
+                      header: 'Confirm',
                       render: (item: HotelBooking) => (
-                        <span data-testid={`booking-total-${item.id}`}>
-                          {item.moneda} {item.total.toFixed(2)}
-                        </span>
+                        <Button
+                          variant="primary"
+                          size="small"
+                          onClick={() => openConfirm(item)}
+                          dataTestId={`booking-confirm-btn-${item.id}`}
+                        >
+                          CONFIRM
+                        </Button>
                       ),
                     },
+                    // Cancel action
+                    {
+                      key: 'cancel',
+                      header: 'Cancel',
+                      render: (item: HotelBooking) => (
+                        <Button
+                          variant="primary"
+                          size="small"
+                          className="booking-manager-page__cancel-btn"
+                          onClick={() => openCancel(item)}
+                          dataTestId={`booking-cancel-btn-${item.id}`}
+                        >
+                          CANCEL
+                        </Button>
+                      ),
+                    },
+                    // Detail
                     {
                       key: 'detail',
                       header: 'Detail',
-                      render: () => (
-                        <span className="booking-manager-page__action-arrow">→</span>
+                      render: (item: HotelBooking) => (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => openDetail(item)}
+                          dataTestId={`booking-detail-btn-${item.id}`}
+                        >
+                          →
+                        </Button>
                       ),
                     },
                   ]}
@@ -273,6 +388,49 @@ const BookingManagerPage: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* ── Modals ── */}
+      <BookingDetailModal
+        isOpen={isDetailOpen}
+        onClose={closeAll}
+        onConfirm={() => selectedBooking && openConfirm(selectedBooking)}
+        onCancel={() => selectedBooking && openCancel(selectedBooking)}
+        clientName={detailClientName}
+        reservedAt={detailHotelName}
+        dateFrom={selectedBooking ? formatDateDDMMYY(selectedBooking.fechaCheckIn) : undefined}
+        dateTo={selectedBooking ? formatDateDDMMYY(selectedBooking.fechaCheckOut) : undefined}
+        status={selectedBooking?.estado}
+        statusVariant={selectedBooking ? getStatusVariant(selectedBooking.estado) : undefined}
+        finalPrice={selectedBooking?.total}
+        originalPrice={
+          selectedBooking && selectedBooking.subtotal !== selectedBooking.total
+            ? selectedBooking.subtotal
+            : undefined
+        }
+        period={
+          selectedBooking
+            ? `${calcNights(selectedBooking.fechaCheckIn, selectedBooking.fechaCheckOut)} nights, ${selectedBooking.numHuespedes} adults`
+            : undefined
+        }
+        dataTestId="booking-detail-modal"
+      />
+
+      <BookingConfirmActionModal
+        isOpen={isConfirmOpen}
+        onClose={closeAll}
+        clientName={detailClientName}
+        hotelName={detailHotelName}
+        dataTestId="booking-confirm-action-modal"
+      />
+
+      <BookingCancelModal
+        isOpen={isCancelOpen}
+        onClose={closeAll}
+        onConfirm={closeAll}
+        clientName={detailClientName}
+        hotelName={detailHotelName}
+        dataTestId="booking-cancel-modal"
+      />
     </div>
   );
 };

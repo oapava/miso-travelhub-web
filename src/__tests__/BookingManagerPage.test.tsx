@@ -14,24 +14,43 @@ jest.mock('react-i18next', () => ({
 jest.mock('@/context/AuthContext', () => ({ useAuth: jest.fn() }));
 
 jest.mock('@/services/booking.service', () => ({
-  bookingService: { getHotelBookings: jest.fn() },
+  bookingService: { getHotelBookings: jest.fn(), getMyBookings: jest.fn() },
   getHotelIdFromToken: jest.fn(),
   HotelBooking: {},
+}));
+
+// Mock the three modals so their internal rendering doesn't interfere
+jest.mock('@/components/shared/BookingDetailModal/BookingDetailModal', () => ({
+  __esModule: true,
+  default: ({ isOpen, dataTestId }: { isOpen: boolean; dataTestId?: string }) =>
+    isOpen ? <div data-testid={dataTestId ?? 'booking-detail-modal'} /> : null,
+}));
+
+jest.mock(
+  '@/components/shared/BookingConfirmActionModal/BookingConfirmActionModal',
+  () => ({
+    __esModule: true,
+    default: ({ isOpen, dataTestId }: { isOpen: boolean; dataTestId?: string }) =>
+      isOpen ? <div data-testid={dataTestId ?? 'booking-confirm-action-modal'} /> : null,
+  }),
+);
+
+jest.mock('@/components/shared/BookingCancelModal/BookingCancelModal', () => ({
+  __esModule: true,
+  default: ({ isOpen, dataTestId }: { isOpen: boolean; dataTestId?: string }) =>
+    isOpen ? <div data-testid={dataTestId ?? 'booking-cancel-modal'} /> : null,
 }));
 
 import { useAuth } from '@/context/AuthContext';
 import { bookingService, getHotelIdFromToken } from '@/services/booking.service';
 
-const mockUseAuth       = useAuth as jest.MockedFunction<typeof useAuth>;
-const mockGetBookings   = bookingService.getHotelBookings as jest.Mock;
-const mockGetHotelId    = getHotelIdFromToken as jest.Mock;
+const mockUseAuth        = useAuth as jest.MockedFunction<typeof useAuth>;
+const mockGetBookings    = bookingService.getHotelBookings as jest.Mock;
+const mockGetMyBookings  = bookingService.getMyBookings as jest.Mock;
+const mockGetHotelId     = getHotelIdFromToken as jest.Mock;
 
 // ── JWT helpers ──────────────────────────────────────────────────────────────
 
-/**
- * Build a minimal but structurally valid JWT whose payload contains hotel_id.
- * The signature is fake — it only needs to be decodeable.
- */
 function buildFakeToken(hotelId: string): string {
   const payload = btoa(JSON.stringify({ hotel_id: hotelId, sub: 'u1', role: 'hotel_admin' }))
     .replace(/\+/g, '-')
@@ -42,7 +61,7 @@ function buildFakeToken(hotelId: string): string {
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
-const TOKEN = buildFakeToken('hotel-42');
+const TOKEN   = buildFakeToken('hotel-42');
 const HOTEL_ID = 'hotel-42';
 
 const mockBookings = [
@@ -94,9 +113,11 @@ describe('BookingManagerPage', () => {
     mockUseAuth.mockReturnValue(authState);
     mockGetHotelId.mockReturnValue(HOTEL_ID);
     mockGetBookings.mockResolvedValue(mockBookings);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
   });
 
   // ── Structural rendering ─────────────────────────────────────────────────
+
   it('renders the page container', () => {
     renderPage();
     expect(screen.getByTestId('booking-manager-page')).toBeInTheDocument();
@@ -122,6 +143,11 @@ describe('BookingManagerPage', () => {
     expect(screen.getByTestId('booking-manager-state-filter')).toBeInTheDocument();
   });
 
+  it('renders client filter', () => {
+    renderPage();
+    expect(screen.getByTestId('booking-manager-client-filter')).toBeInTheDocument();
+  });
+
   it('renders start date filter', () => {
     renderPage();
     expect(screen.getByTestId('booking-manager-start-date')).toBeInTheDocument();
@@ -138,6 +164,7 @@ describe('BookingManagerPage', () => {
   });
 
   // ── API integration ──────────────────────────────────────────────────────
+
   it('calls getHotelIdFromToken with the access token on mount', async () => {
     renderPage();
     await waitFor(() => expect(mockGetHotelId).toHaveBeenCalledWith(TOKEN));
@@ -148,6 +175,19 @@ describe('BookingManagerPage', () => {
     await waitFor(() =>
       expect(mockGetBookings).toHaveBeenCalledWith(HOTEL_ID, TOKEN),
     );
+  });
+
+  it('does not call getHotelBookings when accessToken is null', () => {
+    mockUseAuth.mockReturnValue(noAuthState);
+    renderPage();
+    expect(mockGetBookings).not.toHaveBeenCalled();
+  });
+
+  it('falls back to getMyBookings when hotelId cannot be decoded from token', async () => {
+    mockGetHotelId.mockReturnValueOnce(null);
+    renderPage();
+    await waitFor(() => expect(mockGetMyBookings).toHaveBeenCalledWith(TOKEN));
+    expect(mockGetBookings).not.toHaveBeenCalled();
   });
 
   it('renders bookings in the table after loading', async () => {
@@ -178,14 +218,56 @@ describe('BookingManagerPage', () => {
     expect(screen.getByTestId('booking-guests-b3')).toHaveTextContent('3');
   });
 
-  it('shows total prices in the table', async () => {
+  // ── Action buttons ───────────────────────────────────────────────────────
+
+  it('renders CONFIRM button for each booking row', async () => {
     renderPage();
-    await waitFor(() =>
-      expect(screen.getByTestId('booking-total-b1')).toHaveTextContent('USD 480.00'),
-    );
+    await waitFor(() => {
+      expect(screen.getByTestId('booking-confirm-btn-b1')).toBeInTheDocument();
+      expect(screen.getByTestId('booking-confirm-btn-b2')).toBeInTheDocument();
+      expect(screen.getByTestId('booking-confirm-btn-b3')).toBeInTheDocument();
+    });
+  });
+
+  it('renders CANCEL button for each booking row', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('booking-cancel-btn-b1')).toBeInTheDocument();
+      expect(screen.getByTestId('booking-cancel-btn-b2')).toBeInTheDocument();
+      expect(screen.getByTestId('booking-cancel-btn-b3')).toBeInTheDocument();
+    });
+  });
+
+  it('renders DETAIL button for each booking row', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('booking-detail-btn-b1')).toBeInTheDocument();
+    });
+  });
+
+  it('opens detail modal when DETAIL button is clicked', async () => {
+    renderPage();
+    await waitFor(() => screen.getByTestId('booking-detail-btn-b1'));
+    fireEvent.click(screen.getByTestId('booking-detail-btn-b1'));
+    expect(screen.getByTestId('booking-detail-modal')).toBeInTheDocument();
+  });
+
+  it('opens confirm modal when CONFIRM button is clicked', async () => {
+    renderPage();
+    await waitFor(() => screen.getByTestId('booking-confirm-btn-b1'));
+    fireEvent.click(screen.getByTestId('booking-confirm-btn-b1'));
+    expect(screen.getByTestId('booking-confirm-action-modal')).toBeInTheDocument();
+  });
+
+  it('opens cancel modal when CANCEL button is clicked', async () => {
+    renderPage();
+    await waitFor(() => screen.getByTestId('booking-cancel-btn-b1'));
+    fireEvent.click(screen.getByTestId('booking-cancel-btn-b1'));
+    expect(screen.getByTestId('booking-cancel-modal')).toBeInTheDocument();
   });
 
   // ── Loading state ────────────────────────────────────────────────────────
+
   it('shows loading indicator while fetching', async () => {
     let resolve!: (v: typeof mockBookings) => void;
     mockGetBookings.mockReturnValueOnce(new Promise((res) => { resolve = res; }));
@@ -198,6 +280,7 @@ describe('BookingManagerPage', () => {
   });
 
   // ── Error state ──────────────────────────────────────────────────────────
+
   it('shows error message when getHotelBookings fails', async () => {
     mockGetBookings.mockRejectedValueOnce(new Error('Service unavailable'));
     renderPage();
@@ -225,6 +308,7 @@ describe('BookingManagerPage', () => {
   });
 
   // ── Empty state ──────────────────────────────────────────────────────────
+
   it('shows empty state when no bookings are returned', async () => {
     mockGetBookings.mockResolvedValueOnce([]);
     renderPage();
@@ -233,20 +317,8 @@ describe('BookingManagerPage', () => {
     );
   });
 
-  // ── No token ─────────────────────────────────────────────────────────────
-  it('does not call getHotelBookings when accessToken is null', async () => {
-    mockUseAuth.mockReturnValue(noAuthState);
-    renderPage();
-    expect(mockGetBookings).not.toHaveBeenCalled();
-  });
-
-  it('does not call getHotelBookings when hotelId cannot be decoded', async () => {
-    mockGetHotelId.mockReturnValueOnce(null);
-    renderPage();
-    expect(mockGetBookings).not.toHaveBeenCalled();
-  });
-
   // ── State filter ─────────────────────────────────────────────────────────
+
   it('filters bookings by PENDIENTE state', async () => {
     renderPage();
     await waitFor(() => expect(screen.getByTestId('booking-manager-table')).toBeInTheDocument());
@@ -278,7 +350,23 @@ describe('BookingManagerPage', () => {
     });
   });
 
+  // ── Client filter ────────────────────────────────────────────────────────
+
+  it('filters bookings by client (viajeroId substring)', async () => {
+    renderPage();
+    await waitFor(() => expect(screen.getByTestId('booking-manager-table')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByTestId('booking-manager-client-filter'), {
+      target: { value: 'user-aaa' },
+    });
+
+    await waitFor(() => expect(screen.getByText('CODE001')).toBeInTheDocument());
+    expect(screen.queryByText('CODE002')).not.toBeInTheDocument();
+    expect(screen.queryByText('CODE003')).not.toBeInTheDocument();
+  });
+
   // ── Date filters ─────────────────────────────────────────────────────────
+
   it('filters by start date — excludes bookings before that date', async () => {
     renderPage();
     await waitFor(() => expect(screen.getByTestId('booking-manager-table')).toBeInTheDocument());

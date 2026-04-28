@@ -47,9 +47,12 @@
     border: 1px solid $color-neutral-200;
     box-shadow: $shadow-sm;
     min-height: 3rem;
+    flex-wrap: nowrap;   // prevent button wrapping over guest field
+    align-items: center;
 
     .search-bar__field {
       padding: $spacing-sm $spacing-xs;
+      min-width: 0;        // allow flex children to shrink below content width
     }
 
     .search-bar__label {
@@ -63,6 +66,18 @@
 
     .search-bar__places_box {
       display: none;
+    }
+
+    .search-bar__guests-summary {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    .search-bar__submit {
+      flex-shrink: 0;    // never compress the search button
+      margin-left: $spacing-2xs;
     }
 
     @include respond-to('tablet') {

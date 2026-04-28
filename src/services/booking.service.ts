@@ -1,4 +1,4 @@
-import { AUTH_BASE_URL, SEARCH_BASE_URL } from '@/config/env';
+import { BOOKING_BASE_URL, SEARCH_BASE_URL } from '@/config/env';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -112,7 +112,7 @@ export const bookingService = {
   async getHotelReviews(hotelId: string): Promise<ReviewHotel[]> {
     const query = new URLSearchParams({ hotelId });
     const response = await fetch(
-      `${SEARCH_BASE_URL}/api/v1/booking/reviews_hotel?${query.toString()}`,
+      `${BOOKING_BASE_URL}/api/v1/booking/reviews_hotel?${query.toString()}`,
     );
     return handleResponse<ReviewHotel[]>(response);
   },
@@ -130,7 +130,7 @@ export const bookingService = {
   },
 
   async bookRoom(request: BookingRequest, accessToken: string): Promise<BookingResponse> {
-    const response = await fetch(`${AUTH_BASE_URL}/api/v1/booking/booking_room`, {
+    const response = await fetch(`${BOOKING_BASE_URL}/api/v1/booking/booking_room`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,

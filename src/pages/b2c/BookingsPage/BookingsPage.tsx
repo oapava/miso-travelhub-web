@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Header, SearchBar, AccountSidebar, Footer } from '@/components/layout';
-import { Breadcrumb, Badge } from '@/components/ui';
+import { Header, AccountSidebar, Footer } from '@/components/layout';
+import { Breadcrumb, Badge, AmenityTag, Button } from '@/components/ui';
 import { bookingService, BookingResponse } from '@/services/booking.service';
 import { useAuth } from '@/context/AuthContext';
 import './BookingsPage.scss';
 
 interface BookingGroup {
-  date: string;
+  key: string;
+  displayDate: string;
   bookings: BookingResponse[];
 }
 
@@ -39,28 +40,33 @@ const BookingsPage: React.FC = () => {
     loadBookings();
   }, [accessToken]);
 
-  const groupBookingsByMonth = (bookings: BookingResponse[]): BookingGroup[] => {
-    const groups: Record<string, BookingResponse[]> = {};
+  const groupBookingsByMonth = (list: BookingResponse[]): BookingGroup[] => {
+    const groups: Record<string, { displayDate: string; bookings: BookingResponse[] }> = {};
 
-    bookings.forEach((booking) => {
+    list.forEach((booking) => {
       const date = new Date(booking.fechaCheckIn);
-      const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const displayDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
 
-      if (!groups[monthKey]) {
-        groups[monthKey] = [];
+      if (!groups[key]) {
+        groups[key] = { displayDate, bookings: [] };
       }
-      groups[monthKey].push(booking);
+      groups[key].bookings.push(booking);
     });
 
     return Object.entries(groups)
-      .map(([date, bookings]) => ({ date, bookings }))
-      .reverse();
+      .map(([key, value]) => ({ key, ...value }))
+      .sort((a, b) => b.key.localeCompare(a.key));
   };
 
-  const formatDate = (dateStr: string): string => {
+  const calculateNights = (checkIn: string, checkOut: string): number => {
+    const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
+    return Math.max(1, Math.round(diff / (1000 * 60 * 60 * 24)));
+  };
+
+  const formatShortDate = (dateStr: string): string => {
     try {
       return new Date(dateStr).toLocaleDateString('en-US', {
-        year: 'numeric',
         month: 'short',
         day: 'numeric',
       });
@@ -71,14 +77,15 @@ const BookingsPage: React.FC = () => {
 
   const formatPrice = (price: number): string => {
     return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
   };
 
   const getStatusBadgeVariant = (status: string): 'success' | 'info' | 'warning' => {
     switch (status.toUpperCase()) {
       case 'CONFIRMADA':
+      case 'ACTIVE':
         return 'success';
       case 'CANCELADA':
       case 'PENDIENTE':
@@ -93,9 +100,6 @@ const BookingsPage: React.FC = () => {
   return (
     <div className="bookings-page" data-testid="bookings-page">
       <Header />
-      <div className="bookings-page__search-bar-wrapper">
-        <SearchBar variant="compact" />
-      </div>
 
       <div className="bookings-page__container">
         <Breadcrumb
@@ -116,9 +120,13 @@ const BookingsPage: React.FC = () => {
           <main className="bookings-page__main" data-testid="bookings-main">
             <h1 className="bookings-page__title">Booking History</h1>
 
-            {loading && <div className="bookings-page__loading">Loading bookings...</div>}
+            {loading && (
+              <div className="bookings-page__loading">Loading bookings...</div>
+            )}
 
-            {error && <div className="bookings-page__error">Error: {error}</div>}
+            {error && (
+              <div className="bookings-page__error">Error: {error}</div>
+            )}
 
             {!loading && !error && bookings.length === 0 && (
               <div className="bookings-page__empty">
@@ -130,66 +138,121 @@ const BookingsPage: React.FC = () => {
               <div className="bookings-page__bookings-list">
                 {bookingGroups.map((group, groupIndex) => (
                   <section
-                    key={groupIndex}
+                    key={group.key}
                     className="bookings-page__booking-group"
                     data-testid={`booking-group-${groupIndex}`}
                   >
                     <div className="bookings-page__group-header">
-                      <h2 className="bookings-page__group-date">{group.date}</h2>
+                      <h2 className="bookings-page__group-date">{group.displayDate}</h2>
                     </div>
 
                     <div className="bookings-page__group-bookings">
-                      {group.bookings.map((booking) => (
-                        <div
-                          key={booking.id}
-                          className="bookings-page__booking-item"
-                          data-testid={`booking-item-${booking.id}`}
-                        >
-                          <div className="booking-card">
-                            <div className="booking-card__header">
-                              <div className="booking-card__info">
-                                <h3 className="booking-card__code">Code: {booking.codigo}</h3>
-                                <p className="booking-card__room">Habitación ID: {booking.habitacionId}</p>
-                              </div>
+                      {group.bookings.map((booking) => {
+                        const nights = calculateNights(
+                          booking.fechaCheckIn,
+                          booking.fechaCheckOut,
+                        );
+
+                        return (
+                          <article
+                            key={booking.id}
+                            className="booking-card"
+                            data-testid={`booking-item-${booking.id}`}
+                          >
+                            {/* ── Left: image with status badge ── */}
+                            <div className="booking-card__image-container">
                               <Badge
                                 label={booking.estado}
                                 variant={getStatusBadgeVariant(booking.estado)}
+                                size="small"
+                                className="booking-card__badge"
                                 dataTestId={`booking-status-${booking.id}`}
+                              />
+                              <div
+                                className="booking-card__image"
+                                role="img"
+                                aria-label={`${booking.codigo} hotel photo`}
                               />
                             </div>
 
-                            <div className="booking-card__dates">
-                              <div className="booking-card__date-group">
-                                <span className="booking-card__label">Check-in</span>
-                                <p>{formatDate(booking.fechaCheckIn)}</p>
+                            {/* ── Right: content ── */}
+                            <div className="booking-card__content">
+                              {/* Header row: code + nights/price */}
+                              <div className="booking-card__header">
+                                <div className="booking-card__title-row">
+                                  <h3 className="booking-card__name">{booking.codigo}</h3>
+                                </div>
+                                <div className="booking-card__review">
+                                  <div className="booking-card__review-label-box">
+                                    <span className="booking-card__review-label">
+                                      {nights} {nights === 1 ? 'night' : 'nights'}
+                                    </span>
+                                    <span className="booking-card__review-count">
+                                      {booking.numHuespedes}{' '}
+                                      {booking.numHuespedes === 1 ? 'guest' : 'guests'}
+                                    </span>
+                                  </div>
+                                  <Badge
+                                    label={`${formatPrice(booking.total)} ${booking.moneda}`}
+                                    variant="rating"
+                                    size="small"
+                                  />
+                                </div>
                               </div>
-                              <div className="booking-card__date-group">
-                                <span className="booking-card__label">Check-out</span>
-                                <p>{formatDate(booking.fechaCheckOut)}</p>
-                              </div>
-                              <div className="booking-card__date-group">
-                                <span className="booking-card__label">Guests</span>
-                                <p>{booking.numHuespedes}</p>
-                              </div>
-                            </div>
 
-                            <div className="booking-card__price">
-                              <div className="booking-card__price-row">
-                                <span>Subtotal</span>
-                                <span>{formatPrice(booking.subtotal)} {booking.moneda}</span>
+                              {/* Dates row */}
+                              <div className="booking-card__location">
+                                <span className="booking-card__location-pin">
+                                  <img src="/img/location_on.svg" alt="" />
+                                  <span className="booking-card__location-name">
+                                    {formatShortDate(booking.fechaCheckIn)}
+                                  </span>
+                                </span>
+                                <span className="booking-card__distance">
+                                  → {formatShortDate(booking.fechaCheckOut)}
+                                </span>
+                                <span className="booking-card__access">
+                                  {booking.numHuespedes} adults
+                                </span>
                               </div>
-                              <div className="booking-card__price-row">
-                                <span>Taxes</span>
-                                <span>{formatPrice(booking.impuestos)} {booking.moneda}</span>
+
+                              {/* Room detail row */}
+                              <div className="booking-card__details">
+                                Room: {booking.habitacionId}&nbsp;|&nbsp;
+                                {booking.numHuespedes}{' '}
+                                {booking.numHuespedes === 1 ? 'guest' : 'guests'}
                               </div>
-                              <div className="booking-card__price-row booking-card__price-row--total">
-                                <span>Total</span>
-                                <span>{formatPrice(booking.total)} {booking.moneda}</span>
+
+                              {/* Amenity tags + price footer */}
+                              <div className="booking-card__ammenities-price-box">
+                                <div className="booking-card__amenities">
+                                  <AmenityTag
+                                    label={`Check-in: ${formatShortDate(booking.fechaCheckIn)}`}
+                                  />
+                                  <AmenityTag
+                                    label={`Check-out: ${formatShortDate(booking.fechaCheckOut)}`}
+                                  />
+                                  <AmenityTag label={`${booking.numHuespedes} adults`} />
+                                </div>
+
+                                <div className="booking-card__footer">
+                                  <div className="booking-card__pricing">
+                                    <span className="booking-card__price-final">
+                                      {booking.moneda} {formatPrice(booking.total)}
+                                    </span>
+                                    <span className="booking-card__stay-info">
+                                      {nights} nights, {booking.numHuespedes} adults
+                                    </span>
+                                  </div>
+                                  <Button variant="primary" size="small">
+                                    DETAIL
+                                  </Button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </div>
-                      ))}
+                          </article>
+                        );
+                      })}
                     </div>
                   </section>
                 ))}

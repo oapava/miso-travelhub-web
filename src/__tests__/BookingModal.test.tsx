@@ -45,7 +45,16 @@ describe('BookingModal', () => {
   });
 
   it('renders trip info with dates and guests', () => {
-    render(<BookingModal isOpen={true} onClose={jest.fn()} checkIn="1 Jul" checkOut="5 Jul" guests={3} rooms={2} />);
+    render(
+      <BookingModal
+        isOpen={true}
+        onClose={jest.fn()}
+        checkIn="1 Jul"
+        checkOut="5 Jul"
+        guests={3}
+        rooms={2}
+      />,
+    );
     const tripInfo = screen.getByTestId('booking-modal-trip-info');
     expect(tripInfo).toHaveTextContent('1 Jul');
     expect(tripInfo).toHaveTextContent('5 Jul');
@@ -73,16 +82,35 @@ describe('BookingModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onClose when the modal overlay close button is clicked', () => {
+  it('calls onClose when the modal close button is clicked', () => {
     const onClose = jest.fn();
     render(<BookingModal isOpen={true} onClose={onClose} />);
-    fireEvent.click(screen.getByLabelText('Close booking modal'));
+    fireEvent.click(screen.getByLabelText('Close modal'));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('renders the price display', () => {
     render(<BookingModal isOpen={true} onClose={jest.fn()} />);
     expect(screen.getByTestId('booking-modal-price')).toBeInTheDocument();
+  });
+
+  it('renders a hotel image when imageUrl is provided', () => {
+    render(
+      <BookingModal
+        isOpen={true}
+        onClose={jest.fn()}
+        imageUrl="https://example.com/hotel.jpg"
+        destination="Hotel Test"
+      />,
+    );
+    const img = screen.getByRole('img', { name: 'Hotel Test' });
+    expect(img).toHaveAttribute('src', 'https://example.com/hotel.jpg');
+  });
+
+  it('renders image placeholder when no imageUrl is provided', () => {
+    render(<BookingModal isOpen={true} onClose={jest.fn()} />);
+    const wrapper = screen.getByTestId('booking-modal-image');
+    expect(wrapper.querySelector('.booking-modal__image-placeholder')).toBeInTheDocument();
   });
 
   it('uses custom dataTestId prefix', () => {

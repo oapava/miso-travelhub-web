@@ -26,8 +26,11 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({
     <aside className="account-sidebar" data-testid={dataTestId}>
       <div className="account-sidebar__header">
         <h2 className="account-sidebar__title">Your Account</h2>
-        <p className="account-sidebar__user-info">
-          {userName} &nbsp; {userEmail}
+        <p className="account-sidebar__user-name" data-testid={dataTestId ? `${dataTestId}-name` : undefined}>
+          {userName}
+        </p>
+        <p className="account-sidebar__user-email" data-testid={dataTestId ? `${dataTestId}-email` : undefined}>
+          {userEmail}
         </p>
       </div>
 
