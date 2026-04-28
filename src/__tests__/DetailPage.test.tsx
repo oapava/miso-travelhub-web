@@ -379,7 +379,7 @@ describe('DetailPage', () => {
     mockUseAuth.mockReturnValue(authUser);
     renderPage();
     fireEvent.click(screen.getByTestId('detail-booking-btn'));
-    fireEvent.click(screen.getByLabelText('Close booking modal'));
+    fireEvent.click(screen.getByLabelText('Close modal'));
     expect(screen.queryByTestId('detail-booking-modal')).not.toBeInTheDocument();
   });
 

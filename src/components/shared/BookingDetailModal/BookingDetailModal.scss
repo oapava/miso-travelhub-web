@@ -1,10 +1,12 @@
 .booking-detail-modal {
   &__container {
     @include flex-column;
-    gap: $spacing-lg;
-    padding: $spacing-2xl;
+    gap: $spacing-md;
+    padding: $spacing-xl $spacing-2xl $spacing-2xl;
     width: 100%;
   }
+
+  // ── Header ────────────────────────────────────────────────────────────────
 
   &__header {
     @include flex-between;
@@ -14,7 +16,7 @@
 
   &__header-left {
     @include flex-column;
-    gap: $spacing-xs;
+    gap: $spacing-2xs;
     flex: 1;
   }
 
@@ -35,14 +37,14 @@
 
   &__header-right {
     @include flex-column;
-    gap: $spacing-xs;
+    gap: $spacing-2xs;
     align-items: flex-end;
   }
 
   &__dates {
-    @include flex-center;
-    gap: $spacing-xs;
-    font-size: $font-size-md;
+    display: flex;
+    gap: $spacing-sm;
+    font-size: $font-size-sm;
     font-weight: $font-weight-semibold;
     color: $color-primary-600;
   }
@@ -57,155 +59,172 @@
 
   &__date-label {
     font-size: $font-size-xs;
-    color: $color-neutral-600;
+    color: $color-neutral-500;
     margin: 0;
-    font-weight: $font-weight-regular;
   }
+
+  // ── Status badge ──────────────────────────────────────────────────────────
 
   &__badge-section {
     width: 100%;
   }
 
-  &__status-badge {
-    // Badge styles handled by Badge component
-  }
+  // ── Hotel card — always horizontal ────────────────────────────────────────
 
   &__hotel-card {
-    @include flex-column;
+    display: flex;
+    flex-direction: row;
     gap: $spacing-md;
-    padding: $spacing-lg;
-    border: 1px solid $color-neutral-300;
-    border-radius: $border-radius-md;
-    background-color: $color-neutral-white;
+    align-items: flex-start;
   }
 
   &__hotel-image {
-    width: 100%;
-    height: 160px;
+    width: 140px;
+    height: 140px;
+    flex-shrink: 0;
+    border-radius: $border-radius-md;
+    background-image: url('/img/bg-hotel.png');
+    background-size: cover;
+    background-position: center;
     background-color: $color-neutral-200;
-    border-radius: $border-radius-sm;
   }
 
   &__hotel-content {
+    flex: 1;
     @include flex-column;
-    gap: $spacing-sm;
+    gap: $spacing-xs;
   }
 
   &__hotel-header {
-    @include flex-between;
-    align-items: flex-start;
-    gap: $spacing-sm;
+    @include flex-column;
+    gap: $spacing-2xs;
   }
 
   &__hotel-title {
     font-size: $font-size-md;
-    font-weight: $font-weight-semibold;
+    font-weight: $font-weight-bold;
     color: $color-neutral-black;
     margin: 0;
-    line-height: 1.3;
   }
 
-  &__rating-section {
-    @include flex-center;
+  &__review-row {
+    display: flex;
+    align-items: center;
     gap: $spacing-sm;
     flex-wrap: wrap;
   }
 
+  &__rating-section {
+    display: flex;
+    align-items: center;
+  }
+
+  &__review-meta {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+  }
+
   &__excellent-label {
-    font-size: $font-size-sm;
+    font-size: $font-size-xs;
     font-weight: $font-weight-semibold;
-    color: $color-neutral-black;
+    color: $color-primary-700;
   }
 
   &__reviews-count {
     font-size: $font-size-xs;
-    color: $color-neutral-600;
-    font-weight: $font-weight-regular;
+    color: $color-neutral-500;
   }
 
   &__location {
-    @include flex-center;
-    gap: $spacing-xs;
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
     font-size: $font-size-sm;
   }
 
   &__location-pin {
-    font-size: $font-size-md;
+    display: flex;
+    align-items: center;
+
+    img {
+      width: 14px;
+      height: 14px;
+    }
   }
 
   &__location-text {
     color: $color-primary-600;
     font-weight: $font-weight-medium;
+    font-size: $font-size-sm;
   }
 
   &__distance {
     font-size: $font-size-xs;
     color: $color-neutral-600;
     margin: 0;
-    font-weight: $font-weight-regular;
   }
 
   &__room-type {
-    font-size: $font-size-sm;
-    color: $color-neutral-800;
+    font-size: $font-size-xs;
+    color: $color-neutral-700;
     margin: 0;
-    font-weight: $font-weight-regular;
     line-height: 1.4;
   }
 
   &__amenity {
-    font-size: $font-size-sm;
+    font-size: $font-size-xs;
     color: $color-neutral-700;
     margin: 0;
-    font-weight: $font-weight-regular;
   }
+
+  // ── Price ──────────────────────────────────────────────────────────────────
 
   &__price-section {
-    width: 100%;
-    padding: $spacing-lg;
-    background-color: $color-neutral-50;
-    border-radius: $border-radius-md;
+    margin-top: $spacing-2xs;
   }
 
+  // ── Actions ────────────────────────────────────────────────────────────────
+
   &__actions {
-    @include flex-column;
-    gap: $spacing-md;
-    margin-top: $spacing-lg;
+    display: flex;
+    gap: $spacing-sm;
+    margin-top: $spacing-xs;
+    justify-content: flex-end;
   }
+
+  // CANCEL button override — pink/red
+  &__cancel-btn.button {
+    background-color: $color-error;
+    color: $color-neutral-white;
+
+    &:hover {
+      background-color: darken($color-error, 10%);
+    }
+  }
+
+  // ── Responsive ────────────────────────────────────────────────────────────
 
   @include respond-to('tablet') {
     &__container {
-      padding: $spacing-xl;
-    }
-
-    &__header {
-      flex-wrap: wrap;
-    }
-
-    &__actions {
-      @include flex-between;
-      flex-direction: row;
-      gap: $spacing-md;
-
-      button {
-        flex: 1;
-      }
+      padding: $spacing-lg;
     }
 
     &__hotel-card {
-      @include flex-between;
-      flex-direction: row;
-      align-items: flex-start;
+      flex-direction: column;
     }
 
     &__hotel-image {
-      width: 180px;
-      height: 120px;
-      flex-shrink: 0;
+      width: 100%;
+      height: 140px;
     }
 
-    &__hotel-content {
-      flex: 1;
+    &__actions {
+      justify-content: stretch;
+
+      .button {
+        flex: 1;
+      }
     }
   }
 }

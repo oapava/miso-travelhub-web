@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Header, SearchBar, AccountSidebar, Footer } from '@/components/layout';
+import { Header, AccountSidebar, Footer } from '@/components/layout';
 import { Breadcrumb, Input, Select, Button } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import './AccountPage.scss';
@@ -10,7 +10,7 @@ const AccountPage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: user?.nombre ?? '',
     username: user?.username ?? '',
-    password: '••••••••',
+    password: '',
     country: user?.pais ?? '',
     language: user?.idioma ?? '',
     phone: user?.telefono ?? '',
@@ -27,32 +27,32 @@ const AccountPage: React.FC = () => {
     { value: 'usa', label: 'United States' },
     { value: 'uk', label: 'United Kingdom' },
     { value: 'germany', label: 'Germany' },
+    { value: 'colombia', label: 'Colombia' },
+    { value: 'spain', label: 'Spain' },
   ];
 
   const languageOptions = [
-    { value: 'en', label: 'English' },
-    { value: 'fr', label: 'Français' },
-    { value: 'de', label: 'Deutsch' },
-    { value: 'es', label: 'Español' },
+    { value: 'en', label: 'EN' },
+    { value: 'es', label: 'ES' },
+    { value: 'fr', label: 'FR' },
+    { value: 'de', label: 'DE' },
   ];
 
   const currencyOptions = [
-    { value: 'eur', label: 'EUR (€)' },
-    { value: 'usd', label: 'USD ($)' },
-    { value: 'gbp', label: 'GBP (£)' },
+    { value: 'eur', label: 'EUR' },
+    { value: 'usd', label: 'USD' },
+    { value: 'gbp', label: 'GBP' },
+    { value: 'cop', label: 'COP' },
   ];
 
   const statusOptions = [
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' },
+    { value: 'active', label: 'ACTIVE' },
+    { value: 'inactive', label: 'INACTIVE' },
   ];
 
   return (
     <div className="account-page" data-testid="account-page">
       <Header />
-      <div className="account-page__search-bar-wrapper">
-        <SearchBar variant="compact" />
-      </div>
 
       <div className="account-page__container">
         <Breadcrumb
@@ -78,106 +78,92 @@ const AccountPage: React.FC = () => {
             <form className="account-page__form" data-testid="account-form">
               {/* Name and Username Row */}
               <div className="account-page__form-row">
-                <div className="account-page__form-group">
-                  <label className="account-page__form-label">Name</label>
-                  <Input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    dataTestId="account-name"
-                  />
-                </div>
-                <div className="account-page__form-group">
-                  <label className="account-page__form-label">Username</label>
-                  <Input
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => handleInputChange('username', e.target.value)}
-                    dataTestId="account-username"
-                  />
-                </div>
+                <Input
+                  type="text"
+                  placeholder="Name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  dataTestId="account-name"
+                />
+                <Input
+                  type="text"
+                  placeholder="Username"
+                  value={formData.username}
+                  onChange={(e) => handleInputChange('username', e.target.value)}
+                  dataTestId="account-username"
+                />
               </div>
 
-              {/* Password Field */}
-              <div className="account-page__form-group account-page__password-group">
-                <label className="account-page__form-label">Password</label>
-                <div className="account-page__password-row">
-                  <Input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    dataTestId="account-password"
-                    disabled
-                  />
-                  <Button
-                    variant="secondary"
-                    dataTestId="account-change-password"
-                  >
-                    CHANGE
-                  </Button>
-                </div>
+              {/* Password Row */}
+              <div className="account-page__password-row">
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  dataTestId="account-password"
+                  disabled
+                />
+                <Button
+                  variant="primary"
+                  dataTestId="account-change-password"
+                  className="account-page__change-btn"
+                >
+                  CHANGE
+                </Button>
               </div>
 
               {/* Country and Language Row */}
               <div className="account-page__form-row">
-                <div className="account-page__form-group">
-                  <label className="account-page__form-label">Country</label>
-                  <Select
-                    options={countryOptions}
-                    value={formData.country}
-                    onChange={(e) => handleInputChange('country', e.target.value)}
-                    dataTestId="account-country"
-                  />
-                </div>
-                <div className="account-page__form-group">
-                  <label className="account-page__form-label">Language</label>
-                  <Select
-                    options={languageOptions}
-                    value={formData.language}
-                    onChange={(e) => handleInputChange('language', e.target.value)}
-                    dataTestId="account-language"
-                  />
-                </div>
-              </div>
-
-              {/* Phone Field */}
-              <div className="account-page__form-group">
-                <label className="account-page__form-label">Phone</label>
-                <Input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  dataTestId="account-phone"
+                <Select
+                  options={countryOptions}
+                  placeholder="Country"
+                  value={formData.country}
+                  onChange={(e) => handleInputChange('country', e.target.value)}
+                  dataTestId="account-country"
+                />
+                <Select
+                  options={languageOptions}
+                  placeholder="Language"
+                  value={formData.language}
+                  onChange={(e) => handleInputChange('language', e.target.value)}
+                  dataTestId="account-language"
                 />
               </div>
 
+              {/* Phone Field */}
+              <Input
+                type="tel"
+                placeholder="Phone"
+                value={formData.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                dataTestId="account-phone"
+              />
+
               {/* Currency and Status Row */}
               <div className="account-page__form-row">
-                <div className="account-page__form-group">
-                  <label className="account-page__form-label">Currency</label>
-                  <Select
-                    options={currencyOptions}
-                    value={formData.currency}
-                    onChange={(e) => handleInputChange('currency', e.target.value)}
-                    dataTestId="account-currency"
-                  />
-                </div>
-                <div className="account-page__form-group">
-                  <label className="account-page__form-label">Status</label>
-                  <Select
-                    options={statusOptions}
-                    value={formData.status}
-                    onChange={(e) => handleInputChange('status', e.target.value)}
-                    dataTestId="account-status"
-                  />
-                </div>
+                <Select
+                  options={currencyOptions}
+                  placeholder="Currency"
+                  value={formData.currency}
+                  onChange={(e) => handleInputChange('currency', e.target.value)}
+                  dataTestId="account-currency"
+                />
+                <Select
+                  options={statusOptions}
+                  placeholder="Status"
+                  value={formData.status}
+                  onChange={(e) => handleInputChange('status', e.target.value)}
+                  dataTestId="account-status"
+                />
               </div>
 
-              {/* Save Button */}
+              {/* Save Button — right-aligned */}
               <div className="account-page__form-actions">
                 <Button
                   variant="primary"
                   dataTestId="account-save"
+                  className="account-page__save-btn"
                 >
                   SAVE
                 </Button>

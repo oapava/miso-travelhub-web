@@ -1,10 +1,5 @@
 .account-sidebar {
-  width: 15rem;
   flex-shrink: 0;
-  background: $color-neutral-white;
-  border-radius: $border-radius-lg;
-  padding: $spacing-lg;
-  @include card-shadow;
   align-self: flex-start;
 
   @include respond-to('tablet') {
@@ -12,28 +7,42 @@
     margin-bottom: $spacing-lg;
   }
 
+  // ── Header ─────────────────────────────────────────────────────────────────
+
   &__header {
     margin-bottom: $spacing-lg;
     padding-bottom: $spacing-md;
-    border-bottom: 1px solid $color-neutral-100;
+    border-bottom: 1px solid $color-neutral-200;
   }
 
   &__title {
-    font-size: $font-size-md;
+    font-size: $font-size-base;
     font-weight: $font-weight-bold;
-    color: $color-primary-900;
-    margin-bottom: $spacing-2xs;
+    color: $color-neutral-black;
+    margin: 0 0 $spacing-xs;
   }
 
-  &__user-info {
+  &__user-name {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-regular;
+    color: $color-neutral-700;
+    margin: 0 0 $spacing-2xs;
+    line-height: $line-height-tight;
+  }
+
+  &__user-email {
     font-size: $font-size-xs;
     color: $color-neutral-500;
+    margin: 0;
     line-height: $line-height-base;
+    word-break: break-all;
   }
+
+  // ── Nav menu ───────────────────────────────────────────────────────────────
 
   &__menu {
     @include flex-column;
-    gap: $spacing-2xs;
+    gap: 0;
     list-style: none;
     padding: 0;
     margin: 0;
@@ -43,8 +52,8 @@
     display: flex;
     align-items: center;
     gap: $spacing-xs;
-    padding: $spacing-sm $spacing-md;
-    border-radius: $border-radius-pill;
+    padding: $spacing-sm $spacing-xs;
+    border-radius: $border-radius-sm;
     font-size: $font-size-sm;
     font-weight: $font-weight-medium;
     color: $color-neutral-700;
@@ -54,23 +63,16 @@
     background: none;
     cursor: pointer;
     text-align: left;
-    @include transition(background-color, color);
+    @include transition(color);
     @include focus-visible-outline;
 
     &:hover {
-      background-color: $color-neutral-100;
       color: $color-primary-700;
     }
 
     &--active {
-      background-color: $color-primary-900;
-      color: $color-neutral-white;
-      font-weight: $font-weight-semibold;
-
-      &:hover {
-        background-color: $color-primary-800;
-        color: $color-neutral-white;
-      }
+      font-weight: $font-weight-bold;
+      color: $color-neutral-black;
     }
   }
 
@@ -87,7 +89,6 @@
 
     &:hover {
       color: $color-error;
-      background-color: rgba($color-error, 0.06);
     }
   }
 }

@@ -115,9 +115,12 @@ describe('Header – authenticated', () => {
     expect(mockLogout).toHaveBeenCalledTimes(1);
   });
 
-  it('shows first letter of nombre as avatar placeholder', () => {
+  it('shows the user avatar icon when authenticated', () => {
     renderHeader();
 
-    expect(screen.getByText('T')).toBeInTheDocument(); // First letter of 'Test User'
+    // Avatar renders an SVG icon (not a text initial)
+    const avatar = document.querySelector('.header__user-avatar');
+    expect(avatar).toBeInTheDocument();
+    expect(avatar?.querySelector('svg')).toBeInTheDocument();
   });
 });

@@ -2,13 +2,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: $color-page-bg;
-
-  &__search-bar-wrapper {
-    background: $color-neutral-white;
-    padding: $spacing-sm $spacing-lg;
-    box-shadow: 0 2px 6px rgba($color-neutral-black, 0.06);
-  }
+  background: $color-neutral-white;
 
   &__container {
     @include container;
@@ -18,9 +12,9 @@
 
   &__content {
     display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: $spacing-3xl;
-    margin-top: $spacing-xl;
+    grid-template-columns: 260px 1fr;
+    gap: $spacing-xl;
+    margin-top: $spacing-lg;
 
     @include respond-to('tablet') {
       grid-template-columns: 1fr;
@@ -30,30 +24,31 @@
   &__main {
     display: flex;
     flex-direction: column;
-    gap: $spacing-2xl;
+    gap: $spacing-xl;
   }
 
   &__header {
-    margin-bottom: $spacing-lg;
+    margin-bottom: $spacing-xs;
   }
 
   &__title {
-    @include heading(2xl);
-    color: $color-primary-900;
+    font-size: $font-size-2xl;
     font-weight: $font-weight-bold;
-    margin-bottom: $spacing-sm;
+    color: $color-primary-700;
+    margin: 0 0 $spacing-2xs;
   }
 
   &__subtitle {
-    @include body-text(md);
-    color: $color-accent-green;
-    font-weight: $font-weight-medium;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $color-primary-600;
+    margin: 0;
   }
 
   &__settings-list {
     display: flex;
     flex-direction: column;
-    gap: $spacing-lg;
+    gap: $spacing-md;
     max-width: 600px;
   }
 
@@ -65,12 +60,11 @@
     padding: $spacing-lg;
     background: $color-neutral-white;
     border-radius: $border-radius-lg;
-    border: 1px solid rgba($color-neutral-black, 0.06);
-    @include card-shadow;
+    border: 1px solid $color-neutral-200;
     @include transition(box-shadow);
 
     &:hover {
-      box-shadow: $shadow-md;
+      box-shadow: $shadow-sm;
     }
 
     @include respond-to('tablet') {
@@ -82,18 +76,18 @@
   &__setting-info {
     display: flex;
     flex-direction: column;
-    gap: $spacing-sm;
+    gap: $spacing-xs;
   }
 
   &__setting-label {
-    @include body-text(md);
+    font-size: $font-size-base;
     font-weight: $font-weight-semibold;
     color: $color-neutral-900;
     margin: 0;
   }
 
   &__setting-description {
-    @include body-text(sm);
+    font-size: $font-size-sm;
     color: $color-neutral-600;
     margin: 0;
   }
