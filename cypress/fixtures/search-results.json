@@ -1,0 +1,42 @@
+[
+  {
+    "id": "room-001",
+    "nombre_hotel": "Grand Cypress Hotel",
+    "precio": 1500,
+    "moneda": "USD",
+    "direccion": "123 Main St, Medellín, Colombia",
+    "capacidad_maxima": 2,
+    "distancia": "1.2km from center",
+    "acceso": "Metro access",
+    "estrellas": 4,
+    "puntuacion_resena": 9.0,
+    "cantidad_resenas": 128,
+    "tipo_habitacion": "Deluxe Room",
+    "tipo_cama": ["King Bed"],
+    "tamano_habitacion": "35m²",
+    "amenidades": ["Wifi", "Air Conditioning", "Mini Bar", "Room Service"],
+    "imagenes": ["/img/bg-hotel.png"],
+    "latitud": 6.2442,
+    "longitud": -75.5812
+  },
+  {
+    "id": "room-002",
+    "nombre_hotel": "Boutique City Villa",
+    "precio": 2200,
+    "moneda": "USD",
+    "direccion": "456 Park Ave, Medellín, Colombia",
+    "capacidad_maxima": 4,
+    "distancia": "2.5km from center",
+    "acceso": "Bus access",
+    "estrellas": 5,
+    "puntuacion_resena": 9.6,
+    "cantidad_resenas": 256,
+    "tipo_habitacion": "Suite",
+    "tipo_cama": ["Queen Bed"],
+    "tamano_habitacion": "50m²",
+    "amenidades": ["Wifi", "Pool", "Spa", "Restaurant"],
+    "imagenes": ["/img/bg-hotel.png"],
+    "latitud": 6.2520,
+    "longitud": -75.5740
+  }
+]

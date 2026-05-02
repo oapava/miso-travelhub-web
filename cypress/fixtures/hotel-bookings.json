@@ -1,0 +1,47 @@
+[
+  {
+    "id": "hb-001",
+    "codigo": "TH-2026-101",
+    "viajeroId": "c3e7a1f2-0001",
+    "habitacionId": "room-A",
+    "nombreHabitacion": "La Perla Suite",
+    "fechaCheckIn": "2026-05-01",
+    "fechaCheckOut": "2026-05-05",
+    "numHuespedes": 2,
+    "estado": "CONFIRMADO",
+    "subtotal": 8000,
+    "impuestos": 1440,
+    "total": 9440,
+    "moneda": "USD"
+  },
+  {
+    "id": "hb-002",
+    "codigo": "TH-2026-102",
+    "viajeroId": "c3e7a1f2-0002",
+    "habitacionId": "room-B",
+    "nombreHabitacion": "Standard Room",
+    "fechaCheckIn": "2026-05-10",
+    "fechaCheckOut": "2026-05-12",
+    "numHuespedes": 1,
+    "estado": "PENDIENTE",
+    "subtotal": 3200,
+    "impuestos": 576,
+    "total": 3776,
+    "moneda": "USD"
+  },
+  {
+    "id": "hb-003",
+    "codigo": "TH-2026-103",
+    "viajeroId": "c3e7a1f2-0003",
+    "habitacionId": "room-C",
+    "nombreHabitacion": "Deluxe Room",
+    "fechaCheckIn": "2026-06-01",
+    "fechaCheckOut": "2026-06-03",
+    "numHuespedes": 3,
+    "estado": "CANCELADO",
+    "subtotal": 4000,
+    "impuestos": 720,
+    "total": 4720,
+    "moneda": "USD"
+  }
+]
