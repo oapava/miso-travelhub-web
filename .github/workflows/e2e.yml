@@ -1,8 +1,6 @@
 name: E2E Tests
 
-# Runs on every push to feature/* branches and on PRs targeting them.
-# Separate from ci.yml (unit tests) so feature developers get fast E2E feedback
-# without waiting for the full unit-test + coverage pipeline.
+# Runs on every push/PR to feature/* branches.
 on:
   push:
     branches:
@@ -21,45 +19,48 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Node setup ──────────────────────────────────────────────────────
+      # ── 2. Node + npm cache ────────────────────────────────────────────────
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
 
-      # ── 3. Install dependencies (includes Cypress binary) ──────────────────
+      # ── 3. Cypress binary cache ────────────────────────────────────────────
+      #   The binary lives in ~/.cache/Cypress and is ~700 MB.
+      #   Caching it avoids re-downloading on every run (biggest time saver).
+      - name: Cache Cypress binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-bin-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            cypress-bin-${{ runner.os }}-
+
+      # ── 4. Install dependencies ────────────────────────────────────────────
       - name: Install dependencies
         run: npm ci
 
-      # ── 4. Run Cypress against the Vite dev server ────────────────────────
-      #   cypress-io/github-action handles:
-      #     • Starting `npm run dev` in the background
-      #     • Waiting for localhost:5173 to respond
-      #     • Running all specs with --headless
-      #     • Uploading screenshots/videos on failure
+      # ── 5. Run Cypress ─────────────────────────────────────────────────────
+      #   install: false  → skip the second npm install inside the action
+      #   (we already ran npm ci above, binary is cached)
       - name: Run Cypress E2E tests
         uses: cypress-io/github-action@v6
         with:
-          # Start the Vite dev server before running tests
+          install: false
           start: npm run dev
-          # Wait until the server is accepting connections
           wait-on: 'http://localhost:5173'
           wait-on-timeout: 60
           browser: chrome
           headless: true
-          # Use the ci script (headless, no interactive runner)
           command: npm run test:e2e:ci
         env:
-          # Use the public test API so the app can render without errors.
-          # All actual HTTP calls are intercepted by cy.intercept() in the specs,
-          # so these values are used only as fallback for the fetch base URL.
           VITE_AUTH_BASE_URL: https://apitravelhub.site
           VITE_SEARCH_BASE_URL: https://apitravelhub.site
           VITE_BOOKING_BASE_URL: https://apitravelhub.site
           VITE_ENV_NAME: ci
 
-      # ── 5. Upload Cypress artifacts on failure ────────────────────────────
+      # ── 6. Upload artifacts on failure ─────────────────────────────────────
       - name: Upload screenshots on failure
         if: failure()
         uses: actions/upload-artifact@v4

@@ -10,10 +10,9 @@ export default defineConfig({
     viewportHeight: 800,
     video: false,
     screenshotOnRunFailure: true,
-    defaultCommandTimeout: 10000,
-    requestTimeout: 10000,
-    responseTimeout: 10000,
-    // Allow the app to fully re-render between navigations
-    pageLoadTimeout: 30000,
+    defaultCommandTimeout: 6000,
+    requestTimeout: 8000,
+    responseTimeout: 8000,
+    pageLoadTimeout: 20000,
   },
 });
