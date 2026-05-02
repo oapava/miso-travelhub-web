@@ -28,9 +28,9 @@ describe('Home page', () => {
   });
 
   it('header does NOT show the compact search bar on home', () => {
-    // The compact SearchBar is injected into the Header on internal pages only.
-    // On the home page the search is part of the hero — not the header.
-    cy.get(sel(SEL.SEARCH_BAR_LOCATION)).should('not.exist');
+    // The Header hides its compact SearchBar on home (showSearchBar = false).
+    // The hero section has its own expanded SearchBar — we only check the <header> element.
+    cy.get('header').find(sel(SEL.SEARCH_BAR_LOCATION)).should('not.exist');
   });
 
   it('shows login and sign-up buttons when unauthenticated', () => {

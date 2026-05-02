@@ -1,0 +1,46 @@
+#!/bin/sh
+# ─────────────────────────────────────────────────────────────────────────────
+# Pre-commit: E2E Cross-Browser (Chrome + Firefox)
+# Levanta el dev-server, corre Cypress en ambos browsers y lo apaga al terminar.
+# ─────────────────────────────────────────────────────────────────────────────
+
+echo ""
+echo "🔍 Pre-commit — E2E Cross-Browser (Chrome + Firefox)…"
+echo ""
+
+# Apaga el dev-server al salir (éxito o fallo)
+cleanup() {
+  [ -n "$DEV_PID" ] && kill "$DEV_PID" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# Inicia Vite en segundo plano
+npm run dev &
+DEV_PID=$!
+
+# Espera hasta que el servidor esté listo (máx. 30 s)
+npx wait-on http://localhost:5173 --timeout 30000 || {
+  echo "❌  El dev-server no arrancó a tiempo. Abortando pre-commit."
+  exit 1
+}
+
+FAILED=0
+
+# ── Chrome ────────────────────────────────────────────────────────────────────
+echo "🌐  Chrome…"
+npx cypress run --browser chrome --headless || FAILED=1
+
+# ── Firefox ───────────────────────────────────────────────────────────────────
+echo ""
+echo "🦊  Firefox…"
+npx cypress run --browser firefox --headless || FAILED=1
+
+# ── Resultado ─────────────────────────────────────────────────────────────────
+echo ""
+if [ "$FAILED" -eq 0 ]; then
+  echo "✅  Todas las pruebas E2E cross-browser pasaron. Continuando con el commit."
+else
+  echo "❌  Falló al menos un browser. Corrige los errores antes de commitear."
+fi
+
+exit $FAILED

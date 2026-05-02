@@ -3,16 +3,25 @@
 ## Comandos rápidos
 
 ```bash
-# Instalación
+# Instalación  (también instala el pre-commit hook vía prepare → husky)
 npm ci
 
 # Dev server (http://localhost:5173)
 npm run dev
 
-# Tests
+# Tests unitarios
 npm test                     # todos los tests
 npm run test:watch           # modo watch
 npm run test:coverage        # con reporte de cobertura
+
+# E2E — abrir Cypress interactivo (requiere dev server corriendo)
+npm run test:e2e
+
+# E2E — cross-browser headless (requiere dev server corriendo)
+npm run test:e2e:chrome       # solo Chrome
+npm run test:e2e:firefox      # solo Firefox
+npm run test:e2e:electron     # solo Electron (más rápido, sin descarga extra)
+npm run test:e2e:cross-browser  # Chrome + Firefox en secuencia
 
 # Lint y formato
 npm run lint
@@ -77,6 +86,28 @@ Usuario crea cuenta → authService.register(data)
 - `expiresAt = Date.now() + expires_in * 1000` (token dura 15 min)
 - Al cargar la app: se restaura si no ha expirado; si expiró se elimina
 - Logout: elimina la clave y resetea el estado del contexto
+
+## Pre-commit Hook — E2E Cross-Browser
+
+El pre-commit (`./husky/pre-commit`) se ejecuta automáticamente antes de cada `git commit`. Hace lo siguiente:
+
+1. Levanta `vite` en segundo plano (puerto 5173)
+2. Espera hasta que el servidor esté listo con `wait-on` (máx. 30 s)
+3. Corre `cypress run --browser chrome --headless`
+4. Corre `cypress run --browser firefox --headless`
+5. Apaga el dev-server
+6. Aborta el commit si alguno de los dos browsers falla
+
+> **Nota:** Chrome y Firefox deben estar instalados en la máquina del desarrollador.
+> Cypress los detecta automáticamente. Para verificar los browsers disponibles:
+> ```bash
+> npx cypress info
+> ```
+
+Para **saltar** el pre-commit puntualmente (no recomendado):
+```bash
+git commit --no-verify -m "mensaje"
+```
 
 ## Variables de entorno
 
