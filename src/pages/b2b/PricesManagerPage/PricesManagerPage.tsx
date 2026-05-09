@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { B2BHeader, B2BSidebar } from '@/components/layout';
+import { useAuth } from '@/context/AuthContext';
 import { DataTable } from '@/components/shared';
 import { Input, Pagination } from '@/components/ui';
 import './PricesManagerPage.scss';
@@ -23,6 +24,7 @@ const mockPlacePricesData: PlacePriceRow[] = Array.from({ length: 10 }, (_, i) =
 }));
 
 const PricesManagerPage: React.FC = () => {
+  const { logout } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [prices, setPrices] = useState<Record<number, string>>(
     Object.fromEntries(mockPlacePricesData.map(row => [row.id, row.priceNight]))
@@ -30,10 +32,6 @@ const PricesManagerPage: React.FC = () => {
   const [discounts, setDiscounts] = useState<Record<number, string>>(
     Object.fromEntries(mockPlacePricesData.map(row => [row.id, row.discount]))
   );
-
-  const handleLogout = () => {
-    // Mock logout logic
-  };
 
   const handlePriceChange = (id: number, value: string) => {
     setPrices(prev => ({ ...prev, [id]: value }));
@@ -49,7 +47,7 @@ const PricesManagerPage: React.FC = () => {
 
       <div className="prices-manager-page__container">
         <B2BSidebar
-          onLogout={handleLogout}
+          onLogout={logout}
           dataTestId="prices-manager-sidebar"
         />
 

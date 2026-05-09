@@ -13,6 +13,9 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/context/AuthContext', () => ({ useAuth: jest.fn() }));
+jest.mock('@/context/CurrencyContext', () => ({
+  useCurrency: () => ({ currency: 'USD', setCurrency: jest.fn(), supportedCurrencies: ['USD', 'COP', 'EUR', 'GBP'] }),
+}));
 jest.mock('@/components/shared/LoginModal/LoginModal', () => ({ __esModule: true, default: () => null }));
 jest.mock('@/components/shared/SignUpModal/SignUpModal', () => ({ __esModule: true, default: () => null }));
 
@@ -85,7 +88,7 @@ const mockPostReview = bookingService.postReview as jest.Mock;
 const LAST_SEARCH_KEY = 'travelhub_last_search';
 const mockLastSearch = {
   location: 'Paris', checkIn: '2026-09-01', checkOut: '2026-09-12',
-  rooms: 1, adults: 2, children: 0,
+  rooms: 1, adults: 2, children: 0, moneda: 'USD',
 };
 
 const mockReviews = [
@@ -94,7 +97,8 @@ const mockReviews = [
 ];
 
 const mockRoomDetail = {
-  id: 'room-1', nombre_hotel: 'Hotel Test', precio: 200.0, moneda: 'EUR',
+  id: 'room-1', nombre_hotel: 'Hotel Test', precio: 200.0,
+  descuento: 0, subtotal_sin_descuento: 600, subtotal_con_descuento: 600, total: 680, moneda: 'USD',
   direccion: 'Calle 123', capacidad_maxima: 2, estrellas: 5,
   amenidades: ['AC', 'WiFi'], imagenes: ['img1.jpg'],
 };
@@ -299,7 +303,7 @@ describe('DetailPage', () => {
     sessionStorage.setItem(LAST_SEARCH_KEY, JSON.stringify(mockLastSearch));
     renderPage();
     await waitFor(() =>
-      expect(mockGetDetail).toHaveBeenCalledWith('hotel-1', '2026-09-01', '2026-09-12'),
+      expect(mockGetDetail).toHaveBeenCalledWith('hotel-1', '2026-09-01', '2026-09-12', 'USD'),
     );
   });
 
@@ -337,7 +341,7 @@ describe('DetailPage', () => {
       target: { value: '2026-10-01' },
     });
     await waitFor(() => expect(mockGetDetail).toHaveBeenCalledTimes(2));
-    expect(mockGetDetail).toHaveBeenLastCalledWith('hotel-1', '2026-10-01', '2026-09-12');
+    expect(mockGetDetail).toHaveBeenLastCalledWith('hotel-1', '2026-10-01', '2026-09-12', 'USD');
   });
 
   it('refetches price when end date changes', async () => {
@@ -349,7 +353,7 @@ describe('DetailPage', () => {
       target: { value: '2026-10-15' },
     });
     await waitFor(() => expect(mockGetDetail).toHaveBeenCalledTimes(2));
-    expect(mockGetDetail).toHaveBeenLastCalledWith('hotel-1', '2026-09-01', '2026-10-15');
+    expect(mockGetDetail).toHaveBeenLastCalledWith('hotel-1', '2026-09-01', '2026-10-15', 'USD');
   });
 
   it('renders price display', () => {

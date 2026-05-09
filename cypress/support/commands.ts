@@ -83,7 +83,11 @@ Cypress.Commands.add('loginAsB2C', () => {
     expiresAt: Date.now() + 3_600_000, // 1 hour from now
     user: B2C_USER,
   };
-  cy.window().then((win) => {
+  // Visit the app root first to ensure localStorage is set on the correct origin
+  // (localhost:5173). Calling cy.window() before any cy.visit() in Chrome returns
+  // the about:blank window, causing the session to be written to the wrong origin.
+  cy.visit('/', { log: false });
+  cy.window({ log: false }).then((win) => {
     win.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   });
 });
@@ -95,7 +99,11 @@ Cypress.Commands.add('loginAsB2B', () => {
     expiresAt: Date.now() + 3_600_000,
     user: B2B_USER,
   };
-  cy.window().then((win) => {
+  // Visit the app root first to ensure localStorage is set on the correct origin
+  // (localhost:5173). Calling cy.window() before any cy.visit() in Chrome returns
+  // the about:blank window, causing the session to be written to the wrong origin.
+  cy.visit('/', { log: false });
+  cy.window({ log: false }).then((win) => {
     win.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   });
 });

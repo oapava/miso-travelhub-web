@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Logo, Button } from '@/components/ui';
 import { B2CRoutes } from '@/types';
 import { useAuth } from '@/context/AuthContext';
+import { useCurrency, type SupportedCurrency } from '@/context/CurrencyContext';
 import type { TokenResponse, UserResponse } from '@/services/auth.service';
 import './Header.scss';
 import { SearchBar } from '../SearchBar';
@@ -30,6 +31,7 @@ const Header: React.FC<HeaderProps> = ({ dataTestId, searchInitialValues, onSear
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const { isAuthenticated, user, logout, login } = useAuth();
+  const { currency, setCurrency, supportedCurrencies } = useCurrency();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
@@ -82,9 +84,17 @@ const Header: React.FC<HeaderProps> = ({ dataTestId, searchInitialValues, onSear
             {i18n.language.toUpperCase()}
           </button>
 
-          <span className="header__currency" aria-label="Currency">
-            USD
-          </span>
+          <select
+            className="header__currency"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as SupportedCurrency)}
+            aria-label="Select currency"
+            data-testid="header-currency-select"
+          >
+            {supportedCurrencies.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
 
           {isAuthenticated ? (
             <div className="header__user">

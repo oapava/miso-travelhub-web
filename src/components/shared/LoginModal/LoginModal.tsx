@@ -33,6 +33,11 @@ const LoginModal: React.FC<LoginModalProps> = ({
     try {
       const token = await authService.login(email, password);
       const user = await authService.getCurrentUser(token.access_token);
+      if (user.rol !== 'traveler') {
+        throw new Error(
+          'This portal is for travelers. Hotel administrators should use the Business portal.',
+        );
+      }
       onLoginSuccess?.(token, user);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
@@ -52,16 +57,18 @@ const LoginModal: React.FC<LoginModalProps> = ({
       <div className="login-modal__container" data-testid={`${dataTestId}-container`}>
 
         <div className="login-modal__header" data-testid={`${dataTestId}-header`}>
-          <h1 className="login-modal__title">
+          {/* h2 porque está dentro de un dialog — no es el título principal de la página */}
+          <h2 className="login-modal__title">
             <span className="login-modal__title-accent">Welcome Back</span>
             <span className="login-modal__title-bold"> Traveler!</span>
-          </h1>
+          </h2>
         </div>
 
         <div className="login-modal__avatar" data-testid={`${dataTestId}-avatar`}>
           <div className="login-modal__avatar-placeholder">
             <span className="login-modal__avatar-icon">
-              <img src="/img/user-avatar.png" alt="user avatar" />
+              {/* Imagen decorativa — el contexto lo describe el heading */}
+              <img src="/img/user-avatar.png" alt="" aria-hidden="true" />
             </span>
           </div>
         </div>

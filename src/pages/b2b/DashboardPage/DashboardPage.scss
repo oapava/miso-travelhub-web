@@ -17,16 +17,18 @@
 
   &__content {
     @include container;
-    padding: $spacing-3xl;
+    padding: $spacing-2xl $spacing-3xl;
 
     @include respond-to('tablet') {
-      padding: $spacing-2xl;
+      padding: $spacing-xl $spacing-lg;
     }
   }
 
+  // ── Page title ──────────────────────────────────────────────────────────────
+
   &__title {
     @include heading('2xl');
-    margin-bottom: $spacing-3xl;
+    margin-bottom: $spacing-2xl;
     color: $color-neutral-black;
 
     strong {
@@ -34,29 +36,59 @@
     }
   }
 
-  &__grid {
+  &__error {
+    color: $color-error;
+    font-size: $font-size-sm;
+    margin-bottom: $spacing-md;
+    padding: $spacing-xs $spacing-sm;
+    background-color: rgba($color-error, 0.08);
+    border-radius: $border-radius-sm;
+  }
+
+  // ── Section title (shared) ──────────────────────────────────────────────────
+
+  &__section-title {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-600;
+    margin: 0 0 $spacing-sm;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  // ── KPI row ─────────────────────────────────────────────────────────────────
+
+  &__kpi-row {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: $spacing-3xl;
-    margin-bottom: $spacing-3xl;
+    grid-template-columns: repeat(4, 1fr);
+    gap: $spacing-lg;
+    margin-bottom: $spacing-2xl;
+
+    @include respond-to('laptop') {
+      grid-template-columns: repeat(2, 1fr);
+    }
 
     @include respond-to('tablet') {
       grid-template-columns: 1fr;
-      gap: $spacing-2xl;
-    }
-
-    &--top {
-      min-height: 300px;
-    }
-
-    &--bottom {
-      min-height: 300px;
+      gap: $spacing-md;
     }
   }
 
-  &__grid-item {
-    min-height: 300px;
+  // ── Mid row ─────────────────────────────────────────────────────────────────
+
+  &__mid-row {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-2xl;
+    align-items: start;
+
+    @include respond-to('laptop') {
+      grid-template-columns: 1fr;
+    }
   }
+
+  // ── Table wrapper ───────────────────────────────────────────────────────────
 
   &__table-wrapper {
     background-color: $color-neutral-white;
@@ -68,24 +100,31 @@
   &__name-cell {
     display: flex;
     flex-direction: column;
-    gap: $spacing-xs;
+    gap: 2px;
   }
 
   &__name {
-    @include body-text('md');
+    font-size: $font-size-sm;
     font-weight: $font-weight-semibold;
-    color: $color-neutral-black;
+    color: $color-neutral-800;
   }
 
   &__reservation {
-    @include body-text('sm');
-    color: $color-neutral-600;
+    font-size: $font-size-xs;
+    color: $color-neutral-500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    white-space: nowrap;
   }
 
   &__action-arrow {
     color: $color-primary-700;
     font-size: $font-size-lg;
+    cursor: pointer;
   }
+
+  // ── Occupation card ─────────────────────────────────────────────────────────
 
   &__occupation-card {
     background-color: $color-neutral-white;
@@ -95,50 +134,171 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-md;
+  }
+
+  &__occ-pct-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+  }
+
+  &__occ-pct {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $color-primary-700;
+    line-height: 1;
+  }
+
+  &__occ-badge {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    background-color: $color-accent-yellow;
+    color: $color-neutral-900;
+    padding: $spacing-2xs $spacing-xs;
+    border-radius: $border-radius-pill;
+    white-space: nowrap;
+  }
+
+  &__occ-track {
+    width: 100%;
+    height: 10px;
+    background-color: $color-neutral-200;
+    border-radius: $border-radius-pill;
+    overflow: hidden;
+  }
+
+  &__occ-fill {
     height: 100%;
+    background: linear-gradient(90deg, $color-primary-700 0%, $color-primary-500 100%);
+    border-radius: $border-radius-pill;
+    transition: width 0.5s ease;
+    min-width: 4px;
   }
 
-  &__occupation-title {
-    @include heading('md');
-    color: $color-neutral-black;
-  }
+  // ── Status breakdown bars ───────────────────────────────────────────────────
 
-  &__occupation-value {
+  &__status-chart {
     display: flex;
     flex-direction: column;
+    gap: $spacing-sm;
+    padding-top: $spacing-xs;
+    border-top: 1px solid $color-neutral-100;
+  }
+
+  &__status-row {
+    display: flex;
+    align-items: center;
     gap: $spacing-xs;
-    margin-top: $spacing-md;
   }
 
-  &__occupation-number {
-    @include heading('lg');
-    color: $color-primary-700;
-  }
-
-  &__occupation-label {
-    @include body-text('sm');
+  &__status-label {
+    font-size: $font-size-xs;
     color: $color-neutral-600;
+    width: 64px;
+    flex-shrink: 0;
   }
 
-  &__occupation-chart {
+  &__status-track {
     flex: 1;
-    min-height: 100px;
-    margin-top: $spacing-md;
+    height: 8px;
+    background-color: $color-neutral-100;
+    border-radius: $border-radius-pill;
+    overflow: hidden;
   }
 
-  &__chart-placeholder {
+  &__status-fill {
+    height: 100%;
+    border-radius: $border-radius-pill;
+    transition: width 0.5s ease;
+  }
+
+  &__status-count {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    color: $color-neutral-700;
+    min-width: 20px;
+    text-align: right;
+  }
+
+  // ── Income chart ────────────────────────────────────────────────────────────
+
+  &__chart-card {
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-md;
+    @include card-shadow;
+    padding: $spacing-lg;
+    margin-bottom: $spacing-2xl;
+  }
+
+  &__bar-chart {
+    display: flex;
+    align-items: stretch;
+    height: 180px;
+    gap: $spacing-sm;
+    margin-top: $spacing-xs;
+  }
+
+  &__bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__bar-value {
+    font-size: $font-size-xs;
+    color: $color-neutral-600;
+    font-weight: $font-weight-medium;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    flex-shrink: 0;
+    line-height: 1.2;
+  }
+
+  &__bar-spacer {
+    flex: 1;
+    width: 100%;
     display: flex;
     align-items: flex-end;
-    justify-content: space-between;
-    height: 100%;
-    gap: $spacing-xs;
-    padding-top: $spacing-md;
+    justify-content: center;
+    padding-bottom: $spacing-2xs;
   }
 
-  &__chart-bar {
-    flex: 1;
-    background: linear-gradient(180deg, $color-accent-yellow 0%, $color-accent-green 100%);
+  &__bar {
+    width: 60%;
+    max-width: 40px;
+    min-width: 12px;
+    background: linear-gradient(180deg, $color-primary-500 0%, $color-primary-700 100%);
     border-radius: $border-radius-sm $border-radius-sm 0 0;
-    min-height: 20px;
+    min-height: 4px;
+  }
+
+  &__bar-label {
+    font-size: $font-size-xs;
+    color: $color-neutral-500;
+    text-align: center;
+    flex-shrink: 0;
+    padding-top: $spacing-2xs;
+    border-top: 1px solid $color-neutral-200;
+    width: 100%;
+    line-height: 1.4;
+  }
+
+  // ── Responsive ──────────────────────────────────────────────────────────────
+
+  @include respond-to('tablet') {
+    &__bar-chart {
+      height: 120px;
+    }
+
+    &__bar-value {
+      display: none;
+    }
   }
 }

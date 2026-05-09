@@ -25,7 +25,8 @@
     @include focus-visible-outline;
 
     &::placeholder {
-      color: $color-neutral-400;
+      // WCAG 1.4.3 — #ced4da fallaría (1.4:1). #868e96 da 4.5:1 sobre fondo blanco.
+      color: $color-neutral-600;
     }
 
     &:hover {
@@ -56,6 +57,7 @@
 
   &__helper {
     font-size: $font-size-xs;
-    color: $color-neutral-500;
+    // WCAG 1.4.3 — #adb5bd fallaría (2.9:1). #868e96 da 4.5:1 sobre fondo blanco.
+    color: $color-neutral-600;
   }
 }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Header, Footer } from '@/components/layout';
-import { Breadcrumb, Badge, StarRating, Button, AmenityTag, PriceDisplay, DateRangePicker } from '@/components/ui';
+import { Breadcrumb, Badge, StarRating, Button, AmenityTag, PriceDisplay, DateRangePicker, Toast } from '@/components/ui';
 import { searchParamsStorage } from '@/services/search-params.storage';
-import { searchService } from '@/services/search.service';
+import { searchService, PriceBreakdown } from '@/services/search.service';
+import { useCurrency } from '@/context/CurrencyContext';
 import { bookingService, ReviewHotel, BookingResponse } from '@/services/booking.service';
 import { useAuth } from '@/context/AuthContext';
 import BookingModal from '@/components/shared/BookingModal/BookingModal';
@@ -32,6 +33,12 @@ interface HotelDetail {
   discountPercentage?: number;
   nightsCount: number;
   guestsCount: number;
+  // Desglose de precio propagado desde ResultsPage
+  subtotal_sin_descuento?: number;
+  subtotal_con_descuento?: number;
+  total?: number;
+  descuento?: number;
+  moneda?: string;
 }
 
 const FALLBACK_AMENITIES = [
@@ -47,12 +54,27 @@ function calcNights(checkIn: string, checkOut: string): number {
   return nights > 0 ? nights : 0;
 }
 
+/** Formatea un monto con el código de moneda ISO, p. ej. "$4.591.304 COP". */
+function formatPrice(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toLocaleString('es-CO')}`;
+  }
+}
+
 
 const DetailPage: React.FC = () => {
   const { hotelId } = useParams<{ hotelId: string }>();
   const location = useLocation();
   const hotel = (location.state as { hotel?: HotelDetail } | null)?.hotel ?? null;
   const { isAuthenticated, accessToken } = useAuth();
+  const { currency } = useCurrency();
 
   const lastSearch = searchParamsStorage.load();
 
@@ -109,6 +131,25 @@ const DetailPage: React.FC = () => {
   const [, setIsPriceLoading] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
 
+  // Desglose de precio — se inicializa desde el estado de navegación y se
+  // actualiza cuando cambian las fechas vía getDetailRoom.
+  const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdown | null>(() => {
+    if (
+      hotel?.subtotal_sin_descuento !== undefined &&
+      hotel?.subtotal_con_descuento !== undefined &&
+      hotel?.total !== undefined
+    ) {
+      return {
+        descuento:              hotel.descuento              ?? 0,
+        subtotal_sin_descuento: hotel.subtotal_sin_descuento,
+        subtotal_con_descuento: hotel.subtotal_con_descuento,
+        total:                  hotel.total,
+        moneda:                 hotel.moneda                 ?? 'USD',
+      };
+    }
+    return null;
+  });
+
   // Reviews state
   const [reviews, setReviews] = useState<ReviewHotel[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
@@ -119,6 +160,7 @@ const DetailPage: React.FC = () => {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [bookingResult, setBookingResult] = useState<BookingResponse | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
+  const [showBookingToast, setShowBookingToast] = useState(false);
 
   // Add review modal state
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
@@ -138,23 +180,35 @@ const DetailPage: React.FC = () => {
       .finally(() => setIsLoadingReviews(false));
   }, [hotelId]);
 
-  // ── Refresh room detail (price + amenities) when dates change ─────────────
+  // ── Refresh room detail (precio + amenidades + desglose) when dates change ──
   const fetchRoomDetail = useCallback(() => {
     if (!hotelId || !startDate || !endDate) return;
     setIsPriceLoading(true);
     setPriceError(null);
     searchService
-      .getDetailRoom(hotelId, startDate, endDate)
+      .getDetailRoom(hotelId, startDate, endDate, currency)
       .then((detail) => {
         if (detail.amenidades?.length) setRoomDetailAmenities(detail.amenidades);
-        if (detail.precio) setRoomDetailPrice(detail.precio);
-        if (detail.imagenes?.length) setRoomDetailImages(detail.imagenes);
+        if (detail.imagenes?.length)   setRoomDetailImages(detail.imagenes);
+
+        // Precio efectivo para PriceDisplay (compatibilidad con código existente)
+        const effectivePrice = detail.subtotal_con_descuento ?? detail.precio;
+        if (effectivePrice) setRoomDetailPrice(effectivePrice);
+
+        // Desglose completo — actualiza el estado con los datos más recientes
+        setPriceBreakdown({
+          descuento:              detail.descuento              ?? 0,
+          subtotal_sin_descuento: detail.subtotal_sin_descuento ?? effectivePrice ?? 0,
+          subtotal_con_descuento: detail.subtotal_con_descuento ?? effectivePrice ?? 0,
+          total:                  detail.total                  ?? effectivePrice ?? 0,
+          moneda:                 detail.moneda                 ?? 'USD',
+        });
       })
       .catch(() => {
         setPriceError('Could not refresh price. Showing last known price.');
       })
       .finally(() => setIsPriceLoading(false));
-  }, [hotelId, startDate, endDate]);
+  }, [hotelId, startDate, endDate, currency]);
 
   useEffect(() => {
     fetchRoomDetail();
@@ -191,7 +245,9 @@ const DetailPage: React.FC = () => {
       setBookingResult(result);
       setIsConfirmModalOpen(true);
     } catch (err) {
-      setBookingError(err instanceof Error ? err.message : 'Booking failed. Please try again.');
+      const msg = err instanceof Error ? err.message : 'Booking failed. Please try again.';
+      setBookingError(msg);
+      setShowBookingToast(true);
     }
   };
 
@@ -260,8 +316,8 @@ const DetailPage: React.FC = () => {
                   {hotelReviewLabel} · {hotelReviewCount} reviews
                 </span>
               )}
-              <button className="detail-page__icon-btn" data-testid="favorite-btn">♡</button>
-              <button className="detail-page__icon-btn" data-testid="share-btn">⬈</button>
+              <button className="detail-page__icon-btn" data-testid="favorite-btn" aria-label="Agregar a favoritos" aria-pressed={false}>♡</button>
+              <button className="detail-page__icon-btn" data-testid="share-btn" aria-label="Compartir este hotel">⬈</button>
             </div>
           </div>
 
@@ -272,11 +328,14 @@ const DetailPage: React.FC = () => {
           )}
         </div>
 
-        {/* Tabs — each scrolls to its corresponding section anchor */}
-        <div className="detail-page__tabs" data-testid="detail-tabs">
+        {/* Navegación interna — cada botón desplaza hasta la sección correspondiente.
+            Se usa aria-current="location" (no role="tab") porque el contenido
+            siempre está visible; no se oculta/muestra (no es un widget tab real). */}
+        <nav className="detail-page__tabs" data-testid="detail-tabs" aria-label="Secciones del hotel">
           {TABS.map(({ label, anchor }) => (
             <button
               key={anchor}
+              aria-current={activeTab === anchor ? 'location' : undefined}
               className={`detail-page__tab${activeTab === anchor ? ' detail-page__tab--active' : ''}`}
               onClick={() => handleTabClick(anchor)}
               data-testid={`tab-${label.toLowerCase()}`}
@@ -284,7 +343,7 @@ const DetailPage: React.FC = () => {
               {label}
             </button>
           ))}
-        </div>
+        </nav>
 
         <div className="detail-page__content">
           {/* Gallery — full width */}
@@ -398,18 +457,9 @@ const DetailPage: React.FC = () => {
                 className="detail-page__date-picker"
               />
 
-              {/* Rooms & guests + price on the same row */}
+              {/* Rooms & guests */}
               <div className="detail-page__rooms-guests" data-testid="detail-rooms-guests">
-                <div className="detail-page__rooms-guests-header">
-                  <span className="detail-page__form-label">Rooms and guests</span>
-                  <PriceDisplay
-                    originalPrice={hotelOriginalPrice}
-                    finalPrice={hotelPrice}
-                    discountPercentage={hotelDiscount}
-                    size="small"
-                    dataTestId="detail-price"
-                  />
-                </div>
+                <span className="detail-page__form-label">Rooms and guests</span>
                 {priceError && (
                   <p className="detail-page__price-error" data-testid="detail-price-error">
                     {priceError}
@@ -426,10 +476,66 @@ const DetailPage: React.FC = () => {
                 </p>
               </div>
 
-              {bookingError && (
-                <p className="detail-page__booking-error" data-testid="detail-booking-error">
-                  {bookingError}
-                </p>
+              {/* Desglose de precio */}
+              {priceBreakdown ? (
+                <div className="detail-page__price-breakdown" data-testid="detail-price-breakdown">
+                  <h3 className="detail-page__price-breakdown__title">Price breakdown</h3>
+
+                  <div className="detail-page__price-breakdown__row">
+                    <span>Subtotal</span>
+                    <span>{formatPrice(priceBreakdown.subtotal_sin_descuento, priceBreakdown.moneda)}</span>
+                  </div>
+
+                  {priceBreakdown.descuento > 0 && (
+                    <>
+                      <div className="detail-page__price-breakdown__row detail-page__price-breakdown__row--discount">
+                        <span>Discount ({Math.round(priceBreakdown.descuento * 100)}%)</span>
+                        <span>
+                          −{formatPrice(
+                            priceBreakdown.subtotal_sin_descuento - priceBreakdown.subtotal_con_descuento,
+                            priceBreakdown.moneda,
+                          )}
+                        </span>
+                      </div>
+                      <div className="detail-page__price-breakdown__row detail-page__price-breakdown__row--subtotal">
+                        <span>Discounted subtotal</span>
+                        <span>{formatPrice(priceBreakdown.subtotal_con_descuento, priceBreakdown.moneda)}</span>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="detail-page__price-breakdown__row detail-page__price-breakdown__row--taxes">
+                    <span>Taxes</span>
+                    <span>
+                      {formatPrice(
+                        priceBreakdown.total - priceBreakdown.subtotal_con_descuento,
+                        priceBreakdown.moneda,
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="detail-page__price-breakdown__divider" aria-hidden="true" />
+
+                  <div className="detail-page__price-breakdown__row detail-page__price-breakdown__row--total">
+                    <span>Total</span>
+                    <span>{formatPrice(priceBreakdown.total, priceBreakdown.moneda)}</span>
+                  </div>
+
+                  <p className="detail-page__price-breakdown__currency">
+                    Currency: {priceBreakdown.moneda}
+                  </p>
+                </div>
+              ) : (
+                /* Fallback: si el API aún no respondió mostramos el precio simple */
+                <div className="detail-page__price-breakdown" data-testid="detail-price-breakdown">
+                  <PriceDisplay
+                    originalPrice={hotelOriginalPrice}
+                    finalPrice={hotelPrice}
+                    discountPercentage={hotelDiscount}
+                    size="small"
+                    dataTestId="detail-price"
+                  />
+                </div>
               )}
 
               {/* Booking action — right-aligned, only active when logged in */}
@@ -461,6 +567,7 @@ const DetailPage: React.FC = () => {
         guests={parseInt(guests, 10)}
         rooms={parseInt(rooms, 10)}
         imageUrl={roomDetailImages[0]}
+        priceBreakdown={priceBreakdown ?? undefined}
         originalPrice={hotelOriginalPrice}
         finalPrice={hotelPrice}
         discountPercentage={hotelDiscount}
@@ -482,6 +589,15 @@ const DetailPage: React.FC = () => {
         onSubmit={handleReviewSubmit}
         dataTestId="detail-add-review-modal"
       />
+
+      {showBookingToast && bookingError && (
+        <Toast
+          message={bookingError}
+          variant="error"
+          onClose={() => { setShowBookingToast(false); setBookingError(null); }}
+          dataTestId="detail-booking-error"
+        />
+      )}
 
       <Footer />
     </div>

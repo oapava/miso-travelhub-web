@@ -107,13 +107,17 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
       className="signup-modal"
     >
       <div className="signup-modal__container" data-testid={`${dataTestId}-container`}>
+        {/* Título del modal — h2 porque está dentro de un dialog */}
+        <h2 className="signup-modal__title">Crear cuenta</h2>
+
         <div className="signup-modal__avatar" data-testid={`${dataTestId}-avatar`}>
           <div className="signup-modal__avatar-placeholder">
             <span className="signup-modal__avatar-icon">
-              <img src="/img/user-avatar.png" alt="user avatar" />
+              {/* Decorativa — el heading provee el contexto */}
+              <img src="/img/user-avatar.png" alt="" aria-hidden="true" />
             </span>
-            <div className="signup-modal__avatar-edit">
-              <img src="/img/edit.svg" alt="edit avatar" />
+            <div className="signup-modal__avatar-edit" role="button" tabIndex={0} aria-label="Cambiar foto de perfil">
+              <img src="/img/edit.svg" alt="" aria-hidden="true" />
             </div>
           </div>
         </div>

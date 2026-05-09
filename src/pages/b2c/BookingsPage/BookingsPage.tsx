@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Header, AccountSidebar, Footer } from '@/components/layout';
 import { Breadcrumb, Badge, AmenityTag, Button } from '@/components/ui';
-import { bookingService, BookingResponse } from '@/services/booking.service';
+import { bookingService, TravelerBooking } from '@/services/booking.service';
 import { useAuth } from '@/context/AuthContext';
 import './BookingsPage.scss';
 
 interface BookingGroup {
   key: string;
   displayDate: string;
-  bookings: BookingResponse[];
+  bookings: TravelerBooking[];
 }
 
 const BookingsPage: React.FC = () => {
   const { user, accessToken } = useAuth();
-  const [bookings, setBookings] = useState<BookingResponse[]>([]);
+  const [bookings, setBookings] = useState<TravelerBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,8 +40,8 @@ const BookingsPage: React.FC = () => {
     loadBookings();
   }, [accessToken]);
 
-  const groupBookingsByMonth = (list: BookingResponse[]): BookingGroup[] => {
-    const groups: Record<string, { displayDate: string; bookings: BookingResponse[] }> = {};
+  const groupBookingsByMonth = (list: TravelerBooking[]): BookingGroup[] => {
+    const groups: Record<string, { displayDate: string; bookings: TravelerBooking[] }> = {};
 
     list.forEach((booking) => {
       const date = new Date(booking.fechaCheckIn);
@@ -51,7 +51,7 @@ const BookingsPage: React.FC = () => {
       if (!groups[key]) {
         groups[key] = { displayDate, bookings: [] };
       }
-      groups[key].bookings.push(booking);
+      groups[key]!.bookings.push(booking);
     });
 
     return Object.entries(groups)
@@ -75,7 +75,19 @@ const BookingsPage: React.FC = () => {
     }
   };
 
-  const formatPrice = (price: number): string => {
+  const formatPrice = (price: number, moneda?: string): string => {
+    if (moneda) {
+      try {
+        return new Intl.NumberFormat('es-CO', {
+          style: 'currency',
+          currency: moneda,
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(price);
+      } catch {
+        // fall through to plain number
+      }
+    }
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
@@ -152,6 +164,11 @@ const BookingsPage: React.FC = () => {
                           booking.fechaCheckIn,
                           booking.fechaCheckOut,
                         );
+                        const heroImage = booking.imagenes?.[0];
+                        const locationLine = [booking.ciudad, booking.pais]
+                          .filter(Boolean)
+                          .join(', ');
+                        const taxes = booking.total - booking.subtotal;
 
                         return (
                           <article
@@ -168,19 +185,32 @@ const BookingsPage: React.FC = () => {
                                 className="booking-card__badge"
                                 dataTestId={`booking-status-${booking.id}`}
                               />
-                              <div
-                                className="booking-card__image"
-                                role="img"
-                                aria-label={`${booking.codigo} hotel photo`}
-                              />
+                              {heroImage ? (
+                                <img
+                                  src={heroImage}
+                                  alt={booking.nombreHotel}
+                                  className="booking-card__image booking-card__image--photo"
+                                />
+                              ) : (
+                                <div
+                                  className="booking-card__image"
+                                  role="img"
+                                  aria-label={`${booking.nombreHotel} hotel photo`}
+                                />
+                              )}
                             </div>
 
                             {/* ── Right: content ── */}
                             <div className="booking-card__content">
-                              {/* Header row: code + nights/price */}
+                              {/* Header row: hotel name + nights / guests */}
                               <div className="booking-card__header">
                                 <div className="booking-card__title-row">
-                                  <h3 className="booking-card__name">{booking.codigo}</h3>
+                                  <h3 className="booking-card__name">{booking.nombreHotel}</h3>
+                                  {booking.estrellas && (
+                                    <span className="booking-card__stars" aria-label={`${booking.estrellas} stars`}>
+                                      {'★'.repeat(booking.estrellas)}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="booking-card__review">
                                   <div className="booking-card__review-label-box">
@@ -193,37 +223,47 @@ const BookingsPage: React.FC = () => {
                                     </span>
                                   </div>
                                   <Badge
-                                    label={`${formatPrice(booking.total)} ${booking.moneda}`}
+                                    label={formatPrice(booking.total, booking.moneda)}
                                     variant="rating"
                                     size="small"
+                                    dataTestId={`booking-total-${booking.id}`}
                                   />
                                 </div>
                               </div>
 
-                              {/* Dates row */}
+                              {/* Location row */}
                               <div className="booking-card__location">
-                                <span className="booking-card__location-pin">
-                                  <img src="/img/location_on.svg" alt="" />
-                                  <span className="booking-card__location-name">
-                                    {formatShortDate(booking.fechaCheckIn)}
+                                {locationLine && (
+                                  <span className="booking-card__location-pin">
+                                    <img src="/img/location_on.svg" alt="" aria-hidden="true" />
+                                    <span className="booking-card__location-name">
+                                      {locationLine}
+                                    </span>
                                   </span>
-                                </span>
-                                <span className="booking-card__distance">
-                                  → {formatShortDate(booking.fechaCheckOut)}
-                                </span>
-                                <span className="booking-card__access">
-                                  {booking.numHuespedes} adults
-                                </span>
+                                )}
+                                {booking.distancia && (
+                                  <span className="booking-card__distance">
+                                    · {booking.distancia}
+                                  </span>
+                                )}
+                                {booking.acceso && (
+                                  <span className="booking-card__access">{booking.acceso}</span>
+                                )}
                               </div>
 
-                              {/* Room detail row */}
+                              {/* Dates row */}
                               <div className="booking-card__details">
-                                Room: {booking.habitacionId}&nbsp;|&nbsp;
-                                {booking.numHuespedes}{' '}
-                                {booking.numHuespedes === 1 ? 'guest' : 'guests'}
+                                {formatShortDate(booking.fechaCheckIn)} →{' '}
+                                {formatShortDate(booking.fechaCheckOut)}
+                                {booking.tipo_habitacion && (
+                                  <> · {booking.tipo_habitacion}</>
+                                )}
+                                {booking.tipo_cama && booking.tipo_cama.length > 0 && (
+                                  <> · {booking.tipo_cama.join(', ')}</>
+                                )}
                               </div>
 
-                              {/* Amenity tags + price footer */}
+                              {/* Amenities + price footer */}
                               <div className="booking-card__ammenities-price-box">
                                 <div className="booking-card__amenities">
                                   <AmenityTag
@@ -232,19 +272,38 @@ const BookingsPage: React.FC = () => {
                                   <AmenityTag
                                     label={`Check-out: ${formatShortDate(booking.fechaCheckOut)}`}
                                   />
-                                  <AmenityTag label={`${booking.numHuespedes} adults`} />
+                                  <AmenityTag label={`${booking.numHuespedes} ${booking.numHuespedes === 1 ? 'adult' : 'adults'}`} />
+                                  {booking.amenidades?.slice(0, 2).map((am) => (
+                                    <AmenityTag key={am} label={am} />
+                                  ))}
                                 </div>
 
                                 <div className="booking-card__footer">
                                   <div className="booking-card__pricing">
-                                    <span className="booking-card__price-final">
-                                      {booking.moneda} {formatPrice(booking.total)}
-                                    </span>
+                                    {/* Price breakdown */}
+                                    <div className="booking-card__price-breakdown" data-testid={`booking-price-breakdown-${booking.id}`}>
+                                      <div className="booking-card__price-row">
+                                        <span>Subtotal</span>
+                                        <span>{formatPrice(booking.subtotal, booking.moneda)}</span>
+                                      </div>
+                                      {taxes > 0 && (
+                                        <div className="booking-card__price-row booking-card__price-row--taxes">
+                                          <span>Taxes</span>
+                                          <span>{formatPrice(taxes, booking.moneda)}</span>
+                                        </div>
+                                      )}
+                                      <div className="booking-card__price-row booking-card__price-row--total">
+                                        <span>Total</span>
+                                        <span className="booking-card__price-final">
+                                          {formatPrice(booking.total, booking.moneda)}
+                                        </span>
+                                      </div>
+                                    </div>
                                     <span className="booking-card__stay-info">
-                                      {nights} nights, {booking.numHuespedes} adults
+                                      {nights} nights · {booking.numHuespedes} adults
                                     </span>
                                   </div>
-                                  <Button variant="primary" size="small">
+                                  <Button variant="primary" size="small" dataTestId={`booking-detail-btn-${booking.id}`}>
                                     DETAIL
                                   </Button>
                                 </div>

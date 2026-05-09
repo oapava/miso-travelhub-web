@@ -144,6 +144,38 @@ export const SEL = {
   // ── B2B booking modals ───────────────────────────────────────────────────────
   BOOKING_DETAIL_MODAL:                    'booking-detail-modal',
   BOOKING_DETAIL_MODAL_CONTAINER:          'booking-detail-modal-container',
+  BOOKING_DETAIL_MODAL_HEADER:             'booking-detail-modal-header',
+  BOOKING_DETAIL_MODAL_BOOKING_CODE:       'booking-detail-modal-booking-code',
+  BOOKING_DETAIL_MODAL_ACTIVE_BADGE:       'booking-detail-modal-active-badge',
+  // ── Guest information section
+  BOOKING_DETAIL_MODAL_GUEST_SECTION:      'booking-detail-modal-guest-section',
+  BOOKING_DETAIL_MODAL_CLIENT_NAME:        'booking-detail-modal-client-name',
+  BOOKING_DETAIL_MODAL_GUEST_EMAIL:        'booking-detail-modal-guest-email',
+  BOOKING_DETAIL_MODAL_GUEST_PHONE:        'booking-detail-modal-guest-phone',
+  BOOKING_DETAIL_MODAL_ARRIVAL_TIME:       'booking-detail-modal-arrival-time',
+  // ── Property section
+  BOOKING_DETAIL_MODAL_PROPERTY_SECTION:   'booking-detail-modal-property-section',
+  BOOKING_DETAIL_MODAL_HOTEL_NAME:         'booking-detail-modal-hotel-name',
+  BOOKING_DETAIL_MODAL_LOCATION:           'booking-detail-modal-location',
+  BOOKING_DETAIL_MODAL_ROOM:               'booking-detail-modal-room',
+  BOOKING_DETAIL_MODAL_ROOM_TYPE:          'booking-detail-modal-room-type',
+  BOOKING_DETAIL_MODAL_CATEGORY:           'booking-detail-modal-category',
+  BOOKING_DETAIL_MODAL_ROOM_SIZE:          'booking-detail-modal-room-size',
+  // ── Stay details section
+  BOOKING_DETAIL_MODAL_DATES_SECTION:      'booking-detail-modal-dates-section',
+  BOOKING_DETAIL_MODAL_GUESTS_COUNT:       'booking-detail-modal-guests-count',
+  BOOKING_DETAIL_MODAL_CHECKIN:            'booking-detail-modal-checkin',
+  BOOKING_DETAIL_MODAL_CHECKOUT:           'booking-detail-modal-checkout',
+  BOOKING_DETAIL_MODAL_NIGHTS:             'booking-detail-modal-nights',
+  // ── Financial section
+  BOOKING_DETAIL_MODAL_FINANCIAL_SECTION:  'booking-detail-modal-financial-section',
+  BOOKING_DETAIL_MODAL_TOTAL:              'booking-detail-modal-total',
+  // ── Special requests
+  BOOKING_DETAIL_MODAL_SPECIAL_REQUESTS:   'booking-detail-modal-special-requests',
+  // ── Actions
+  BOOKING_DETAIL_MODAL_CONFIRM_BTN:        'booking-detail-modal-confirm-btn',
+  BOOKING_DETAIL_MODAL_CANCEL_BTN:         'booking-detail-modal-cancel-btn',
+
   BOOKING_CONFIRM_ACTION_MODAL:            'booking-confirm-action-modal',
   BOOKING_CONFIRM_ACTION_MODAL_CONTAINER:  'booking-confirm-action-modal-container',
   BOOKING_CANCEL_MODAL:                    'booking-cancel-modal',

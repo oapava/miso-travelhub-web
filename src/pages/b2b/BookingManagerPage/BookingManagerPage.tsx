@@ -10,7 +10,6 @@ import {
   bookingService,
   getHotelIdFromToken,
   HotelBooking,
-  BookingResponse,
 } from '@/services/booking.service';
 import './BookingManagerPage.scss';
 
@@ -39,11 +38,6 @@ function calcDaysNights(checkIn: string, checkOut: string): string {
   }
 }
 
-function calcNights(checkIn: string, checkOut: string): number {
-  const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
-  return Math.max(1, Math.round(diff / (1000 * 60 * 60 * 24)));
-}
-
 function normalizeEstado(estado: string): string {
   return estado.charAt(0).toUpperCase() + estado.slice(1).toLowerCase();
 }
@@ -54,13 +48,6 @@ function estadoCssModifier(estado: string): string {
   if (lower === 'pendiente') return 'pending';
   if (lower === 'cancelado' || lower === 'cancelada') return 'cancelled';
   return lower;
-}
-
-function getStatusVariant(estado: string): 'success' | 'info' | 'warning' {
-  const lower = estado.toLowerCase();
-  if (lower === 'confirmado' || lower === 'confirmada' || lower === 'active' || lower === 'activo') return 'success';
-  if (lower === 'cancelado' || lower === 'cancelada' || lower === 'pendiente') return 'warning';
-  return 'info';
 }
 
 const BookingManagerPage: React.FC = () => {
@@ -83,6 +70,10 @@ const BookingManagerPage: React.FC = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
 
+  // Action state (confirm / cancel API calls)
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
   // ── Load bookings on mount ───────────────────────────────────────────────
   useEffect(() => {
     if (!accessToken) return;
@@ -95,7 +86,7 @@ const BookingManagerPage: React.FC = () => {
     // Use hotel-specific endpoint when hotel_id is present in the JWT,
     // otherwise fall back to the traveler endpoint (development / tokens
     // without a hotel_id claim).
-    const request: Promise<HotelBooking[] | BookingResponse[]> = hotelId
+    const request = hotelId
       ? bookingService.getHotelBookings(hotelId, accessToken)
       : bookingService.getMyBookings(accessToken);
 
@@ -110,7 +101,7 @@ const BookingManagerPage: React.FC = () => {
   // ── Client-side filtering ────────────────────────────────────────────────
   const filtered = bookings.filter((b) => {
     if (clientFilter) {
-      const haystack = `${b.viajeroId ?? ''} ${b.codigo ?? ''}`.toLowerCase();
+      const haystack = `${b.nombreUser ?? ''} ${b.viajeroId ?? ''} ${b.codigo ?? ''}`.toLowerCase();
       if (!haystack.includes(clientFilter.toLowerCase())) return false;
     }
     if (stateFilter && (b.estado ?? '').toLowerCase() !== stateFilter.toLowerCase()) return false;
@@ -128,17 +119,13 @@ const BookingManagerPage: React.FC = () => {
   // ── Modal helpers ────────────────────────────────────────────────────────
   const openDetail = (booking: HotelBooking) => {
     setSelectedBooking(booking);
+    setActionError(null);
     setIsDetailOpen(true);
-  };
-
-  const openConfirm = (booking: HotelBooking) => {
-    setSelectedBooking(booking);
-    setIsDetailOpen(false);
-    setIsConfirmOpen(true);
   };
 
   const openCancel = (booking: HotelBooking) => {
     setSelectedBooking(booking);
+    setActionError(null);
     setIsDetailOpen(false);
     setIsCancelOpen(true);
   };
@@ -149,8 +136,50 @@ const BookingManagerPage: React.FC = () => {
     setIsCancelOpen(false);
   };
 
+  // ── API actions ───────────────────────────────────────────────────────────
+
+  /** PATCH the booking to CONFIRMADA, then show the success receipt modal. */
+  const handleConfirmBooking = async (booking: HotelBooking) => {
+    if (!accessToken) return;
+    setIsActionLoading(true);
+    setActionError(null);
+    try {
+      await bookingService.updateBooking(booking.id, 'CONFIRMADA', accessToken);
+      // Optimistic update — reflect new state in the table immediately
+      setBookings((prev) =>
+        prev.map((b) => (b.id === booking.id ? { ...b, estado: 'CONFIRMADO' } : b)),
+      );
+      setSelectedBooking({ ...booking, estado: 'CONFIRMADO' });
+      setIsDetailOpen(false);
+      setIsCancelOpen(false);
+      setIsConfirmOpen(true);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Could not confirm booking.');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  /** PATCH the booking to CANCELADA, then close all modals. */
+  const handleCancelBooking = async () => {
+    if (!accessToken || !selectedBooking) return;
+    setIsActionLoading(true);
+    setActionError(null);
+    try {
+      await bookingService.updateBooking(selectedBooking.id, 'CANCELADA', accessToken);
+      setBookings((prev) =>
+        prev.map((b) => (b.id === selectedBooking.id ? { ...b, estado: 'CANCELADO' } : b)),
+      );
+      closeAll();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Could not cancel booking.');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
   const detailClientName = selectedBooking
-    ? (selectedBooking.viajeroId ?? selectedBooking.codigo ?? '—').slice(0, 8)
+    ? (selectedBooking.nombreUser ?? selectedBooking.viajeroId ?? selectedBooking.codigo ?? '—')
     : undefined;
 
   const detailHotelName = selectedBooking
@@ -227,6 +256,12 @@ const BookingManagerPage: React.FC = () => {
               </p>
             )}
 
+            {actionError && (
+              <p className="booking-manager-page__error" data-testid="booking-manager-action-error">
+                {actionError}
+              </p>
+            )}
+
             {!isLoading && !loadError && filtered.length === 0 && (
               <p className="booking-manager-page__empty" data-testid="booking-manager-empty">
                 No bookings found.
@@ -242,7 +277,7 @@ const BookingManagerPage: React.FC = () => {
                       key: 'viajeroId',
                       header: 'Client',
                       render: (item: HotelBooking) => {
-                        const clientId = item.viajeroId ?? item.codigo ?? '—';
+                        const clientId = item.nombreUser ?? item.viajeroId ?? item.codigo ?? '—';
                         const initial  = clientId.charAt(0).toUpperCase();
                         const label    = clientId.length > 8
                           ? `${clientId.slice(0, 8)}…`
@@ -334,7 +369,8 @@ const BookingManagerPage: React.FC = () => {
                         <Button
                           variant="primary"
                           size="small"
-                          onClick={() => openConfirm(item)}
+                          onClick={() => void handleConfirmBooking(item)}
+                          disabled={isActionLoading}
                           dataTestId={`booking-confirm-btn-${item.id}`}
                         >
                           CONFIRM
@@ -393,25 +429,9 @@ const BookingManagerPage: React.FC = () => {
       <BookingDetailModal
         isOpen={isDetailOpen}
         onClose={closeAll}
-        onConfirm={() => selectedBooking && openConfirm(selectedBooking)}
+        onConfirm={() => selectedBooking && void handleConfirmBooking(selectedBooking)}
         onCancel={() => selectedBooking && openCancel(selectedBooking)}
-        clientName={detailClientName}
-        reservedAt={detailHotelName}
-        dateFrom={selectedBooking ? formatDateDDMMYY(selectedBooking.fechaCheckIn) : undefined}
-        dateTo={selectedBooking ? formatDateDDMMYY(selectedBooking.fechaCheckOut) : undefined}
-        status={selectedBooking?.estado}
-        statusVariant={selectedBooking ? getStatusVariant(selectedBooking.estado) : undefined}
-        finalPrice={selectedBooking?.total}
-        originalPrice={
-          selectedBooking && selectedBooking.subtotal !== selectedBooking.total
-            ? selectedBooking.subtotal
-            : undefined
-        }
-        period={
-          selectedBooking
-            ? `${calcNights(selectedBooking.fechaCheckIn, selectedBooking.fechaCheckOut)} nights, ${selectedBooking.numHuespedes} adults`
-            : undefined
-        }
+        booking={selectedBooking ?? undefined}
         dataTestId="booking-detail-modal"
       />
 
@@ -426,7 +446,7 @@ const BookingManagerPage: React.FC = () => {
       <BookingCancelModal
         isOpen={isCancelOpen}
         onClose={closeAll}
-        onConfirm={closeAll}
+        onConfirm={() => void handleCancelBooking()}
         clientName={detailClientName}
         hotelName={detailHotelName}
         dataTestId="booking-cancel-modal"

@@ -19,6 +19,7 @@ const HomePage: React.FC = () => {
         checkout: searchParams.checkOut,
         group: searchParams.adults,
         rooms: searchParams.rooms,
+        moneda: searchParams.moneda,
       });
       searchParamsStorage.save(searchParams);
       searchResultsStorage.save(results);
@@ -101,6 +102,7 @@ const HomePage: React.FC = () => {
     <div className="home-page" data-testid="home-page">
       <Header />
 
+      <main id="main-content">
       {/* Hero Section */}
       <section className="home-page__hero" data-testid="home-page-hero">
         <div className="home-page__hero-background" />
@@ -165,6 +167,8 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      </main>
 
       <Footer />
     </div>

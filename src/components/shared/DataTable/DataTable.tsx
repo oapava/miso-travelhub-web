@@ -27,7 +27,7 @@ function DataTable<T>({
   return (
     <div className={`data-table ${className}`} data-testid={dataTestId}>
       {title && <h3 className="data-table__title">{title}</h3>}
-      <div className="data-table__wrapper">
+      <div className="data-table__wrapper" tabIndex={0}>
         <table className="data-table__table" role="table">
           <thead className="data-table__head">
             <tr className="data-table__row data-table__row--header">

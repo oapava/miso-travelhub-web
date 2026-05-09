@@ -14,7 +14,11 @@ jest.mock('react-i18next', () => ({
 jest.mock('@/context/AuthContext', () => ({ useAuth: jest.fn() }));
 
 jest.mock('@/services/booking.service', () => ({
-  bookingService: { getHotelBookings: jest.fn(), getMyBookings: jest.fn() },
+  bookingService: {
+    getHotelBookings: jest.fn(),
+    getMyBookings: jest.fn(),
+    updateBooking: jest.fn(),
+  },
   getHotelIdFromToken: jest.fn(),
   HotelBooking: {},
 }));
@@ -48,6 +52,7 @@ const mockUseAuth        = useAuth as jest.MockedFunction<typeof useAuth>;
 const mockGetBookings    = bookingService.getHotelBookings as jest.Mock;
 const mockGetMyBookings  = bookingService.getMyBookings as jest.Mock;
 const mockGetHotelId     = getHotelIdFromToken as jest.Mock;
+const mockUpdateBooking  = bookingService.updateBooking as jest.Mock;
 
 // ── JWT helpers ──────────────────────────────────────────────────────────────
 
@@ -114,6 +119,8 @@ describe('BookingManagerPage', () => {
     mockGetHotelId.mockReturnValue(HOTEL_ID);
     mockGetBookings.mockResolvedValue(mockBookings);
     mockGetMyBookings.mockResolvedValue(mockBookings);
+    // Default: updateBooking succeeds and returns the updated booking
+    mockUpdateBooking.mockResolvedValue({ ...mockBookings[0], estado: 'CONFIRMADO' });
   });
 
   // ── Structural rendering ─────────────────────────────────────────────────
@@ -252,11 +259,42 @@ describe('BookingManagerPage', () => {
     expect(screen.getByTestId('booking-detail-modal')).toBeInTheDocument();
   });
 
-  it('opens confirm modal when CONFIRM button is clicked', async () => {
+  it('opens confirm modal after CONFIRM button calls API successfully', async () => {
     renderPage();
     await waitFor(() => screen.getByTestId('booking-confirm-btn-b1'));
     fireEvent.click(screen.getByTestId('booking-confirm-btn-b1'));
-    expect(screen.getByTestId('booking-confirm-action-modal')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByTestId('booking-confirm-action-modal')).toBeInTheDocument(),
+    );
+  });
+
+  it('calls updateBooking with CONFIRMADA when CONFIRM button is clicked', async () => {
+    renderPage();
+    await waitFor(() => screen.getByTestId('booking-confirm-btn-b1'));
+    fireEvent.click(screen.getByTestId('booking-confirm-btn-b1'));
+    await waitFor(() =>
+      expect(mockUpdateBooking).toHaveBeenCalledWith('b1', 'CONFIRMADA', TOKEN),
+    );
+  });
+
+  it('updates the booking state in the list after confirmation', async () => {
+    mockUpdateBooking.mockResolvedValueOnce({ ...mockBookings[0], estado: 'CONFIRMADO' });
+    renderPage();
+    await waitFor(() => screen.getByTestId('booking-confirm-btn-b1'));
+    fireEvent.click(screen.getByTestId('booking-confirm-btn-b1'));
+    await waitFor(() =>
+      expect(screen.getByTestId('booking-state-b1')).toHaveTextContent('Confirmado'),
+    );
+  });
+
+  it('shows action error when CONFIRM API call fails', async () => {
+    mockUpdateBooking.mockRejectedValueOnce(new Error('Service error'));
+    renderPage();
+    await waitFor(() => screen.getByTestId('booking-confirm-btn-b1'));
+    fireEvent.click(screen.getByTestId('booking-confirm-btn-b1'));
+    await waitFor(() =>
+      expect(screen.getByTestId('booking-manager-action-error')).toHaveTextContent('Service error'),
+    );
   });
 
   it('opens cancel modal when CANCEL button is clicked', async () => {

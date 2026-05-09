@@ -155,13 +155,147 @@ describe('B2B Booking Manager — modals', () => {
   });
 
   it('opens the confirm-action modal when clicking Confirm', () => {
+    // Intercept the PATCH so handleConfirmBooking resolves and setIsConfirmOpen(true) is called
+    cy.intercept('PATCH', '**/api/v1/booking/update/**', {
+      statusCode: 200,
+      body: {
+        id: 'hb-001', codigo: 'TH-2026-101', viajeroId: 'c3e7a1f2-0001',
+        habitacionId: 'room-A', nombreHabitacion: 'La Perla Suite',
+        fechaCheckIn: '2026-05-01T12:00:00', fechaCheckOut: '2026-05-05T12:00:00',
+        numHuespedes: 2, estado: 'CONFIRMADO',
+        subtotal: 8000, impuestos: 1440, total: 9440, moneda: 'USD',
+      },
+    }).as('updateBooking');
     cy.get('[data-testid^="booking-confirm-btn-"]').first().click({ force: true });
+    cy.wait('@updateBooking');
     cy.getByTestId(SEL.BOOKING_CONFIRM_ACTION_MODAL_CONTAINER).should('be.visible');
   });
 
   it('opens the cancel modal when clicking Cancel', () => {
     cy.get('[data-testid^="booking-cancel-btn-"]').first().click({ force: true });
     cy.getByTestId(SEL.BOOKING_CANCEL_MODAL_CONTAINER).should('be.visible');
+  });
+});
+
+describe('B2B Booking Manager — detail modal content', () => {
+  beforeEach(() => {
+    cy.loginAsB2B();
+    cy.intercept('GET', INTERCEPT_HOTEL_BOOKINGS, {
+      fixture: 'hotel-bookings.json',
+    }).as('getHotelBookings');
+    cy.visit('/business/booking-manager');
+    cy.wait('@getHotelBookings');
+    // Open the detail modal for the first booking (hb-001 — has all fields)
+    cy.get('[data-testid^="booking-detail-btn-"]').first().click({ force: true });
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_CONTAINER).should('be.visible');
+  });
+
+  it('renders the booking code in the modal header', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_BOOKING_CODE).should('contain.text', 'TH-2026-101');
+  });
+
+  it('renders the status badge', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_ACTIVE_BADGE).should('be.visible');
+  });
+
+  // ── Guest information ────────────────────────────────────────────────────
+
+  it('renders the guest information section', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_GUEST_SECTION).should('be.visible');
+  });
+
+  it('shows nombreUser as the guest display name', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_CLIENT_NAME).should('contain.text', 'Ana García');
+  });
+
+  it('shows guest email when provided in fixture', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_GUEST_EMAIL).should('contain.text', 'ana.garcia@email.com');
+  });
+
+  it('shows guest phone when provided in fixture', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_GUEST_PHONE).should('contain.text', '+57 300 111 2222');
+  });
+
+  it('shows estimated arrival time when provided in fixture', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_ARRIVAL_TIME).should('contain.text', '3:00 PM');
+  });
+
+  // ── Property section ─────────────────────────────────────────────────────
+
+  it('renders the property section', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_PROPERTY_SECTION).should('be.visible');
+  });
+
+  it('shows the hotel name in the property section', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_HOTEL_NAME).should('contain.text', 'Hotel La Perla');
+  });
+
+  it('shows ciudad and pais as location', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_LOCATION).should('contain.text', 'Medellín').and('contain.text', 'Colombia');
+  });
+
+  it('shows the room name', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_ROOM).should('contain.text', 'La Perla Suite');
+  });
+
+  it('shows tipo_habitacion when provided', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_ROOM_TYPE).should('contain.text', 'Suite');
+  });
+
+  it('shows categoria when provided', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_CATEGORY).should('contain.text', 'Luxury');
+  });
+
+  it('shows tamano_habitacion when provided', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_ROOM_SIZE).should('contain.text', '55 m²');
+  });
+
+  // ── Stay details ─────────────────────────────────────────────────────────
+
+  it('renders the stay details section', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_DATES_SECTION).should('be.visible');
+  });
+
+  it('shows numHuespedes in stay details', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_GUESTS_COUNT).should('contain.text', '2 adults');
+  });
+
+  it('shows check-in date', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_CHECKIN).should('contain.text', '01/05/26');
+  });
+
+  it('shows check-out date', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_CHECKOUT).should('contain.text', '05/05/26');
+  });
+
+  it('shows nights count', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_NIGHTS).should('contain.text', '4 nights');
+  });
+
+  // ── Financial section ────────────────────────────────────────────────────
+
+  it('renders the financial section', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_FINANCIAL_SECTION).should('be.visible');
+  });
+
+  it('shows the booking total', () => {
+    // Modal content may extend beyond viewport — scroll the element into view first
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_TOTAL).scrollIntoView().should('exist');
+  });
+
+  // ── Special requests ─────────────────────────────────────────────────────
+
+  it('shows special requests when provided', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_SPECIAL_REQUESTS)
+      .scrollIntoView()
+      .should('contain.text', 'Vista al mar');
+  });
+
+  // ── Actions ──────────────────────────────────────────────────────────────
+
+  it('shows CONFIRM and CANCEL action buttons inside the modal', () => {
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_CONFIRM_BTN).scrollIntoView().should('exist');
+    cy.getByTestId(SEL.BOOKING_DETAIL_MODAL_CANCEL_BTN).scrollIntoView().should('exist');
   });
 });
 

@@ -11,6 +11,10 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/context/AuthContext', () => ({ useAuth: jest.fn() }));
 
+jest.mock('@/context/CurrencyContext', () => ({
+  useCurrency: () => ({ currency: 'USD', setCurrency: jest.fn(), supportedCurrencies: ['USD', 'COP', 'EUR', 'GBP'] }),
+}));
+
 jest.mock('@/components/shared/LoginModal/LoginModal', () => ({
   __esModule: true,
   default: () => null,
@@ -43,12 +47,26 @@ const authUser = {
 
 const mockBookings = [
   {
-    id: 'b1', codigo: 'CODE-001', viajeroId: 'u1', habitacionId: 'h1',
+    id: 'b1', habitacionId: 'h1', nombreUser: 'Test User',
+    nombreHotel: 'Grand Cypress Hotel', descripcion: 'Vista ciudad',
+    ciudad: 'Medellín', pais: 'Colombia', direccion: 'Calle 100',
+    estrellas: 4, distancia: '1.2km from center', acceso: 'Metro',
+    tipo: 'Doble', categoria: 'Deluxe',
+    tipo_habitacion: 'deluxe', tipo_cama: ['king'], tamano_habitacion: '35m2',
+    amenidades: ['AC', 'WiFi'],
+    imagenes: ['https://example.com/hotel1.jpg'],
     fechaCheckIn: '2025-08-10T00:00:00', fechaCheckOut: '2025-08-15T00:00:00',
     numHuespedes: 2, estado: 'CONFIRMADA', subtotal: 500, impuestos: 100, total: 600, moneda: 'USD',
   },
   {
-    id: 'b2', codigo: 'CODE-002', viajeroId: 'u1', habitacionId: 'h2',
+    id: 'b2', habitacionId: 'h2', nombreUser: 'Test User',
+    nombreHotel: 'Boutique City Villa', descripcion: 'Suite premium',
+    ciudad: 'Bogotá', pais: 'Colombia', direccion: 'Cra 7',
+    estrellas: 5, distancia: '2.5km from center', acceso: 'Bus',
+    tipo: 'Suite', categoria: 'Premium',
+    tipo_habitacion: 'suite', tipo_cama: ['queen'], tamano_habitacion: '50m2',
+    amenidades: ['Pool', 'Spa'],
+    imagenes: [],
     fechaCheckIn: '2024-09-01T00:00:00', fechaCheckOut: '2024-09-05T00:00:00',
     numHuespedes: 1, estado: 'CANCELADA', subtotal: 300, impuestos: 60, total: 360, moneda: 'USD',
   },
@@ -124,13 +142,13 @@ describe('BookingsPage', () => {
     });
   });
 
-  it('renders booking codes', async () => {
+  it('renders hotel names', async () => {
     mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
     mockGetMyBookings.mockResolvedValue(mockBookings);
     renderPage();
     await waitFor(() => {
-      expect(screen.getByText(/CODE-001/)).toBeInTheDocument();
-      expect(screen.getByText(/CODE-002/)).toBeInTheDocument();
+      expect(screen.getByText(/Grand Cypress Hotel/)).toBeInTheDocument();
+      expect(screen.getByText(/Boutique City Villa/)).toBeInTheDocument();
     });
   });
 

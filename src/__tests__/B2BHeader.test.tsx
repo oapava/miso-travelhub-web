@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import B2BHeader from '@/components/layout/B2BHeader/B2BHeader';
 
 const mockChangeLanguage = jest.fn();
+const mockSetCurrency = jest.fn();
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -13,9 +14,18 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
+jest.mock('@/context/CurrencyContext', () => ({
+  useCurrency: () => ({
+    currency: 'USD',
+    setCurrency: mockSetCurrency,
+    supportedCurrencies: ['USD', 'COP', 'EUR', 'GBP'],
+  }),
+}));
+
 describe('B2BHeader', () => {
   beforeEach(() => {
     mockChangeLanguage.mockClear();
+    mockSetCurrency.mockClear();
   });
 
   it('renders the header element', () => {
@@ -43,9 +53,26 @@ describe('B2BHeader', () => {
     expect(screen.getByTestId('b2b-header-language')).toBeInTheDocument();
   });
 
-  it('renders the currency label', () => {
+  it('renders the currency select with current currency', () => {
     render(<B2BHeader />);
-    expect(screen.getByText('USD')).toBeInTheDocument();
+    const select = screen.getByTestId('b2b-header-currency-select');
+    expect(select).toBeInTheDocument();
+    expect(select).toHaveValue('USD');
+  });
+
+  it('renders all supported currencies as options', () => {
+    render(<B2BHeader />);
+    ['USD', 'COP', 'EUR', 'GBP'].forEach((c) => {
+      expect(screen.getByRole('option', { name: c })).toBeInTheDocument();
+    });
+  });
+
+  it('calls setCurrency when a different currency is selected', () => {
+    render(<B2BHeader />);
+    fireEvent.change(screen.getByTestId('b2b-header-currency-select'), {
+      target: { value: 'COP' },
+    });
+    expect(mockSetCurrency).toHaveBeenCalledWith('COP');
   });
 
   it('renders the notifications button', () => {

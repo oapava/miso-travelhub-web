@@ -19,6 +19,10 @@ jest.mock('@/context/AuthContext', () => ({
   }),
 }));
 
+jest.mock('@/context/CurrencyContext', () => ({
+  useCurrency: () => ({ currency: 'USD', setCurrency: jest.fn(), supportedCurrencies: ['USD', 'COP', 'EUR', 'GBP'] }),
+}));
+
 jest.mock('@/components/shared/LoginModal/LoginModal', () => ({
   __esModule: true,
   default: () => null,

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Logo } from '@/components/ui';
+import { useCurrency, type SupportedCurrency } from '@/context/CurrencyContext';
 import './B2BHeader.scss';
 
 interface B2BHeaderProps {
@@ -14,6 +15,7 @@ const B2BHeader: React.FC<B2BHeaderProps> = ({
   dataTestId,
 }) => {
   const { i18n } = useTranslation();
+  const { currency, setCurrency, supportedCurrencies } = useCurrency();
   const displayDate =
     currentDate ||
     new Date().toLocaleDateString('en-US', {
@@ -45,7 +47,17 @@ const B2BHeader: React.FC<B2BHeaderProps> = ({
           >
             {i18n.language.toUpperCase()}
           </button>
-          <span className="b2b-header__currency">USD</span>
+          <select
+            className="b2b-header__currency"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as SupportedCurrency)}
+            aria-label="Select currency"
+            data-testid="b2b-header-currency-select"
+          >
+            {supportedCurrencies.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
           <button
             type="button"
             className="b2b-header__notification"

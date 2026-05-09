@@ -8,6 +8,8 @@ export interface LastSearchParams {
   rooms: number;
   adults: number;
   children: number;
+  /** Código ISO de moneda seleccionado en la búsqueda, p. ej. "COP" | "USD". */
+  moneda: string;
 }
 
 function sessionGet<T>(key: string): T | null {
