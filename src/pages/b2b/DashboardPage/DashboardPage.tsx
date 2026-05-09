@@ -63,7 +63,7 @@ function buildMonthlyIncome(bookings: HotelBooking[]): { month: string; value: n
           && st !== 'cancelado' && st !== 'cancelada';
       })
       .reduce((sum, b) => sum + (b.total || 0), 0);
-    return { month: MONTHS_SHORT[m], value };
+    return { month: MONTHS_SHORT[m] ?? '', value };
   });
 }
 
