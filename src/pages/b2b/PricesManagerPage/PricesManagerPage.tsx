@@ -24,7 +24,7 @@ const mockPlacePricesData: PlacePriceRow[] = Array.from({ length: 10 }, (_, i) =
 }));
 
 const PricesManagerPage: React.FC = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [prices, setPrices] = useState<Record<number, string>>(
     Object.fromEntries(mockPlacePricesData.map(row => [row.id, row.priceNight]))
@@ -48,6 +48,8 @@ const PricesManagerPage: React.FC = () => {
       <div className="prices-manager-page__container">
         <B2BSidebar
           onLogout={logout}
+          userEmail={user?.email}
+          userRole={user?.rol}
           dataTestId="prices-manager-sidebar"
         />
 

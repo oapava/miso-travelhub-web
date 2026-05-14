@@ -80,7 +80,7 @@ function isConfirmed(estado: string) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const DashboardPage: React.FC = () => {
-  const { logout, accessToken } = useAuth();
+  const { logout, accessToken, user } = useAuth();
   const [bookings, setBookings]   = useState<HotelBooking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -137,7 +137,12 @@ const DashboardPage: React.FC = () => {
       <B2BHeader breadcrumbText="Travelhub/Dashboard" dataTestId="dashboard-header" />
 
       <div className="dashboard-page__container">
-        <B2BSidebar onLogout={logout} dataTestId="dashboard-sidebar" />
+        <B2BSidebar
+          onLogout={logout}
+          userEmail={user?.email}
+          userRole={user?.rol}
+          dataTestId="dashboard-sidebar"
+        />
 
         <main className="dashboard-page__main" tabIndex={0}>
           <div className="dashboard-page__content">

@@ -6,6 +6,7 @@ import BookingConfirmActionModal from '@/components/shared/BookingConfirmActionM
 import BookingCancelModal from '@/components/shared/BookingCancelModal/BookingCancelModal';
 import { Input, Select, Pagination, Button } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import {
   bookingService,
   getHotelIdFromToken,
@@ -47,11 +48,20 @@ function estadoCssModifier(estado: string): string {
   if (lower === 'confirmado' || lower === 'confirmada' || lower === 'activo' || lower === 'active') return 'active';
   if (lower === 'pendiente') return 'pending';
   if (lower === 'cancelado' || lower === 'cancelada') return 'cancelled';
+  if (lower === 'pagado' || lower === 'pagada') return 'paid';
+  if (lower === 'reembolsando') return 'refunding';
   return lower;
 }
 
+/** A paid or refunding booking cannot be confirmed or cancelled from B2B. */
+function isPaid(estado: string): boolean {
+  const s = estado.toUpperCase();
+  return s === 'PAGADO' || s === 'PAGADA' || s === 'REEMBOLSANDO';
+}
+
 const BookingManagerPage: React.FC = () => {
-  const { accessToken, logout } = useAuth();
+  const { accessToken, logout, user } = useAuth();
+  const { currency } = useCurrency();
 
   const [bookings, setBookings] = useState<HotelBooking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -87,8 +97,8 @@ const BookingManagerPage: React.FC = () => {
     // otherwise fall back to the traveler endpoint (development / tokens
     // without a hotel_id claim).
     const request = hotelId
-      ? bookingService.getHotelBookings(hotelId, accessToken)
-      : bookingService.getMyBookings(accessToken);
+      ? bookingService.getHotelBookings(hotelId, accessToken, currency)
+      : bookingService.getMyBookings(accessToken, { moneda: currency });
 
     request
       .then((data) => setBookings(data as HotelBooking[]))
@@ -96,7 +106,7 @@ const BookingManagerPage: React.FC = () => {
         setLoadError(err instanceof Error ? err.message : 'Could not load bookings.');
       })
       .finally(() => setIsLoading(false));
-  }, [accessToken]);
+  }, [accessToken, currency]);
 
   // ── Client-side filtering ────────────────────────────────────────────────
   const filtered = bookings.filter((b) => {
@@ -191,7 +201,12 @@ const BookingManagerPage: React.FC = () => {
       <B2BHeader breadcrumbText="Travelhub/Booking Manager" dataTestId="booking-manager-header" />
 
       <div className="booking-manager-page__container">
-        <B2BSidebar onLogout={logout} dataTestId="booking-manager-sidebar" />
+        <B2BSidebar
+          onLogout={logout}
+          userEmail={user?.email}
+          userRole={user?.rol}
+          dataTestId="booking-manager-sidebar"
+        />
 
         <main className="booking-manager-page__main">
           <div className="booking-manager-page__content">
@@ -370,7 +385,8 @@ const BookingManagerPage: React.FC = () => {
                           variant="primary"
                           size="small"
                           onClick={() => void handleConfirmBooking(item)}
-                          disabled={isActionLoading}
+                          disabled={isActionLoading || isPaid(item.estado)}
+                          title={isPaid(item.estado) ? 'Booking already paid / refunding' : undefined}
                           dataTestId={`booking-confirm-btn-${item.id}`}
                         >
                           CONFIRM
@@ -387,6 +403,8 @@ const BookingManagerPage: React.FC = () => {
                           size="small"
                           className="booking-manager-page__cancel-btn"
                           onClick={() => openCancel(item)}
+                          disabled={isPaid(item.estado)}
+                          title={isPaid(item.estado) ? 'Booking already paid / refunding' : undefined}
                           dataTestId={`booking-cancel-btn-${item.id}`}
                         >
                           CANCEL

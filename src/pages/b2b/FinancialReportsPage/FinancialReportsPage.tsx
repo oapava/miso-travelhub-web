@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { B2BHeader, B2BSidebar } from '@/components/layout';
 import { useAuth } from '@/context/AuthContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import { DataTable, StatCard } from '@/components/shared';
 import { Badge, Input, Pagination } from '@/components/ui';
 import {
@@ -135,7 +136,8 @@ function exportToCSV(
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const FinancialReportsPage: React.FC = () => {
-  const { logout, accessToken } = useAuth();
+  const { logout, accessToken, user } = useAuth();
+  const { currency } = useCurrency();
   const [bookings, setBookings]     = useState<HotelBooking[]>([]);
   const [isLoading, setIsLoading]   = useState(false);
   const [loadError, setLoadError]   = useState<string | null>(null);
@@ -151,14 +153,14 @@ const FinancialReportsPage: React.FC = () => {
 
     const hotelId = getHotelIdFromToken(accessToken);
     const request = hotelId
-      ? bookingService.getHotelBookings(hotelId, accessToken)
-      : bookingService.getMyBookings(accessToken);
+      ? bookingService.getHotelBookings(hotelId, accessToken, currency)
+      : bookingService.getMyBookings(accessToken, { moneda: currency });
 
     request
       .then(data => setBookings(data as HotelBooking[]))
       .catch(err => setLoadError(err instanceof Error ? err.message : 'Could not load data.'))
       .finally(() => setIsLoading(false));
-  }, [accessToken]);
+  }, [accessToken, currency]);
 
   // ── Derived metrics ────────────────────────────────────────────────────────
   const filteredBookings     = bookings.filter(b => isInDateRange(b.fechaCheckIn, startDate, endDate));
@@ -193,7 +195,12 @@ const FinancialReportsPage: React.FC = () => {
       <B2BHeader breadcrumbText="Travelhub/Financial Reports" dataTestId="financial-reports-header" />
 
       <div className="financial-reports-page__container">
-        <B2BSidebar onLogout={logout} dataTestId="financial-reports-sidebar" />
+        <B2BSidebar
+          onLogout={logout}
+          userEmail={user?.email}
+          userRole={user?.rol}
+          dataTestId="financial-reports-sidebar"
+        />
 
         <main className="financial-reports-page__main" tabIndex={0}>
           <div className="financial-reports-page__content">

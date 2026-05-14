@@ -96,9 +96,11 @@ export interface GetBookingsFilter {
   status?: string;
   checkin?: string;
   checkout?: string;
+  /** ISO 4217 currency code — API converts all monetary values to this currency */
+  moneda?: string;
 }
 
-/** A booking row as returned by /api/v1/booking/bookings_hotel */
+/** A booking row as returned by /api/v1/booking/get_bookings */
 export interface HotelBooking {
   id: string;
   codigo: string;
@@ -209,11 +211,20 @@ export const bookingService = {
     return handleResponse<BookingResponse>(response);
   },
 
-  /** Fetch all bookings for the hotel identified by `hotelId`, auth required. */
-  async getHotelBookings(hotelId: string, accessToken: string): Promise<HotelBooking[]> {
-    const query = new URLSearchParams({ hotel_id: hotelId });
+  /**
+   * Fetch all bookings for the hotel identified by `hotelId`, auth required.
+   * Pass `moneda` to receive monetary values converted to that currency.
+   */
+  async getHotelBookings(
+    hotelId: string,
+    accessToken: string,
+    moneda?: string,
+  ): Promise<HotelBooking[]> {
+    const params: Record<string, string> = { hotel_id: hotelId };
+    if (moneda) params['moneda'] = moneda;
+    const query = new URLSearchParams(params);
     const response = await fetch(
-      `${SEARCH_BASE_URL}/api/v1/booking/bookings_hotel?${query.toString()}`,
+      `${SEARCH_BASE_URL}/api/v1/booking/get_bookings?${query.toString()}`,
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
     return handleResponse<HotelBooking[]>(response);
@@ -258,6 +269,7 @@ export const bookingService = {
     if (filter?.status)    params['status']    = filter.status;
     if (filter?.checkin)   params['checkin']   = filter.checkin;
     if (filter?.checkout)  params['checkout']  = filter.checkout;
+    if (filter?.moneda)    params['moneda']    = filter.moneda;
 
     const qs = new URLSearchParams(params);
     const url = `${BOOKING_BASE_URL}/api/v1/booking/get_bookings${qs.toString() ? `?${qs.toString()}` : ''}`;

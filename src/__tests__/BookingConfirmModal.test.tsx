@@ -127,4 +127,55 @@ describe('BookingConfirmModal', () => {
     expect(screen.getByTestId('custom-confirm')).toBeInTheDocument();
     expect(screen.getByTestId('custom-confirm-header')).toBeInTheDocument();
   });
+
+  it('renders pending hint text', () => {
+    render(<BookingConfirmModal isOpen={true} onClose={jest.fn()} />);
+    expect(screen.getByText(/pending confirmation/i)).toBeInTheDocument();
+  });
+
+  it('renders "Go to My Bookings" button when onGoToBookings is provided', () => {
+    render(
+      <BookingConfirmModal
+        isOpen={true}
+        onClose={jest.fn()}
+        onGoToBookings={jest.fn()}
+      />,
+    );
+    expect(
+      screen.getByTestId('booking-confirm-modal-go-to-bookings'),
+    ).toBeInTheDocument();
+  });
+
+  it('does NOT render "Go to My Bookings" button when onGoToBookings is absent', () => {
+    render(<BookingConfirmModal isOpen={true} onClose={jest.fn()} />);
+    expect(
+      screen.queryByTestId('booking-confirm-modal-go-to-bookings'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('calls onGoToBookings when the button is clicked', () => {
+    const onGoToBookings = jest.fn();
+    const onClose = jest.fn();
+    render(
+      <BookingConfirmModal
+        isOpen={true}
+        onClose={onClose}
+        onGoToBookings={onGoToBookings}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('booking-confirm-modal-go-to-bookings'));
+    expect(onGoToBookings).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the inline Close action button', () => {
+    render(<BookingConfirmModal isOpen={true} onClose={jest.fn()} />);
+    expect(screen.getByTestId('booking-confirm-modal-close-action')).toBeInTheDocument();
+  });
+
+  it('calls onClose when the inline Close button is clicked', () => {
+    const onClose = jest.fn();
+    render(<BookingConfirmModal isOpen={true} onClose={onClose} />);
+    fireEvent.click(screen.getByTestId('booking-confirm-modal-close-action'));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
 });

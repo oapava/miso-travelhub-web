@@ -15,6 +15,10 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/context/AuthContext', () => ({ useAuth: jest.fn() }));
 
+jest.mock('@/context/CurrencyContext', () => ({
+  useCurrency: () => ({ currency: 'USD', setCurrency: jest.fn(), supportedCurrencies: ['USD', 'COP', 'EUR', 'GBP'] }),
+}));
+
 jest.mock('@/services/booking.service', () => ({
   bookingService: {
     getHotelBookings: jest.fn(),
@@ -236,10 +240,10 @@ describe('FinancialReportsPage', () => {
 
   // ── API call ───────────────────────────────────────────────────────────────
 
-  it('calls getHotelBookings with the hotel ID from token', async () => {
+  it('calls getHotelBookings with the hotel ID, token and currency', async () => {
     renderPage();
     await waitFor(() =>
-      expect(mockGetHotelBookings).toHaveBeenCalledWith('hotel-123', 'token-abc'),
+      expect(mockGetHotelBookings).toHaveBeenCalledWith('hotel-123', 'token-abc', 'USD'),
     );
   });
 

@@ -19,7 +19,7 @@
 
 import { SEL, sel } from '../support/selectors';
 
-const INTERCEPT_HOTEL_BOOKINGS = '**/api/v1/booking/bookings_hotel*';
+const INTERCEPT_HOTEL_BOOKINGS = '**/api/v1/booking/get_bookings*';
 
 describe('B2B Booking Manager — page structure', () => {
   beforeEach(() => {

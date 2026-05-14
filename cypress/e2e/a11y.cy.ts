@@ -134,7 +134,7 @@ describe('A11y WCAG 2.1 AA — B2B Login page', () => {
 describe('A11y WCAG 2.1 AA — B2B Dashboard', () => {
   beforeEach(() => {
     cy.loginAsB2B();
-    cy.intercept('GET', '**/api/v1/booking/bookings_hotel*', { fixture: 'hotel-bookings.json' }).as('getBookings');
+    cy.intercept('GET', '**/api/v1/booking/get_bookings*', { fixture: 'hotel-bookings.json' }).as('getBookings');
     cy.visit('/business');
     cy.injectAxe();
   });

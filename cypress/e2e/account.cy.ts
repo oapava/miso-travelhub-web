@@ -63,7 +63,7 @@ describe('Bookings page', () => {
   describe('authenticated with bookings', () => {
     beforeEach(() => {
       cy.loginAsB2C();
-      cy.intercept('GET', '**/api/v1/booking/get_bookings', {
+      cy.intercept('GET', '**/api/v1/booking/get_bookings*', {
         fixture: 'bookings.json',
       }).as('getBookings');
       cy.visit('/account/bookings');
@@ -102,7 +102,7 @@ describe('Bookings page', () => {
   describe('authenticated with no bookings', () => {
     beforeEach(() => {
       cy.loginAsB2C();
-      cy.intercept('GET', '**/api/v1/booking/get_bookings', { body: [] }).as('emptyBookings');
+      cy.intercept('GET', '**/api/v1/booking/get_bookings*', { body: [] }).as('emptyBookings');
       cy.visit('/account/bookings');
       cy.wait('@emptyBookings');
     });

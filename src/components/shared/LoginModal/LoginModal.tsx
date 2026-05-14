@@ -33,7 +33,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
     try {
       const token = await authService.login(email, password);
       const user = await authService.getCurrentUser(token.access_token);
-      if (user.rol !== 'traveler') {
+      if (user.rol !== 'viajero') {
         throw new Error(
           'This portal is for travelers. Hotel administrators should use the Business portal.',
         );

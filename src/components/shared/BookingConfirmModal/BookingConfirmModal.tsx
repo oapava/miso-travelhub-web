@@ -19,6 +19,8 @@ interface BookingResponse {
 interface BookingConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Called when user clicks "Go to My Bookings" — navigate to /account/bookings */
+  onGoToBookings?: () => void;
   destination?: string;
   bookingResult?: BookingResponse | null;
   imageUrl?: string;
@@ -56,6 +58,7 @@ const CheckmarkIcon: React.FC = () => (
 const BookingConfirmModal: React.FC<BookingConfirmModalProps> = ({
   isOpen,
   onClose,
+  onGoToBookings,
   destination = 'Hotel Destination',
   bookingResult = null,
   imageUrl,
@@ -121,6 +124,34 @@ const BookingConfirmModal: React.FC<BookingConfirmModalProps> = ({
             <CheckmarkIcon />
           </div>
           <h3 className="booking-confirm-modal__success-text">Booking Success!</h3>
+          <p className="booking-confirm-modal__success-hint">
+            Your booking is pending confirmation. We'll notify you once it's approved.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div
+          className="booking-confirm-modal__actions"
+          data-testid={`${dataTestId}-actions`}
+        >
+          {onGoToBookings && (
+            <button
+              type="button"
+              className="booking-confirm-modal__go-bookings-btn"
+              onClick={onGoToBookings}
+              data-testid={`${dataTestId}-go-to-bookings`}
+            >
+              Go to My Bookings
+            </button>
+          )}
+          <button
+            type="button"
+            className="booking-confirm-modal__close-btn"
+            onClick={onClose}
+            data-testid={`${dataTestId}-close-action`}
+          >
+            Close
+          </button>
         </div>
 
       </div>

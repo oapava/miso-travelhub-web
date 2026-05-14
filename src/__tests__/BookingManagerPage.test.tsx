@@ -13,6 +13,10 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/context/AuthContext', () => ({ useAuth: jest.fn() }));
 
+jest.mock('@/context/CurrencyContext', () => ({
+  useCurrency: () => ({ currency: 'USD', setCurrency: jest.fn(), supportedCurrencies: ['USD', 'COP', 'EUR', 'GBP'] }),
+}));
+
 jest.mock('@/services/booking.service', () => ({
   bookingService: {
     getHotelBookings: jest.fn(),
@@ -177,10 +181,10 @@ describe('BookingManagerPage', () => {
     await waitFor(() => expect(mockGetHotelId).toHaveBeenCalledWith(TOKEN));
   });
 
-  it('calls getHotelBookings with hotelId and token on mount', async () => {
+  it('calls getHotelBookings with hotelId, token and currency on mount', async () => {
     renderPage();
     await waitFor(() =>
-      expect(mockGetBookings).toHaveBeenCalledWith(HOTEL_ID, TOKEN),
+      expect(mockGetBookings).toHaveBeenCalledWith(HOTEL_ID, TOKEN, 'USD'),
     );
   });
 
@@ -190,10 +194,12 @@ describe('BookingManagerPage', () => {
     expect(mockGetBookings).not.toHaveBeenCalled();
   });
 
-  it('falls back to getMyBookings when hotelId cannot be decoded from token', async () => {
+  it('falls back to getMyBookings with currency when hotelId cannot be decoded', async () => {
     mockGetHotelId.mockReturnValueOnce(null);
     renderPage();
-    await waitFor(() => expect(mockGetMyBookings).toHaveBeenCalledWith(TOKEN));
+    await waitFor(() =>
+      expect(mockGetMyBookings).toHaveBeenCalledWith(TOKEN, { moneda: 'USD' }),
+    );
     expect(mockGetBookings).not.toHaveBeenCalled();
   });
 

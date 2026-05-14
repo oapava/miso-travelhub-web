@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Header, Footer } from '@/components/layout';
 import { Breadcrumb, Badge, StarRating, Button, AmenityTag, PriceDisplay, DateRangePicker, Toast } from '@/components/ui';
 import { searchParamsStorage } from '@/services/search-params.storage';
@@ -72,6 +72,7 @@ function formatPrice(amount: number, currency: string): string {
 const DetailPage: React.FC = () => {
   const { hotelId } = useParams<{ hotelId: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const hotel = (location.state as { hotel?: HotelDetail } | null)?.hotel ?? null;
   const { isAuthenticated, accessToken } = useAuth();
   const { currency } = useCurrency();
@@ -577,6 +578,10 @@ const DetailPage: React.FC = () => {
       <BookingConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
+        onGoToBookings={() => {
+          setIsConfirmModalOpen(false);
+          navigate('/account/bookings');
+        }}
         destination={hotelName}
         bookingResult={bookingResult ?? undefined}
         imageUrl={roomDetailImages[0]}

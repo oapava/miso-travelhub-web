@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import BookingsPage from '@/pages/b2c/BookingsPage/BookingsPage';
 
@@ -25,7 +25,10 @@ jest.mock('@/components/shared/SignUpModal/SignUpModal', () => ({
 }));
 
 jest.mock('@/services/booking.service', () => ({
-  bookingService: { getMyBookings: jest.fn() },
+  bookingService: {
+    getMyBookings: jest.fn(),
+    updateBooking: jest.fn(),
+  },
 }));
 
 import { useAuth } from '@/context/AuthContext';
@@ -33,6 +36,7 @@ import { bookingService } from '@/services/booking.service';
 
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const mockGetMyBookings = bookingService.getMyBookings as jest.Mock;
+const mockUpdateBooking = bookingService.updateBooking as jest.Mock;
 
 const unauthUser = {
   isAuthenticated: false, user: null, accessToken: null,
@@ -69,6 +73,18 @@ const mockBookings = [
     imagenes: [],
     fechaCheckIn: '2024-09-01T00:00:00', fechaCheckOut: '2024-09-05T00:00:00',
     numHuespedes: 1, estado: 'CANCELADA', subtotal: 300, impuestos: 60, total: 360, moneda: 'USD',
+  },
+  {
+    id: 'b3', habitacionId: 'h3', nombreUser: 'Test User',
+    nombreHotel: 'Seaside Resort', descripcion: 'Vista al mar',
+    ciudad: 'Cartagena', pais: 'Colombia', direccion: 'Avenida el Mar',
+    estrellas: 3, distancia: '0.5km from center', acceso: 'Walk',
+    tipo: 'Standard', categoria: 'Economy',
+    tipo_habitacion: 'standard', tipo_cama: ['double'], tamano_habitacion: '25m2',
+    amenidades: ['Beach'],
+    imagenes: [],
+    fechaCheckIn: '2024-10-01T00:00:00', fechaCheckOut: '2024-10-03T00:00:00',
+    numHuespedes: 2, estado: 'PENDIENTE', subtotal: 200, impuestos: 40, total: 240, moneda: 'COP',
   },
 ];
 
@@ -116,10 +132,12 @@ describe('BookingsPage', () => {
     expect(screen.getByText('Loading bookings...')).toBeInTheDocument();
   });
 
-  it('calls getMyBookings with the access token', async () => {
+  it('calls getMyBookings with the access token and active currency', async () => {
     mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
     renderPage();
-    await waitFor(() => expect(mockGetMyBookings).toHaveBeenCalledWith('my-token'));
+    await waitFor(() =>
+      expect(mockGetMyBookings).toHaveBeenCalledWith('my-token', { moneda: 'USD' }),
+    );
   });
 
   it('renders booking items when loaded', async () => {
@@ -178,5 +196,202 @@ describe('BookingsPage', () => {
     await waitFor(() =>
       expect(screen.getByText('You have no bookings yet.')).toBeInTheDocument(),
     );
+  });
+
+  // ── PAY button (CONFIRMADA bookings) ─────────────────────────────────────────
+
+  it('renders PAY NOW button for CONFIRMADA booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByTestId('booking-pay-btn-b1')).toBeInTheDocument(),
+    );
+  });
+
+  it('PAY NOW button href contains invoiceId, currency and amount for CONFIRMADA booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => {
+      const payBtn = screen.getByTestId('booking-pay-btn-b1');
+      expect(payBtn).toHaveAttribute('href', expect.stringContaining('invoiceId=b1'));
+      expect(payBtn).toHaveAttribute('href', expect.stringContaining('currency=USD'));
+      expect(payBtn).toHaveAttribute('href', expect.stringContaining('amount=600'));
+      expect(payBtn).toHaveAttribute('href', expect.stringContaining('returnUrl='));
+    });
+  });
+
+  it('does NOT render PAY NOW for CANCELADA booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() =>
+      expect(screen.queryByTestId('booking-pay-btn-b2')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('does NOT render PAY NOW for PENDIENTE booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() =>
+      expect(screen.queryByTestId('booking-pay-btn-b3')).not.toBeInTheDocument(),
+    );
+  });
+
+  // ── Pending info tooltip ──────────────────────────────────────────────────────
+
+  it('renders pending info icon for PENDIENTE booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByTestId('booking-pending-info-b3')).toBeInTheDocument(),
+    );
+  });
+
+  it('does NOT render pending info icon for CONFIRMADA booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() =>
+      expect(screen.queryByTestId('booking-pending-info-b1')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('pending info tooltip contains payment explanation text', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => {
+      const info = screen.getByTestId('booking-pending-info-b3');
+      expect(info).toHaveTextContent(/approved.*payment/i);
+    });
+  });
+
+  it('PAY NOW returnUrl contains /account/bookings', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => {
+      const payBtn = screen.getByTestId('booking-pay-btn-b1');
+      const href = payBtn.getAttribute('href') ?? '';
+      expect(decodeURIComponent(href)).toContain('/account/bookings');
+    });
+  });
+
+  // ── Cancel booking ─────────────────────────────────────────────────────────
+
+  it('renders CANCEL button for CONFIRMADA booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('booking-cancel-btn-b1')).toBeInTheDocument();
+    });
+  });
+
+  it('renders CANCEL button for PENDIENTE booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('booking-cancel-btn-b3')).toBeInTheDocument();
+    });
+  });
+
+  it('does NOT render CANCEL button for already CANCELADA booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => {
+      expect(screen.queryByTestId('booking-cancel-btn-b2')).not.toBeInTheDocument();
+    });
+  });
+
+  it('opens cancel modal when CANCEL button is clicked', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => {
+      fireEvent.click(screen.getByTestId('booking-cancel-btn-b1'));
+    });
+    const modal = screen.getByTestId('bookings-cancel-modal');
+    expect(modal).toBeInTheDocument();
+    expect(within(modal).getByText(/Grand Cypress Hotel/i)).toBeInTheDocument();
+  });
+
+  it('calls updateBooking with CANCELADA when confirm is clicked in modal', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    mockUpdateBooking.mockResolvedValue({});
+    renderPage();
+    await waitFor(() => {
+      fireEvent.click(screen.getByTestId('booking-cancel-btn-b1'));
+    });
+    fireEvent.click(screen.getByTestId('bookings-cancel-modal-confirm-btn'));
+    await waitFor(() => {
+      expect(mockUpdateBooking).toHaveBeenCalledWith('b1', 'CANCELADA', 'my-token');
+    });
+  });
+
+  it('shows error and closes modal when cancel is attempted on check-in day', async () => {
+    const today = new Date();
+    const todayISO = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0'),
+    ].join('-');
+    const sameDayBooking = { ...mockBookings[0], id: 'b-today', fechaCheckIn: `${todayISO}T00:00:00` };
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue([sameDayBooking]);
+    renderPage();
+    await waitFor(() => {
+      fireEvent.click(screen.getByTestId('booking-cancel-btn-b-today'));
+    });
+    fireEvent.click(screen.getByTestId('bookings-cancel-modal-confirm-btn'));
+    await waitFor(() => {
+      expect(mockUpdateBooking).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('bookings-cancel-modal')).not.toBeInTheDocument();
+    });
+  });
+
+  it('does NOT render CANCEL button for REEMBOLSANDO booking', async () => {
+    const refundingBooking = { ...mockBookings[0], id: 'b-ref', estado: 'REEMBOLSANDO' };
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue([refundingBooking]);
+    renderPage();
+    await waitFor(() => {
+      expect(screen.queryByTestId('booking-cancel-btn-b-ref')).not.toBeInTheDocument();
+    });
+  });
+
+  it('renders REFUNDING label for REEMBOLSANDO booking in English', async () => {
+    const refundingBooking = { ...mockBookings[0], id: 'b-ref2', estado: 'REEMBOLSANDO' };
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue([refundingBooking]);
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('booking-status-b-ref2')).toHaveTextContent('REFUNDING');
+    });
+  });
+
+  it('closes cancel modal and updates status after successful cancellation', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    mockUpdateBooking.mockResolvedValue({});
+    renderPage();
+    await waitFor(() => {
+      fireEvent.click(screen.getByTestId('booking-cancel-btn-b1'));
+    });
+    fireEvent.click(screen.getByTestId('bookings-cancel-modal-confirm-btn'));
+    await waitFor(() => {
+      expect(screen.queryByTestId('bookings-cancel-modal')).not.toBeInTheDocument();
+    });
+    // Cancel button should be gone for the now-cancelled booking
+    await waitFor(() => {
+      expect(screen.queryByTestId('booking-cancel-btn-b1')).not.toBeInTheDocument();
+    });
   });
 });

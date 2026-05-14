@@ -372,9 +372,24 @@ describe('bookingService.getHotelBookings', () => {
     mockFetch.mockResolvedValueOnce(makeOkResponse(mockHotelBookings));
     await bookingService.getHotelBookings('hotel-1', 'token');
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/booking/bookings_hotel?hotel_id=hotel-1'),
+      expect.stringContaining('/api/v1/booking/get_bookings?hotel_id=hotel-1'),
       expect.any(Object),
     );
+  });
+
+  it('includes moneda query param when provided', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse(mockHotelBookings));
+    await bookingService.getHotelBookings('hotel-1', 'token', 'EUR');
+    const calledUrl: string = (mockFetch.mock.calls[0] as [string])[0];
+    expect(calledUrl).toContain('hotel_id=hotel-1');
+    expect(calledUrl).toContain('moneda=EUR');
+  });
+
+  it('omits moneda param when not provided', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse(mockHotelBookings));
+    await bookingService.getHotelBookings('hotel-1', 'token');
+    const calledUrl: string = (mockFetch.mock.calls[0] as [string])[0];
+    expect(calledUrl).not.toContain('moneda=');
   });
 
   it('sends Authorization Bearer header', async () => {
@@ -484,6 +499,13 @@ describe('bookingService.getMyBookings', () => {
     expect(calledUrl).toContain('status=PENDIENTE');
     expect(calledUrl).toContain('checkin=2026-09-05');
     expect(calledUrl).toContain('checkout=2026-09-11');
+  });
+
+  it('includes moneda param when provided in filter', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse([]));
+    await bookingService.getMyBookings('my-token', { moneda: 'EUR' });
+    const calledUrl: string = (mockFetch.mock.calls[0] as [string])[0];
+    expect(calledUrl).toContain('moneda=EUR');
   });
 
   it('omits query string entirely when filter is empty object', async () => {

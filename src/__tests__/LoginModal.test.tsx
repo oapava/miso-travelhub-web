@@ -30,7 +30,7 @@ const mockUser: UserResponse = {
   idioma: 'en',
   moneda_preferida: 'USD',
   mfa_activo: false,
-  rol: 'traveler',
+  rol: 'viajero',
   fecha_registro: '2024-01-01T00:00:00Z',
 };
 
