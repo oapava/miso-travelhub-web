@@ -24,7 +24,7 @@ const B2BLoginPage: React.FC = () => {
     try {
       const token = await authService.login(email, password);
       const user = await authService.getCurrentUser(token.access_token);
-      if (user.rol === 'traveler') {
+      if (user.rol === 'viajero' || user.rol === 'traveler') {
         throw new Error('Access denied. This portal is for hotel administrators only.');
       }
       contextLogin(token, user);
