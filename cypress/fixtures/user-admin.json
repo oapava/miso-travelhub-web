@@ -1,0 +1,11 @@
+{
+  "id": "admin-001",
+  "email": "admin@hotel.com",
+  "username": "hotel_admin",
+  "nombre": "Hotel Admin",
+  "rol": "hotel_admin",
+  "telefono": "+1 555 0200",
+  "pais": "Colombia",
+  "idioma": "en",
+  "moneda_preferida": "USD"
+}

@@ -13,3 +13,5 @@ export { Input } from './Input';
 export { Select } from './Select';
 export { DateRangePicker } from './DateRangePicker';
 export type { DateRangePickerProps } from './DateRangePicker';
+export { Toast } from './Toast';
+export type { ToastProps, ToastVariant } from './Toast';

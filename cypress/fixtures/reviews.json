@@ -1,0 +1,18 @@
+[
+  {
+    "id": "review-001",
+    "viajeroId": "traveler-001",
+    "calificacion": 5,
+    "comentario": "Excellent stay! Highly recommended.",
+    "fecha": "2026-04-01",
+    "verificada": true
+  },
+  {
+    "id": "review-002",
+    "viajeroId": "traveler-002",
+    "calificacion": 4,
+    "comentario": "Good hotel with great amenities.",
+    "fecha": "2026-03-15",
+    "verificada": false
+  }
+]

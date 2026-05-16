@@ -10,6 +10,8 @@ interface BookingCancelModalProps {
   // Optional — static defaults keep existing tests green
   clientName?: string;
   hotelName?: string;
+  /** When true the confirm button is disabled and shows a loading state */
+  isLoading?: boolean;
 }
 
 const BookingCancelModal: React.FC<BookingCancelModalProps> = ({
@@ -19,10 +21,11 @@ const BookingCancelModal: React.FC<BookingCancelModalProps> = ({
   dataTestId = 'booking-cancel-modal',
   clientName = 'Carlos',
   hotelName = 'La Perla, Medellín',
+  isLoading = false,
 }) => {
   const handleConfirm = () => {
+    // Parent is responsible for closing the modal (e.g. after async call completes)
     onConfirm?.();
-    onClose();
   };
 
   return (
@@ -65,9 +68,10 @@ const BookingCancelModal: React.FC<BookingCancelModalProps> = ({
             variant="primary"
             size="small"
             onClick={handleConfirm}
+            disabled={isLoading}
             dataTestId={`${dataTestId}-confirm-btn`}
           >
-            CONFIRM
+            {isLoading ? 'CANCELLING…' : 'CONFIRM'}
           </Button>
         </div>
       </div>

@@ -105,4 +105,59 @@
     margin: 0;
     text-align: center;
   }
+
+  &__success-hint {
+    font-size: $font-size-sm;
+    color: $color-neutral-600;
+    text-align: center;
+    margin: 0;
+    max-width: 28rem;
+  }
+
+  // ── Action buttons ─────────────────────────────────────────────────────────
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    align-items: center;
+    padding-top: $spacing-xs;
+  }
+
+  &__go-bookings-btn {
+    width: 100%;
+    max-width: 20rem;
+    padding: $spacing-sm $spacing-xl;
+    border-radius: $border-radius-md;
+    border: none;
+    background-color: $color-primary-600;
+    color: $color-neutral-white;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    @include transition(background-color);
+
+    &:hover {
+      background-color: $color-primary-700;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary-500;
+      outline-offset: 2px;
+    }
+  }
+
+  &__close-btn {
+    background: none;
+    border: none;
+    color: $color-neutral-500;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: $spacing-2xs;
+
+    &:hover {
+      color: $color-neutral-700;
+    }
+  }
 }

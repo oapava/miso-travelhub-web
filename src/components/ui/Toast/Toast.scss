@@ -1,0 +1,109 @@
+// ── Toast notification ────────────────────────────────────────────────────────
+
+.toast {
+  position: fixed;
+  bottom: $spacing-xl;
+  right: $spacing-xl;
+  z-index: 2000;
+
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+
+  min-width: 280px;
+  max-width: 420px;
+  padding: $spacing-md $spacing-lg;
+  border-radius: $border-radius-lg;
+  border-left: 4px solid currentColor;
+  @include card-shadow;
+
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+  animation: toast-slide-in 0.2s ease-out;
+
+  // ── Variants ─────────────────────────────────────────────────────────────
+
+  &--error {
+    background-color: #fff5f5;
+    color: $color-error;
+    border-left-color: $color-error;
+
+    .toast__icon {
+      color: $color-error;
+    }
+  }
+
+  &--success {
+    background-color: #f0fdf4;
+    color: $color-success;
+    border-left-color: $color-success;
+
+    .toast__icon {
+      color: $color-success;
+    }
+  }
+
+  &--warning {
+    background-color: #fffbeb;
+    color: #b45309;
+    border-left-color: #f59e0b;
+
+    .toast__icon {
+      color: #f59e0b;
+    }
+  }
+
+  &--info {
+    background-color: #eff6ff;
+    color: $color-primary-700;
+    border-left-color: $color-primary-700;
+
+    .toast__icon {
+      color: $color-primary-700;
+    }
+  }
+
+  // ── Parts ─────────────────────────────────────────────────────────────────
+
+  &__icon {
+    font-size: $font-size-base;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  &__message {
+    flex: 1;
+    color: $color-neutral-900;
+    word-break: break-word;
+  }
+
+  &__close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-size: $font-size-sm;
+    color: $color-neutral-400;
+    line-height: 1;
+
+    @include transition(color);
+
+    &:hover {
+      color: $color-neutral-700;
+    }
+  }
+}
+
+// ── Slide-in animation ────────────────────────────────────────────────────────
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

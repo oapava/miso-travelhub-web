@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import PricesManagerPage from '@/pages/b2b/PricesManagerPage/PricesManagerPage';
+import { useAuth } from '@/context/AuthContext';
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -8,6 +9,11 @@ jest.mock('react-i18next', () => ({
     i18n: { language: 'en', changeLanguage: jest.fn() },
   }),
 }));
+
+jest.mock('@/context/AuthContext', () => ({ useAuth: jest.fn() }));
+
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+const mockLogout = jest.fn();
 
 const renderPage = () =>
   render(
@@ -17,6 +23,26 @@ const renderPage = () =>
   );
 
 describe('PricesManagerPage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: true,
+      user: {
+        id: 'u1',
+        email: 'admin@hotel.com',
+        username: 'admin',
+        nombre: 'Admin Hotel',
+        rol: 'hotel_admin',
+        telefono: null,
+        pais: 'CO',
+        idioma: 'es',
+        moneda_preferida: 'USD',
+      },
+      accessToken: 'token-abc',
+      login: jest.fn(),
+      logout: mockLogout,
+    });
+  });
   it('renders the page container', () => {
     renderPage();
     expect(screen.getByTestId('prices-manager-page')).toBeInTheDocument();
@@ -98,6 +124,12 @@ describe('PricesManagerPage', () => {
   it('logout button is clickable without throwing', () => {
     renderPage();
     expect(() => fireEvent.click(screen.getByTestId('b2b-sidebar-logout'))).not.toThrow();
+  });
+
+  it('calls logout from AuthContext when logout button is clicked', () => {
+    renderPage();
+    fireEvent.click(screen.getByTestId('b2b-sidebar-logout'));
+    expect(mockLogout).toHaveBeenCalledTimes(1);
   });
 
   it('updates price input when changed', () => {

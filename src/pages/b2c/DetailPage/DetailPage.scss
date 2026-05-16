@@ -323,5 +323,80 @@
     color: $color-primary-800;
   }
 
+  // ── Price breakdown ───────────────────────────────────────────────────────
+  &__price-breakdown {
+    margin-top: $spacing-md;
+    padding-top: $spacing-md;
+    border-top: 1px solid $color-neutral-200;
+
+    &__title {
+      @include body-text(sm);
+      font-weight: $font-weight-semibold;
+      color: $color-primary-800;
+      margin-bottom: $spacing-sm;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    &__row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: $spacing-sm;
+      padding: $spacing-2xs 0;
+      @include body-text(sm);
+      color: $color-neutral-700;
+
+      &--discount {
+        color: $color-success;
+        font-weight: $font-weight-medium;
+      }
+
+      &--subtotal {
+        color: $color-neutral-700;
+        font-style: italic;
+      }
+
+      &--taxes {
+        color: $color-neutral-500;
+        font-size: $font-size-xs;
+      }
+
+      &--total {
+        @include body-text(md);
+        font-weight: $font-weight-bold;
+        color: $color-primary-900;
+        padding-top: $spacing-xs;
+      }
+    }
+
+    &__divider {
+      border: none;
+      border-top: 1px dashed $color-neutral-300;
+      margin: $spacing-xs 0;
+    }
+
+    &__currency {
+      @include body-text(xs);
+      color: $color-neutral-400;
+      margin-top: $spacing-xs;
+      text-align: right;
+    }
+  }
+
+  // ── Booking error / price error ───────────────────────────────────────────
+  &__price-error,
+  &__booking-error {
+    @include body-text(sm);
+    color: $color-error;
+    margin-bottom: $spacing-xs;
+  }
+
+  // ── Add review header ─────────────────────────────────────────────────────
+  &__reviews-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: $spacing-xs;
+  }
 
 }

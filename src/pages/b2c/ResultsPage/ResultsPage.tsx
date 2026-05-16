@@ -15,6 +15,7 @@ interface SearchParams {
   rooms: number;
   adults: number;
   children: number;
+  moneda: string;
 }
 
 interface ResultsState {
@@ -67,11 +68,20 @@ function mapApiToCard(hotel: HabitacionDisponible, searchParams: SearchParams, i
   // CARD_DEFAULTS has 4 entries; modulo guarantees a valid index — non-null assertion is safe
   const defaults = CARD_DEFAULTS[index % CARD_DEFAULTS.length]!;
   const score = hotel.puntuacion_resena ?? defaults.reviewScore;
+
+  // Precio efectivo = subtotal con descuento (nuevo API) o precio legacy
+  const finalPrice = hotel.subtotal_con_descuento ?? hotel.precio ?? 0;
+  // Precio original sólo se expone si existe un descuento real
+  const originalPrice = hotel.descuento > 0 ? hotel.subtotal_sin_descuento : undefined;
+  const discountPercentage = hotel.descuento > 0 ? Math.round(hotel.descuento * 100) : undefined;
+
   return {
     id: hotel.id,
     hotelName: hotel.nombre_hotel,
     location: hotel.direccion,
-    finalPrice: hotel.precio,
+    finalPrice,
+    originalPrice,
+    discountPercentage,
     nightsCount: calcNights(searchParams.checkIn, searchParams.checkOut),
     guestsCount: hotel.capacidad_maxima ?? searchParams.adults,
     distance: hotel.distancia ?? defaults.distance,
@@ -84,6 +94,12 @@ function mapApiToCard(hotel: HabitacionDisponible, searchParams: SearchParams, i
     bedType: hotel.tipo_cama?.join(', ') ?? defaults.bedType,
     roomSize: hotel.tamano_habitacion ?? defaults.roomSize,
     amenities: hotel.amenidades ?? defaults.amenities,
+    // Desglose completo — se propaga al estado de navegación del DetailPage
+    subtotal_sin_descuento: hotel.subtotal_sin_descuento,
+    subtotal_con_descuento: hotel.subtotal_con_descuento,
+    total: hotel.total,
+    descuento: hotel.descuento,
+    moneda: hotel.moneda,
   };
 }
 
@@ -220,6 +236,7 @@ const ResultsPage: React.FC = () => {
     rooms?: number;
     adults?: number;
     children?: number;
+    moneda?: string;
   }) => {
     // Build a fully-required SearchParams using safe defaults
     const fullParams: SearchParams = {
@@ -229,6 +246,7 @@ const ResultsPage: React.FC = () => {
       rooms: params.rooms ?? 1,
       adults: params.adults ?? 1,
       children: params.children ?? 0,
+      moneda: params.moneda ?? routeState.searchParams?.moneda ?? 'COP',
     };
     try {
       const results = await searchService.searchRooms({
@@ -237,6 +255,7 @@ const ResultsPage: React.FC = () => {
         checkout: fullParams.checkOut,
         group: fullParams.adults,
         rooms: fullParams.rooms,
+        moneda: fullParams.moneda,
       });
       searchParamsStorage.save(fullParams);
       searchResultsStorage.save(results);
@@ -286,7 +305,7 @@ const ResultsPage: React.FC = () => {
             onClear={handleClearFilters}
           />
 
-          <main className="results-page__main" data-testid="results-main">
+          <main id="main-content" className="results-page__main" data-testid="results-main">
             <div className="results-page__header">
               <h1 className="results-page__title">
                 {searchWasPerformed
@@ -294,8 +313,9 @@ const ResultsPage: React.FC = () => {
                   : 'Explore 300+ places in Paris'}
               </h1>
               <div className="results-page__sort">
-                <label className="results-page__sort-label">Sorted by:</label>
+                <label htmlFor="results-sort-select" className="results-page__sort-label">Sorted by:</label>
                 <Select
+                  id="results-sort-select"
                   options={[
                     { value: 'top-reviewed', label: 'Top reviewed' },
                     { value: 'price-low', label: 'Price: Low to High' },
@@ -308,6 +328,9 @@ const ResultsPage: React.FC = () => {
                 />
               </div>
             </div>
+
+            {/* H2 visually-hidden para mantener la jerarquía H1→H2→H3 (WCAG 1.3.1) */}
+            <h2 className="visually-hidden">Lista de alojamientos</h2>
 
             <div className="results-page__hotels-list">
               {allHotels.length === 0 && (

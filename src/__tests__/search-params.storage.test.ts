@@ -11,6 +11,7 @@ const mockParams: LastSearchParams = {
   rooms: 1,
   adults: 2,
   children: 0,
+  moneda: 'USD',
 };
 
 beforeEach(() => {

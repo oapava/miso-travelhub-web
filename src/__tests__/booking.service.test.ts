@@ -4,6 +4,8 @@ import {
   BookingResponse,
   ReviewResponse,
   HotelBooking,
+  TravelerBooking,
+  GetBookingsFilter,
   decodeJwtPayload,
   getHotelIdFromToken,
 } from '@/services/booking.service';
@@ -366,13 +368,28 @@ describe('bookingService.getHotelBookings', () => {
     expect(result).toEqual(mockHotelBookings);
   });
 
-  it('calls the correct endpoint with hotelId query param', async () => {
+  it('calls the correct endpoint with hotel_id query param', async () => {
     mockFetch.mockResolvedValueOnce(makeOkResponse(mockHotelBookings));
     await bookingService.getHotelBookings('hotel-1', 'token');
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/booking/bookings_hotel?hotelId=hotel-1'),
+      expect.stringContaining('/api/v1/booking/get_bookings?hotel_id=hotel-1'),
       expect.any(Object),
     );
+  });
+
+  it('includes moneda query param when provided', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse(mockHotelBookings));
+    await bookingService.getHotelBookings('hotel-1', 'token', 'EUR');
+    const calledUrl: string = (mockFetch.mock.calls[0] as [string])[0];
+    expect(calledUrl).toContain('hotel_id=hotel-1');
+    expect(calledUrl).toContain('moneda=EUR');
+  });
+
+  it('omits moneda param when not provided', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse(mockHotelBookings));
+    await bookingService.getHotelBookings('hotel-1', 'token');
+    const calledUrl: string = (mockFetch.mock.calls[0] as [string])[0];
+    expect(calledUrl).not.toContain('moneda=');
   });
 
   it('sends Authorization Bearer header', async () => {
@@ -404,5 +421,119 @@ describe('bookingService.getHotelBookings', () => {
     await expect(bookingService.getHotelBookings('hotel-x', 'token')).rejects.toThrow(
       'Hotel not found',
     );
+  });
+});
+
+describe('bookingService.getMyBookings', () => {
+  beforeEach(() => mockFetch.mockReset());
+
+  const mockTravelerBooking: TravelerBooking = {
+    id: '0023c0c7-6e36-457b-b548-434d9ec31c94',
+    habitacionId: '22222222-2222-2222-2222-000000000001',
+    nombreUser: 'Carlos Viajero',
+    descripcion: 'Vista ciudad',
+    numHuespedes: 2,
+    fechaCheckIn: '2026-09-05T00:00:00Z',
+    fechaCheckOut: '2026-09-11T00:00:00Z',
+    estado: 'PENDIENTE',
+    nombreHotel: 'Hotel treta',
+    direccion: 'Calle 543',
+    ciudad: 'Madrid',
+    pais: 'Spain',
+    latitud: 50.0755,
+    longitud: 14.4378,
+    estrellas: 5,
+    distancia: '3 km del centro',
+    acceso: 'Metro',
+    tipo: 'Doble',
+    categoria: 'Deluxe',
+    imagenes: ['https://example.com/img.jpg'],
+    tipo_habitacion: 'deluxe',
+    tipo_cama: ['king'],
+    tamano_habitacion: '35m2',
+    amenidades: ['AC', 'IDK'],
+    subtotal: 540.0,
+    impuestos: 108.0,
+    total: 648.0,
+  };
+
+  it('returns traveler bookings array on success', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse([mockTravelerBooking]));
+    const result = await bookingService.getMyBookings('my-token');
+    expect(result).toEqual([mockTravelerBooking]);
+  });
+
+  it('calls the correct endpoint without filters', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse([]));
+    await bookingService.getMyBookings('my-token');
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/booking/get_bookings'),
+      expect.objectContaining({ headers: { Authorization: 'Bearer my-token' } }),
+    );
+  });
+
+  it('sends Authorization Bearer header', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse([]));
+    await bookingService.getMyBookings('super-secret-token');
+    const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect((options.headers as Record<string, string>)['Authorization']).toBe(
+      'Bearer super-secret-token',
+    );
+  });
+
+  it('includes filter params in the URL when provided', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse([]));
+    const filter: GetBookingsFilter = {
+      name: 'Carlos',
+      bookingId: '0023c0c7-6e36-457b-b548-434d9ec31c94',
+      email: 'privera05@hotmail.com',
+      status: 'PENDIENTE',
+      checkin: '2026-09-05',
+      checkout: '2026-09-11',
+    };
+    await bookingService.getMyBookings('my-token', filter);
+    const calledUrl: string = (mockFetch.mock.calls[0] as [string])[0];
+    expect(calledUrl).toContain('name=Carlos');
+    expect(calledUrl).toContain('bookingId=0023c0c7');
+    expect(calledUrl).toContain('email=privera05');
+    expect(calledUrl).toContain('status=PENDIENTE');
+    expect(calledUrl).toContain('checkin=2026-09-05');
+    expect(calledUrl).toContain('checkout=2026-09-11');
+  });
+
+  it('includes moneda param when provided in filter', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse([]));
+    await bookingService.getMyBookings('my-token', { moneda: 'EUR' });
+    const calledUrl: string = (mockFetch.mock.calls[0] as [string])[0];
+    expect(calledUrl).toContain('moneda=EUR');
+  });
+
+  it('omits query string entirely when filter is empty object', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse([]));
+    await bookingService.getMyBookings('my-token', {});
+    const calledUrl: string = (mockFetch.mock.calls[0] as [string])[0];
+    expect(calledUrl).not.toContain('?');
+  });
+
+  it('only appends defined filter fields', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse([]));
+    await bookingService.getMyBookings('my-token', { status: 'CONFIRMADA' });
+    const calledUrl: string = (mockFetch.mock.calls[0] as [string])[0];
+    expect(calledUrl).toContain('status=CONFIRMADA');
+    expect(calledUrl).not.toContain('name=');
+    expect(calledUrl).not.toContain('email=');
+  });
+
+  it('throws error with detail message on 401 response', async () => {
+    mockFetch.mockResolvedValueOnce(makeErrorResponse(401, 'Not authenticated'));
+    await expect(bookingService.getMyBookings('bad-token')).rejects.toThrow(
+      'Not authenticated',
+    );
+  });
+
+  it('returns empty array when API returns empty list', async () => {
+    mockFetch.mockResolvedValueOnce(makeOkResponse([]));
+    const result = await bookingService.getMyBookings('my-token');
+    expect(result).toEqual([]);
   });
 });

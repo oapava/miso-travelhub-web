@@ -50,6 +50,15 @@
     font-size: $font-size-sm;
     font-weight: $font-weight-medium;
     color: $color-neutral-700;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: $spacing-2xs $spacing-xs;
+    @include focus-visible-outline;
+
+    &:hover {
+      color: $color-primary-700;
+    }
   }
 
   &__notification {
