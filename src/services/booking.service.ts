@@ -49,11 +49,64 @@ export interface BookingResponse {
   moneda: string;
 }
 
-/** A booking row as returned by /api/v1/booking/bookings_hotel */
+/**
+ * A traveler booking as returned by /api/v1/booking/get_bookings.
+ * Richer than BookingResponse — includes hotel & room details.
+ */
+export interface TravelerBooking {
+  id: string;
+  habitacionId: string;
+  nombreUser: string;
+  descripcion?: string;
+  numHuespedes: number;
+  fechaCheckIn: string;
+  fechaCheckOut: string;
+  estado: string;
+  // Hotel info
+  nombreHotel: string;
+  direccion?: string;
+  ciudad?: string;
+  pais?: string;
+  latitud?: number;
+  longitud?: number;
+  estrellas?: number;
+  distancia?: string;
+  acceso?: string;
+  // Room info
+  tipo?: string;
+  categoria?: string;
+  imagenes?: string[];
+  tipo_habitacion?: string;
+  tipo_cama?: string[];
+  tamano_habitacion?: string;
+  amenidades?: string[];
+  // Financial
+  subtotal: number;
+  impuestos: number;
+  total: number;
+  /** Not always returned by the API; optional for backward compat. */
+  moneda?: string;
+}
+
+/** Optional filter params for GET /api/v1/booking/get_bookings */
+export interface GetBookingsFilter {
+  name?: string;
+  bookingId?: string;
+  email?: string;
+  status?: string;
+  checkin?: string;
+  checkout?: string;
+  /** ISO 4217 currency code — API converts all monetary values to this currency */
+  moneda?: string;
+}
+
+/** A booking row as returned by /api/v1/booking/get_bookings */
 export interface HotelBooking {
   id: string;
   codigo: string;
   viajeroId: string;
+  /** Full name of the guest — preferred display name when available */
+  nombreUser?: string;
   habitacionId: string;
   nombreHabitacion?: string;
   fechaCheckIn: string;
@@ -64,6 +117,23 @@ export interface HotelBooking {
   impuestos: number;
   total: number;
   moneda: string;
+  // ── Hotel / property context ───────────────────────────────────────────────
+  nombreHotel?: string;
+  ciudad?: string;
+  pais?: string;
+  // ── Room characteristics ───────────────────────────────────────────────────
+  tipo_habitacion?: string;
+  categoria?: string;
+  tamano_habitacion?: string;
+  // ── Operational fields (returned when available) ───────────────────────────
+  /** Estimated check-in time, e.g. "3:00 PM" */
+  horaEstimadaLlegada?: string;
+  /** Free-text special requests left by the guest */
+  solicitudesEspeciales?: string;
+  /** Guest contact e-mail */
+  emailHuesped?: string;
+  /** Guest contact phone */
+  telefonoHuesped?: string;
 }
 
 // ─── JWT helper (no external dependency) ─────────────────────────────────────
@@ -141,21 +211,72 @@ export const bookingService = {
     return handleResponse<BookingResponse>(response);
   },
 
-  /** Fetch all bookings for the hotel identified by `hotelId`, auth required. */
-  async getHotelBookings(hotelId: string, accessToken: string): Promise<HotelBooking[]> {
-    const query = new URLSearchParams({ hotelId });
+  /**
+   * Fetch all bookings for the hotel identified by `hotelId`, auth required.
+   * Pass `moneda` to receive monetary values converted to that currency.
+   */
+  async getHotelBookings(
+    hotelId: string,
+    accessToken: string,
+    moneda?: string,
+  ): Promise<HotelBooking[]> {
+    const params: Record<string, string> = { hotel_id: hotelId };
+    if (moneda) params['moneda'] = moneda;
+    const query = new URLSearchParams(params);
     const response = await fetch(
-      `${SEARCH_BASE_URL}/api/v1/booking/bookings_hotel?${query.toString()}`,
+      `${SEARCH_BASE_URL}/api/v1/booking/get_bookings?${query.toString()}`,
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
     return handleResponse<HotelBooking[]>(response);
   },
 
-  /** Fetch all bookings for the authenticated traveler user */
-  async getMyBookings(accessToken: string): Promise<BookingResponse[]> {
-    const response = await fetch(`${SEARCH_BASE_URL}/api/v1/booking/get_bookings`, {
+  /**
+   * Update the status of a booking (PATCH /api/v1/booking/update/:id).
+   * Used by B2B hotel operators to confirm or cancel a reservation.
+   *
+   * @param bookingId - UUID of the booking to update
+   * @param status    - New status value, e.g. "CONFIRMADA" | "CANCELADA"
+   * @param accessToken - JWT bearer token
+   */
+  async updateBooking(
+    bookingId: string,
+    status: string,
+    accessToken: string,
+  ): Promise<HotelBooking> {
+    const response = await fetch(
+      `${BOOKING_BASE_URL}/api/v1/booking/update/${bookingId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      },
+    );
+    return handleResponse<HotelBooking>(response);
+  },
+
+  /**
+   * Fetch bookings for the authenticated traveler.
+   * Optional `filter` builds query params (name, bookingId, email, status, checkin, checkout).
+   */
+  async getMyBookings(accessToken: string, filter?: GetBookingsFilter): Promise<TravelerBooking[]> {
+    const params: Record<string, string> = {};
+    if (filter?.name)      params['name']      = filter.name;
+    if (filter?.bookingId) params['bookingId'] = filter.bookingId;
+    if (filter?.email)     params['email']     = filter.email;
+    if (filter?.status)    params['status']    = filter.status;
+    if (filter?.checkin)   params['checkin']   = filter.checkin;
+    if (filter?.checkout)  params['checkout']  = filter.checkout;
+    if (filter?.moneda)    params['moneda']    = filter.moneda;
+
+    const qs = new URLSearchParams(params);
+    const url = `${BOOKING_BASE_URL}/api/v1/booking/get_bookings${qs.toString() ? `?${qs.toString()}` : ''}`;
+
+    const response = await fetch(url, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    return handleResponse<BookingResponse[]>(response);
+    return handleResponse<TravelerBooking[]>(response);
   },
 };

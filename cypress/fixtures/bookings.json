@@ -1,0 +1,30 @@
+[
+  {
+    "id": "booking-001",
+    "codigo": "TH-2026-001",
+    "viajeroId": "traveler-001",
+    "habitacionId": "room-001",
+    "fechaCheckIn": "2026-06-15",
+    "fechaCheckOut": "2026-06-18",
+    "numHuespedes": 2,
+    "estado": "CONFIRMADA",
+    "subtotal": 4500,
+    "impuestos": 810,
+    "total": 5310,
+    "moneda": "USD"
+  },
+  {
+    "id": "booking-002",
+    "codigo": "TH-2026-002",
+    "viajeroId": "traveler-001",
+    "habitacionId": "room-002",
+    "fechaCheckIn": "2026-07-10",
+    "fechaCheckOut": "2026-07-12",
+    "numHuespedes": 1,
+    "estado": "PENDIENTE",
+    "subtotal": 3000,
+    "impuestos": 540,
+    "total": 3540,
+    "moneda": "USD"
+  }
+]

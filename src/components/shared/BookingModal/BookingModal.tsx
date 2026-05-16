@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui';
 import { PriceDisplay } from '@/components/ui';
 import { Modal } from '@/components/ui';
+import type { PriceBreakdown } from '@/services/search.service';
 import './BookingModal.scss';
 
 interface BookingModalProps {
@@ -13,10 +14,27 @@ interface BookingModalProps {
   guests?: number;
   rooms?: number;
   imageUrl?: string;
+  /** Full price breakdown from the API — when provided, shown instead of legacy PriceDisplay. */
+  priceBreakdown?: PriceBreakdown;
+  /** Legacy fallback props (used when priceBreakdown is not available). */
   originalPrice?: number;
   finalPrice?: number;
   discountPercentage?: number;
   dataTestId?: string;
+}
+
+/** Formats a monetary amount using the ISO currency code (e.g. "$ 4.591.304 COP"). */
+function formatPrice(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toLocaleString('es-CO')}`;
+  }
 }
 
 const BookingModal: React.FC<BookingModalProps> = ({
@@ -29,6 +47,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
   guests = 2,
   rooms = 1,
   imageUrl,
+  priceBreakdown,
   originalPrice = 1800,
   finalPrice = 1500,
   discountPercentage = 10,
@@ -92,14 +111,63 @@ const BookingModal: React.FC<BookingModalProps> = ({
             Credit / Debit card
           </div>
 
-          <div data-testid={`${dataTestId}-pricing`}>
-            <PriceDisplay
-              originalPrice={originalPrice}
-              finalPrice={finalPrice}
-              discountPercentage={discountPercentage}
-              size="large"
-              dataTestId={`${dataTestId}-price`}
-            />
+          {/* Price section — full breakdown when available, legacy PriceDisplay otherwise */}
+          <div data-testid={`${dataTestId}-price`}>
+            {priceBreakdown ? (
+              <div className="booking-modal__breakdown" data-testid={`${dataTestId}-breakdown`}>
+                <div className="booking-modal__breakdown__row">
+                  <span>Subtotal</span>
+                  <span>{formatPrice(priceBreakdown.subtotal_sin_descuento, priceBreakdown.moneda)}</span>
+                </div>
+
+                {priceBreakdown.descuento > 0 && (
+                  <>
+                    <div className="booking-modal__breakdown__row booking-modal__breakdown__row--discount">
+                      <span>Discount ({Math.round(priceBreakdown.descuento * 100)}%)</span>
+                      <span>
+                        −{formatPrice(
+                          priceBreakdown.subtotal_sin_descuento - priceBreakdown.subtotal_con_descuento,
+                          priceBreakdown.moneda,
+                        )}
+                      </span>
+                    </div>
+                    <div className="booking-modal__breakdown__row booking-modal__breakdown__row--subtotal">
+                      <span>Discounted subtotal</span>
+                      <span>{formatPrice(priceBreakdown.subtotal_con_descuento, priceBreakdown.moneda)}</span>
+                    </div>
+                  </>
+                )}
+
+                <div className="booking-modal__breakdown__row booking-modal__breakdown__row--taxes">
+                  <span>Taxes</span>
+                  <span>
+                    {formatPrice(
+                      priceBreakdown.total - priceBreakdown.subtotal_con_descuento,
+                      priceBreakdown.moneda,
+                    )}
+                  </span>
+                </div>
+
+                <div className="booking-modal__breakdown__divider" aria-hidden="true" />
+
+                <div className="booking-modal__breakdown__row booking-modal__breakdown__row--total">
+                  <span>Total</span>
+                  <span>{formatPrice(priceBreakdown.total, priceBreakdown.moneda)}</span>
+                </div>
+
+                <p className="booking-modal__breakdown__currency">
+                  Currency: {priceBreakdown.moneda}
+                </p>
+              </div>
+            ) : (
+              <PriceDisplay
+                originalPrice={originalPrice}
+                finalPrice={finalPrice}
+                discountPercentage={discountPercentage}
+                size="large"
+                dataTestId={`${dataTestId}-price-display`}
+              />
+            )}
           </div>
         </div>
 

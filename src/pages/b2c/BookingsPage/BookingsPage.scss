@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // ── Page shell ────────────────────────────────────────────────────────────────
 
 .bookings-page {
@@ -49,6 +51,20 @@
     color: $color-error;
   }
 
+  &__cancel-error {
+    position: fixed;
+    bottom: $spacing-lg;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: $color-error;
+    color: $color-neutral-white;
+    padding: $spacing-sm $spacing-lg;
+    border-radius: $border-radius-md;
+    font-size: $font-size-sm;
+    z-index: 9999;
+    box-shadow: $shadow-lg;
+  }
+
   &__bookings-list {
     display: flex;
     flex-direction: column;
@@ -85,7 +101,7 @@
 .booking-card {
   display: flex;
   border-radius: $border-radius-lg;
-  overflow: hidden;
+  overflow: visible; // tooltip must escape the card bounds
   border: 1px solid $color-neutral-100;
   padding: 0.5rem;
   @include card-shadow;
@@ -102,6 +118,8 @@
     width: 16rem;
     min-height: 11rem;
     flex-shrink: 0;
+    overflow: hidden; // clips image to its border-radius
+    border-radius: $border-radius-xl;
 
     @include respond-to('tablet') {
       width: 100%;
@@ -125,6 +143,28 @@
     top: $spacing-xs;
     left: $spacing-xs;
     z-index: 2;
+  }
+
+  // ── Pending notice (inline in content area — never clipped) ──────────────────
+
+  &__pending-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-2xs;
+    background-color: rgba($color-primary-100, 0.6);
+    border: 1px solid $color-primary-200;
+    border-radius: $border-radius-md;
+    padding: $spacing-2xs $spacing-sm;
+    font-size: $font-size-xs;
+    color: $color-primary-800;
+    line-height: $line-height-base;
+  }
+
+  &__info-icon {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    color: $color-primary-600;
+    line-height: 1.4;
   }
 
   // ── Content side ────────────────────────────────────────────────────────────
@@ -250,11 +290,54 @@
     padding-top: $spacing-xs;
   }
 
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    align-items: flex-end;
+  }
+
+  &__cancel-btn {
+    color: $color-error !important;
+    border-color: $color-error !important;
+
+    &:hover {
+      background-color: rgba($color-error, 0.06) !important;
+    }
+  }
+
   &__pricing {
     display: flex;
     flex-direction: column;
     gap: 2px;
     align-items: flex-end;
+  }
+
+  &__price-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+  }
+
+  &__price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: $font-size-xs;
+    color: $color-neutral-700;
+
+    &--taxes {
+      color: $color-neutral-500;
+    }
+
+    &--total {
+      font-weight: $font-weight-semibold;
+      color: $color-neutral-900;
+      padding-top: 3px;
+      border-top: 1px solid $color-neutral-200;
+      margin-top: 2px;
+    }
   }
 
   &__price-final {

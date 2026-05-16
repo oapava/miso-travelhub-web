@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, DateRangePicker } from '@/components/ui';
 import { searchService } from '@/services/search.service';
+import { useCurrency } from '@/context/CurrencyContext';
 import './SearchBar.scss';
 
 interface SearchBarProps {
@@ -19,6 +20,7 @@ interface SearchParams {
   rooms: number;
   adults: number;
   children: number;
+  moneda: string;
 }
 
 /** Returns tomorrow's date as "YYYY-MM-DD" in local time */
@@ -36,6 +38,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   className = '',
 }) => {
   const { t } = useTranslation();
+  const { currency } = useCurrency();
   const tomorrow = getTomorrow();
 
   const [selectedPlace, setSelectedPlace] = useState<'hotels' | 'apartments' | 'suites'>('hotels');
@@ -46,7 +49,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
     rooms:    initialValues?.rooms    ?? 1,
     adults:   initialValues?.adults   ?? 1,
     children: initialValues?.children ?? 0,
+    moneda:   initialValues?.moneda   ?? currency,
   });
+
+  // Keep moneda in sync when the user changes the currency selector in the header.
+  useEffect(() => {
+    setSearchData((prev) => ({ ...prev, moneda: currency }));
+  }, [currency]);
   const [isGuestsOpen, setIsGuestsOpen] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   const guestsRef = useRef<HTMLDivElement>(null);
@@ -97,16 +106,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
       data-testid={dataTestId}
     >
       {/* ── Place selector (Hotels / Apartments / Suites) ── */}
-      <div className="search-bar__places_box">
+      <div className="search-bar__places_box" role="group" aria-label="Tipo de alojamiento">
         <div className="search-bar__places_box__bar">
           {(['hotels', 'apartments', 'suites'] as const).map((place) => (
-            <div
+            <button
               key={place}
+              type="button"
               onClick={() => setSelectedPlace(place)}
               className={`search-bar__places_box__item ${selectedPlace === place ? 'search-bar__places_box__item--active' : ''}`}
+              aria-pressed={selectedPlace === place}
             >
               {place.charAt(0).toUpperCase() + place.slice(1)}
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -151,13 +162,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* ── Rooms & Guests ── */}
       <div className="search-bar__field search-bar__field--guests" ref={guestsRef}>
-        <label className="search-bar__label">Rooms and Guests</label>
+        {/* id asociado al botón mediante aria-labelledby */}
+        <label id="guests-label" className="search-bar__label">Rooms and Guests</label>
         <button
           type="button"
           className="search-bar__guests-summary"
           onClick={() => setIsGuestsOpen((prev) => !prev)}
           aria-expanded={isGuestsOpen}
           aria-haspopup="true"
+          aria-labelledby="guests-label"
           data-testid="search-bar-guests-toggle"
         >
           {searchData.rooms} Room, {searchData.adults} Adults, {searchData.children} Children

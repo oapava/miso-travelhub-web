@@ -30,7 +30,7 @@ const mockUser: UserResponse = {
   idioma: 'en',
   moneda_preferida: 'USD',
   mfa_activo: false,
-  rol: 'traveler',
+  rol: 'viajero',
   fecha_registro: '2024-01-01T00:00:00Z',
 };
 
@@ -98,6 +98,50 @@ describe('LoginModal', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('login-modal-error')).toHaveTextContent('Credenciales inválidas');
+    });
+  });
+
+  it('shows error and does not call onLoginSuccess when user has hotel_admin role', async () => {
+    const adminUser = { ...mockUser, rol: 'hotel_admin' };
+    mockLogin.mockResolvedValueOnce(mockToken);
+    mockGetCurrentUser.mockResolvedValueOnce(adminUser);
+
+    const onLoginSuccess = jest.fn();
+    render(<LoginModal isOpen onClose={() => {}} onLoginSuccess={onLoginSuccess} />);
+
+    fireEvent.change(screen.getByTestId('login-modal-email'), {
+      target: { value: 'admin@hotel.com' },
+    });
+    fireEvent.change(screen.getByTestId('login-modal-password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.click(screen.getByTestId('login-modal-sign-in'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('login-modal-error')).toBeInTheDocument();
+    });
+    expect(onLoginSuccess).not.toHaveBeenCalled();
+  });
+
+  it('shows the correct error message for non-traveler role', async () => {
+    const adminUser = { ...mockUser, rol: 'hotel_admin' };
+    mockLogin.mockResolvedValueOnce(mockToken);
+    mockGetCurrentUser.mockResolvedValueOnce(adminUser);
+
+    render(<LoginModal isOpen onClose={() => {}} />);
+
+    fireEvent.change(screen.getByTestId('login-modal-email'), {
+      target: { value: 'admin@hotel.com' },
+    });
+    fireEvent.change(screen.getByTestId('login-modal-password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.click(screen.getByTestId('login-modal-sign-in'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('login-modal-error')).toHaveTextContent(
+        'This portal is for travelers. Hotel administrators should use the Business portal.',
+      );
     });
   });
 

@@ -1,10 +1,24 @@
 import { SEARCH_BASE_URL } from '@/config/env';
 
-export interface RoomDetail {
-  id: string;
-  nombre_hotel: string;
-  precio: number;
+export interface PriceBreakdown {
+  /** Descuento aplicado como fracción (0.0 – 1.0).  0 = sin descuento. */
+  descuento: number;
+  /** Subtotal antes de aplicar el descuento. */
+  subtotal_sin_descuento: number;
+  /** Subtotal después de aplicar el descuento. */
+  subtotal_con_descuento: number;
+  /** Total final (subtotal_con_descuento + impuestos). */
+  total: number;
+  /** Código ISO de moneda, p. ej. "COP" | "USD". */
   moneda: string;
+}
+
+export interface RoomDetail extends PriceBreakdown {
+  id: string;
+  hotelId?: string;
+  nombre_hotel: string;
+  /** @deprecated Usar subtotal_con_descuento. Mantenido para compatibilidad. */
+  precio?: number;
   direccion: string;
   capacidad_maxima: number;
   distancia?: string;
@@ -25,12 +39,16 @@ export interface SearchRoomsParams {
   checkout: string; // "YYYY-MM-DD"
   group: number;
   rooms: number;
+  /** Código ISO de moneda requerido por el API, p. ej. "COP" | "USD". */
+  moneda: string;
 }
 
-export interface HabitacionDisponible {
+export interface HabitacionDisponible extends PriceBreakdown {
   id: string;
+  hotelId?: string;
   nombre_hotel: string;
-  precio: number;
+  /** @deprecated Usar subtotal_con_descuento. Mantenido para compatibilidad. */
+  precio?: number;
   direccion: string;
   capacidad_maxima: number;
   distancia?: string;
@@ -68,14 +86,15 @@ export const searchService = {
       checkout: params.checkout,
       group: String(params.group),
       rooms: String(params.rooms),
+      moneda: params.moneda,
     });
 
     const response = await fetch(`${SEARCH_BASE_URL}/search/search_rooms?${query.toString()}`);
     return handleResponse<HabitacionDisponible[]>(response);
   },
 
-  async getDetailRoom(habitacionId: string, checkin: string, checkout: string): Promise<RoomDetail> {
-    const query = new URLSearchParams({ habitacionId, checkin, checkout });
+  async getDetailRoom(habitacionId: string, checkin: string, checkout: string, moneda: string): Promise<RoomDetail> {
+    const query = new URLSearchParams({ habitacionId, checkin, checkout, moneda });
     const response = await fetch(`${SEARCH_BASE_URL}/search/detail_room?${query.toString()}`);
     return handleResponse<RoomDetail>(response);
   

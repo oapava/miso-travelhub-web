@@ -69,7 +69,7 @@ const AccountPage: React.FC = () => {
             dataTestId="account-sidebar"
           />
 
-          <main className="account-page__main" data-testid="account-main">
+          <main id="main-content" className="account-page__main" data-testid="account-main">
             <div className="account-page__header">
               <h1 className="account-page__title">Account</h1>
               <p className="account-page__subtitle">Information</p>

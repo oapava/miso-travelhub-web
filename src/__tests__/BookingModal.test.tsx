@@ -89,9 +89,52 @@ describe('BookingModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('renders the price display', () => {
+  it('renders the price container', () => {
     render(<BookingModal isOpen={true} onClose={jest.fn()} />);
     expect(screen.getByTestId('booking-modal-price')).toBeInTheDocument();
+  });
+
+  it('renders legacy PriceDisplay when no priceBreakdown is provided', () => {
+    render(<BookingModal isOpen={true} onClose={jest.fn()} />);
+    expect(screen.getByTestId('booking-modal-price-display')).toBeInTheDocument();
+    expect(screen.queryByTestId('booking-modal-breakdown')).not.toBeInTheDocument();
+  });
+
+  it('renders full price breakdown when priceBreakdown prop is provided', () => {
+    const breakdown = {
+      descuento: 0.1,
+      subtotal_sin_descuento: 4500000,
+      subtotal_con_descuento: 4050000,
+      total: 4591304,
+      moneda: 'COP',
+    };
+    render(<BookingModal isOpen={true} onClose={jest.fn()} priceBreakdown={breakdown} />);
+    const bd = screen.getByTestId('booking-modal-breakdown');
+    expect(bd).toBeInTheDocument();
+    expect(bd).toHaveTextContent('Subtotal');
+    expect(bd).toHaveTextContent('Discount (10%)');
+    expect(bd).toHaveTextContent('Discounted subtotal');
+    expect(bd).toHaveTextContent('Taxes');
+    expect(bd).toHaveTextContent('Total');
+    expect(bd).toHaveTextContent('Currency: COP');
+    // Legacy PriceDisplay must NOT be rendered
+    expect(screen.queryByTestId('booking-modal-price-display')).not.toBeInTheDocument();
+  });
+
+  it('does not render the discount row when descuento is 0', () => {
+    const breakdown = {
+      descuento: 0,
+      subtotal_sin_descuento: 3000000,
+      subtotal_con_descuento: 3000000,
+      total: 3400000,
+      moneda: 'USD',
+    };
+    render(<BookingModal isOpen={true} onClose={jest.fn()} priceBreakdown={breakdown} />);
+    const bd = screen.getByTestId('booking-modal-breakdown');
+    expect(bd).not.toHaveTextContent('Discount');
+    expect(bd).not.toHaveTextContent('Discounted subtotal');
+    expect(bd).toHaveTextContent('Taxes');
+    expect(bd).toHaveTextContent('Total');
   });
 
   it('renders a hotel image when imageUrl is provided', () => {

@@ -8,6 +8,11 @@ const mockRoom: HabitacionDisponible = {
   id: 'room-1',
   nombre_hotel: 'Hotel Bogotá',
   precio: 250000,
+  descuento: 0.1,
+  subtotal_sin_descuento: 750000,
+  subtotal_con_descuento: 675000,
+  total: 765217,
+  moneda: 'COP',
   direccion: 'Calle 100 #15-20',
   capacidad_maxima: 2,
   distancia: '1.5 km',
@@ -28,6 +33,7 @@ const searchParams = {
   checkout: '2024-06-05',
   group: 2,
   rooms: 1,
+  moneda: 'USD',
 };
 
 beforeEach(() => {
@@ -73,6 +79,7 @@ describe('searchService.searchRooms', () => {
     expect(calledUrl).toContain('checkout=2024-06-05');
     expect(calledUrl).toContain('group=2');
     expect(calledUrl).toContain('rooms=1');
+    expect(calledUrl).toContain('moneda=USD');
   });
 
   it('throws error with detail message on 400 response', async () => {
@@ -142,6 +149,10 @@ describe('searchService.getDetailRoom', () => {
     id: '22222222-2222-2222-2222-000000000001',
     nombre_hotel: 'Hotel Treta',
     precio: 100.0,
+    descuento: 0,
+    subtotal_sin_descuento: 300,
+    subtotal_con_descuento: 300,
+    total: 340,
     moneda: 'EUR',
     direccion: 'Calle 123',
     capacidad_maxima: 2,
@@ -163,23 +174,25 @@ describe('searchService.getDetailRoom', () => {
       '22222222-2222-2222-2222-000000000001',
       '2026-09-01',
       '2026-09-12',
+      'EUR',
     );
     expect(result).toEqual(mockDetail);
   });
 
   it('calls the correct endpoint', async () => {
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockDetail });
-    await searchService.getDetailRoom('room-id', '2026-09-01', '2026-09-12');
+    await searchService.getDetailRoom('room-id', '2026-09-01', '2026-09-12', 'USD');
     expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/search/detail_room'));
   });
 
-  it('includes habitacionId, checkin and checkout as query params', async () => {
+  it('includes habitacionId, checkin, checkout and moneda as query params', async () => {
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockDetail });
-    await searchService.getDetailRoom('room-abc', '2026-09-01', '2026-09-12');
+    await searchService.getDetailRoom('room-abc', '2026-09-01', '2026-09-12', 'COP');
     const calledUrl: string = (mockFetch.mock.calls[0] as [string])[0];
     expect(calledUrl).toContain('habitacionId=room-abc');
     expect(calledUrl).toContain('checkin=2026-09-01');
     expect(calledUrl).toContain('checkout=2026-09-12');
+    expect(calledUrl).toContain('moneda=COP');
   });
 
   it('throws error with detail message on 404 response', async () => {
@@ -189,7 +202,7 @@ describe('searchService.getDetailRoom', () => {
       json: async () => ({ detail: 'Room not found' }),
     });
     await expect(
-      searchService.getDetailRoom('bad-id', '2026-09-01', '2026-09-12'),
+      searchService.getDetailRoom('bad-id', '2026-09-01', '2026-09-12', 'USD'),
     ).rejects.toThrow('Room not found');
   });
 
@@ -200,7 +213,7 @@ describe('searchService.getDetailRoom', () => {
       json: async () => { throw new Error('no json'); },
     });
     await expect(
-      searchService.getDetailRoom('room-id', '2026-09-01', '2026-09-12'),
+      searchService.getDetailRoom('room-id', '2026-09-01', '2026-09-12', 'USD'),
     ).rejects.toThrow('HTTP 503');
   });
 });

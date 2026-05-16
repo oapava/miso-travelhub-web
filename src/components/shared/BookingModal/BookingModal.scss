@@ -114,6 +114,57 @@
     white-space: nowrap;
   }
 
+  // ── Price breakdown (replaces PriceDisplay when full data is available) ────
+
+  &__breakdown {
+    min-width: 240px;
+
+    &__row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: $spacing-sm;
+      padding: $spacing-2xs 0;
+      font-size: $font-size-sm;
+      color: $color-neutral-700;
+
+      &--discount {
+        color: $color-success;
+        font-weight: $font-weight-medium;
+      }
+
+      &--subtotal {
+        font-style: italic;
+        color: $color-neutral-600;
+      }
+
+      &--taxes {
+        font-size: $font-size-xs;
+        color: $color-neutral-500;
+      }
+
+      &--total {
+        font-size: $font-size-base;
+        font-weight: $font-weight-bold;
+        color: $color-primary-900;
+        padding-top: $spacing-xs;
+      }
+    }
+
+    &__divider {
+      border: none;
+      border-top: 1px dashed $color-neutral-300;
+      margin: $spacing-xs 0;
+    }
+
+    &__currency {
+      font-size: $font-size-xs;
+      color: $color-neutral-400;
+      margin-top: $spacing-xs;
+      text-align: right;
+    }
+  }
+
   // ── Footer ─────────────────────────────────────────────────────────────────
 
   &__footer {

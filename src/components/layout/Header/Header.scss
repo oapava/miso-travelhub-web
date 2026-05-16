@@ -142,9 +142,26 @@
   }
 
   &__currency {
+    padding: $spacing-2xs $spacing-xs;
+    border: none;
+    border-radius: $border-radius-pill;
+    background: none;
     font-size: $font-size-sm;
     font-weight: $font-weight-bold;
     color: $color-primary-700;
+    cursor: pointer;
+    appearance: none;          // remove native arrow
+    -webkit-appearance: none;
+    outline: none;
+    @include transition(color);
+
+    &:hover {
+      color: $color-primary-900;
+    }
+
+    &:focus {
+      @include focus-visible-outline;
+    }
   }
 
   &__auth-buttons {

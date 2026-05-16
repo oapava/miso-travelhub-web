@@ -17,22 +17,25 @@
 
   &__content {
     @include container;
-    padding: $spacing-3xl;
+    padding: $spacing-2xl $spacing-3xl;
 
     @include respond-to('tablet') {
-      padding: $spacing-2xl;
+      padding: $spacing-xl $spacing-lg;
     }
   }
+
+  // ── Page header ─────────────────────────────────────────────────────────────
 
   &__header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: $spacing-3xl;
-    gap: $spacing-2xl;
+    align-items: flex-end;
+    margin-bottom: $spacing-2xl;
+    gap: $spacing-xl;
 
     @include respond-to('tablet') {
       flex-direction: column;
+      align-items: stretch;
     }
   }
 
@@ -40,35 +43,97 @@
     @include heading('2xl');
     color: $color-neutral-black;
     flex-shrink: 0;
+    margin: 0;
 
     strong {
       font-weight: $font-weight-bold;
     }
   }
 
+  // ── Controls (filters + download) ───────────────────────────────────────────
+
+  &__controls {
+    display: flex;
+    align-items: flex-end;
+    gap: $spacing-lg;
+
+    @include respond-to('tablet') {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
   &__date-filters {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: $spacing-lg;
-    min-width: 350px;
+    gap: $spacing-md;
 
     @include respond-to('tablet') {
       grid-template-columns: 1fr;
-      min-width: auto;
-      width: 100%;
     }
   }
+
+  &__download-btn {
+    background-color: $color-primary-700;
+    color: $color-neutral-white;
+    border: none;
+    border-radius: $border-radius-sm;
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    white-space: nowrap;
+    height: 44px;
+    align-self: flex-end;
+
+    &:hover:not(:disabled) {
+      background-color: $color-primary-800;
+    }
+
+    &:active:not(:disabled) {
+      background-color: $color-primary-900;
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    @include respond-to('tablet') {
+      width: 100%;
+      align-self: stretch;
+    }
+  }
+
+  // ── Error ───────────────────────────────────────────────────────────────────
+
+  &__error {
+    color: $color-error;
+    font-size: $font-size-sm;
+    margin-bottom: $spacing-md;
+    padding: $spacing-xs $spacing-sm;
+    background-color: rgba($color-error, 0.08);
+    border-radius: $border-radius-sm;
+  }
+
+  // ── Summary row ─────────────────────────────────────────────────────────────
 
   &__summary {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: $spacing-lg;
-    margin-bottom: $spacing-3xl;
+    margin-bottom: $spacing-2xl;
+
+    @include respond-to('laptop') {
+      grid-template-columns: 1fr 1fr;
+    }
 
     @include respond-to('tablet') {
       grid-template-columns: 1fr;
     }
   }
+
+  // ── Income graphic card ──────────────────────────────────────────────────────
 
   &__income-graphic {
     background-color: $color-neutral-white;
@@ -77,41 +142,80 @@
     padding: $spacing-lg;
     display: flex;
     flex-direction: column;
-    gap: $spacing-md;
-    min-height: 300px;
+    gap: $spacing-sm;
   }
 
   &__income-title {
-    @include heading('md');
-    color: $color-neutral-black;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-600;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
   }
 
-  &__chart-placeholder {
+  // ── Bar chart ────────────────────────────────────────────────────────────────
+
+  &__bar-chart {
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
+    align-items: stretch;
+    height: 140px;
+    gap: $spacing-xs;
+    margin-top: $spacing-xs;
     flex: 1;
-    gap: $spacing-md;
-    padding: $spacing-lg 0;
   }
 
-  &__chart-column {
+  &__bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     flex: 1;
-    background: linear-gradient(180deg, $color-primary-700 0%, $color-primary-500 100%);
-    border-radius: $border-radius-sm $border-radius-sm 0 0;
-    min-height: 50px;
-    position: relative;
+    min-width: 0;
+  }
+
+  &__bar-value {
+    font-size: $font-size-xs;
+    color: $color-neutral-600;
+    font-weight: $font-weight-medium;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    flex-shrink: 0;
+    line-height: 1.2;
+  }
+
+  &__bar-spacer {
+    flex: 1;
+    width: 100%;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-bottom: $spacing-sm;
+    padding-bottom: $spacing-2xs;
   }
 
-  &__chart-label {
-    @include body-text('xs');
-    color: $color-neutral-white;
-    font-weight: $font-weight-semibold;
+  &__bar {
+    width: 55%;
+    max-width: 36px;
+    min-width: 10px;
+    background: linear-gradient(180deg, $color-primary-500 0%, $color-primary-700 100%);
+    border-radius: $border-radius-sm $border-radius-sm 0 0;
+    min-height: 4px;
   }
+
+  &__bar-label {
+    font-size: $font-size-xs;
+    color: $color-neutral-500;
+    text-align: center;
+    flex-shrink: 0;
+    padding-top: $spacing-2xs;
+    border-top: 1px solid $color-neutral-200;
+    width: 100%;
+    line-height: 1.4;
+  }
+
+  // ── Occupation card ──────────────────────────────────────────────────────────
 
   &__occupation-summary {
     background-color: $color-neutral-white;
@@ -121,46 +225,63 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-md;
-    min-height: 300px;
     justify-content: center;
   }
 
   &__occupation-title {
-    @include heading('md');
-    color: $color-neutral-black;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-600;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
   }
 
   &__occupation-content {
     display: flex;
     flex-direction: column;
-    gap: $spacing-md;
+    gap: $spacing-sm;
     align-items: center;
   }
 
   &__occupation-percent {
-    @include heading('3xl');
-    color: $color-accent-green;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $color-primary-700;
+    line-height: 1;
   }
 
   &__occupation-bar {
     width: 100%;
-    height: 12px;
+    height: 10px;
     background-color: $color-neutral-200;
-    border-radius: $border-radius-full;
+    border-radius: $border-radius-pill;
     overflow: hidden;
   }
 
   &__occupation-fill {
     height: 100%;
-    background: linear-gradient(90deg, $color-accent-yellow 0%, $color-accent-green 100%);
-    border-radius: $border-radius-full;
-    @include transition(width);
+    background: linear-gradient(90deg, $color-primary-700 0%, $color-primary-500 100%);
+    border-radius: $border-radius-pill;
+    transition: width 0.5s ease;
+    min-width: 4px;
   }
 
+  &__occupation-label {
+    font-size: $font-size-xs;
+    color: $color-neutral-500;
+    text-align: center;
+  }
+
+  // ── Table section ────────────────────────────────────────────────────────────
+
   &__subtitle {
-    @include heading('md');
-    margin-bottom: $spacing-lg;
-    color: $color-neutral-black;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-600;
+    margin: 0 0 $spacing-sm;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
   }
 
   &__table-wrapper {
@@ -168,6 +289,18 @@
     border-radius: $border-radius-md;
     @include card-shadow;
     overflow: hidden;
-    margin-bottom: $spacing-3xl;
+    margin-bottom: $spacing-xl;
+  }
+
+  // ── Responsive ──────────────────────────────────────────────────────────────
+
+  @include respond-to('tablet') {
+    &__bar-chart {
+      height: 100px;
+    }
+
+    &__bar-value {
+      display: none;
+    }
   }
 }

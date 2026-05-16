@@ -1,0 +1,6 @@
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0cmF2ZWxlckB0ZXN0LmNvbSIsInJvbCI6InRyYXZlbGVyIiwiZXhwIjo5OTk5OTk5OTk5fQ.fake_signature",
+  "refresh_token": "fake-refresh-b2c",
+  "token_type": "bearer",
+  "expires_in": 900
+}
