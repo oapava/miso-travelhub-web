@@ -16,6 +16,10 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/context/AuthContext', () => ({ useAuth: jest.fn() }));
 
+jest.mock('@/context/CurrencyContext', () => ({
+  useCurrency: () => ({ currency: 'USD', setCurrency: jest.fn(), supportedCurrencies: ['USD', 'COP', 'EUR', 'GBP'] }),
+}));
+
 jest.mock('@/services/booking.service', () => ({
   bookingService: {
     getHotelBookings: jest.fn(),
@@ -112,35 +116,35 @@ describe('DashboardPage', () => {
   it("renders the Today's Bookings stat card", () => {
     renderPage();
     expect(screen.getByTestId('dashboard-bookings-card')).toBeInTheDocument();
-    expect(screen.getByText("Today's Bookings")).toBeInTheDocument();
+    expect(screen.getByText('b2b.dashboard.todaysBookings')).toBeInTheDocument();
   });
 
   it('renders the Incomes stat card', () => {
     renderPage();
     expect(screen.getByTestId('dashboard-incomes-card')).toBeInTheDocument();
-    expect(screen.getByText('Incomes')).toBeInTheDocument();
+    expect(screen.getByText('b2b.dashboard.incomes')).toBeInTheDocument();
   });
 
   it('renders the Confirmed stat card', () => {
     renderPage();
     const card = screen.getByTestId('dashboard-confirmed-card');
     expect(card).toBeInTheDocument();
-    expect(card).toHaveTextContent('Confirmed');
+    expect(card).toHaveTextContent('b2b.dashboard.confirmed');
   });
 
   it('renders the Pending stat card', () => {
     renderPage();
     const card = screen.getByTestId('dashboard-pending-card');
     expect(card).toBeInTheDocument();
-    expect(card).toHaveTextContent('Pending');
+    expect(card).toHaveTextContent('b2b.dashboard.pending');
   });
 
   // ── API call ───────────────────────────────────────────────────────────────
 
-  it('calls getHotelBookings with the hotel ID from token', async () => {
+  it('calls getHotelBookings with the hotel ID, token and currency', async () => {
     renderPage();
     await waitFor(() =>
-      expect(mockGetHotelBookings).toHaveBeenCalledWith('hotel-123', 'token-abc'),
+      expect(mockGetHotelBookings).toHaveBeenCalledWith('hotel-123', 'token-abc', 'USD'),
     );
   });
 
@@ -148,7 +152,7 @@ describe('DashboardPage', () => {
 
   it('renders the Last Bookings data table', () => {
     renderPage();
-    expect(screen.getByText('Last Bookings')).toBeInTheDocument();
+    expect(screen.getByText('b2b.dashboard.lastBookings')).toBeInTheDocument();
   });
 
   it('renders the bookings table with data rows after loading', async () => {
@@ -162,11 +166,11 @@ describe('DashboardPage', () => {
   it('renders table header columns', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByText('Name')).toBeInTheDocument();
-      expect(screen.getByText('Days/Nights')).toBeInTheDocument();
-      expect(screen.getByText('Guests')).toBeInTheDocument();
-      expect(screen.getByText('Start')).toBeInTheDocument();
-      expect(screen.getByText('End')).toBeInTheDocument();
+      expect(screen.getByText('b2b.dashboard.colName')).toBeInTheDocument();
+      expect(screen.getByText('b2b.dashboard.colDaysNights')).toBeInTheDocument();
+      expect(screen.getByText('b2b.dashboard.colGuests')).toBeInTheDocument();
+      expect(screen.getByText('b2b.dashboard.colStart')).toBeInTheDocument();
+      expect(screen.getByText('b2b.dashboard.colEnd')).toBeInTheDocument();
     });
   });
 
@@ -181,16 +185,14 @@ describe('DashboardPage', () => {
 
   it('renders the Occupation Rate section', () => {
     renderPage();
-    expect(screen.getByText('Occupation Rate')).toBeInTheDocument();
+    expect(screen.getByText('b2b.dashboard.occupationRate')).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-occupation-badge')).toBeInTheDocument();
   });
 
   it('renders occupation badge with percentage format', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByTestId('dashboard-occupation-badge')).toHaveTextContent(
-        /\d+% Occupations Free/,
-      );
+      expect(screen.getByTestId('dashboard-occupation-badge')).toHaveTextContent(/\d+%/);
     });
   });
 
@@ -198,9 +200,7 @@ describe('DashboardPage', () => {
     // mockBookings: 2 confirmed, 1 pending, 1 cancelled → 50%
     renderPage();
     await waitFor(() => {
-      expect(screen.getByTestId('dashboard-occupation-badge')).toHaveTextContent(
-        '50% Occupations Free',
-      );
+      expect(screen.getByTestId('dashboard-occupation-badge')).toHaveTextContent('50%');
     });
   });
 

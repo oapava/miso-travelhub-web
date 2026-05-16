@@ -1,0 +1,38 @@
+[
+  {
+    "id": "room-suite-01",
+    "hotelId": "hotel-test-123",
+    "tipo": "Suite",
+    "tipo_habitacion": "Suite",
+    "capacidadMaxima": 2,
+    "categoria": "Premium",
+    "descripcion": "Spacious suite with ocean view",
+    "tamano_habitacion": "55 m²",
+    "amenidades": ["WiFi", "TV", "Mini-bar"],
+    "imagenes": []
+  },
+  {
+    "id": "room-standard-01",
+    "hotelId": "hotel-test-123",
+    "tipo": "Estándar",
+    "tipo_habitacion": "Estándar",
+    "capacidadMaxima": 2,
+    "categoria": "Economy",
+    "descripcion": "Comfortable standard room",
+    "tamano_habitacion": "25 m²",
+    "amenidades": ["WiFi", "TV"],
+    "imagenes": []
+  },
+  {
+    "id": "room-deluxe-01",
+    "hotelId": "hotel-test-123",
+    "tipo": "Deluxe",
+    "tipo_habitacion": "Deluxe",
+    "capacidadMaxima": 3,
+    "categoria": "Business",
+    "descripcion": "Deluxe room with city view",
+    "tamano_habitacion": "40 m²",
+    "amenidades": ["WiFi", "TV", "Jacuzzi"],
+    "imagenes": []
+  }
+]

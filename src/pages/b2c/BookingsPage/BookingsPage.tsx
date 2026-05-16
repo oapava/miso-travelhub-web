@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Header, AccountSidebar, Footer } from '@/components/layout';
 import { Breadcrumb, Badge, AmenityTag, Button } from '@/components/ui';
 import BookingCancelModal from '@/components/shared/BookingCancelModal/BookingCancelModal';
-import { bookingService, TravelerBooking } from '@/services/booking.service';
+import BookingDetailModal from '@/components/shared/BookingDetailModal/BookingDetailModal';
+import { bookingService, TravelerBooking, HotelBooking } from '@/services/booking.service';
 import { useAuth } from '@/context/AuthContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import './BookingsPage.scss';
@@ -56,6 +57,32 @@ function isCancellable(estado: string): boolean {
   );
 }
 
+/** Map a TravelerBooking (B2C API shape) to the HotelBooking interface expected by BookingDetailModal. */
+function travelerToHotelBooking(b: TravelerBooking): HotelBooking {
+  return {
+    id: b.id,
+    codigo: '',
+    viajeroId: b.nombreUser ?? b.id,
+    nombreUser: b.nombreUser,
+    habitacionId: b.habitacionId,
+    nombreHabitacion: b.tipo_habitacion,
+    fechaCheckIn: b.fechaCheckIn,
+    fechaCheckOut: b.fechaCheckOut,
+    numHuespedes: b.numHuespedes,
+    estado: b.estado,
+    subtotal: b.subtotal,
+    impuestos: b.impuestos,
+    total: b.total,
+    moneda: b.moneda ?? 'USD',
+    nombreHotel: b.nombreHotel,
+    ciudad: b.ciudad,
+    pais: b.pais,
+    tipo_habitacion: b.tipo_habitacion,
+    categoria: b.categoria,
+    tamano_habitacion: b.tamano_habitacion,
+  };
+}
+
 interface BookingGroup {
   key: string;
   displayDate: string;
@@ -64,11 +91,15 @@ interface BookingGroup {
 
 const BookingsPage: React.FC = () => {
   const { user, accessToken } = useAuth();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { currency } = useCurrency();
   const [bookings, setBookings] = useState<TravelerBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // ── Detail modal state ───────────────────────────────────────────────────────
+  const [detailBooking, setDetailBooking] = useState<HotelBooking | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // ── Cancel modal state ───────────────────────────────────────────────────────
   const [cancelTarget, setCancelTarget] = useState<TravelerBooking | null>(null);
@@ -228,9 +259,9 @@ const BookingsPage: React.FC = () => {
       <div className="bookings-page__container">
         <Breadcrumb
           items={[
-            { label: 'Home', path: '/' },
-            { label: 'Account', path: '/account' },
-            { label: 'Bookings' },
+            { label: t('breadcrumb.home'), path: '/' },
+            { label: t('breadcrumb.account'), path: '/account' },
+            { label: t('breadcrumb.bookings') },
           ]}
         />
 
@@ -242,10 +273,10 @@ const BookingsPage: React.FC = () => {
           />
 
           <main className="bookings-page__main" data-testid="bookings-main">
-            <h1 className="bookings-page__title">Booking History</h1>
+            <h1 className="bookings-page__title">{t('bookings.title')}</h1>
 
             {loading && (
-              <div className="bookings-page__loading">Loading bookings...</div>
+              <div className="bookings-page__loading">{t('bookings.loading')}</div>
             )}
 
             {error && (
@@ -254,7 +285,7 @@ const BookingsPage: React.FC = () => {
 
             {!loading && !error && bookings.length === 0 && (
               <div className="bookings-page__empty">
-                <p>You have no bookings yet.</p>
+                <p>{t('bookings.empty')}</p>
               </div>
             )}
 
@@ -323,7 +354,7 @@ const BookingsPage: React.FC = () => {
                                 >
                                   <span className="booking-card__info-icon" aria-hidden="true">ℹ</span>
                                   <span>
-                                    Once your booking is approved you will need to complete the payment to confirm your stay.
+                                    {t('bookings.pendingNotice')}
                                   </span>
                                 </div>
                               )}
@@ -409,17 +440,17 @@ const BookingsPage: React.FC = () => {
                                     {/* Price breakdown */}
                                     <div className="booking-card__price-breakdown" data-testid={`booking-price-breakdown-${booking.id}`}>
                                       <div className="booking-card__price-row">
-                                        <span>Subtotal</span>
+                                        <span>{t('bookings.subtotal')}</span>
                                         <span>{formatPrice(booking.subtotal, booking.moneda)}</span>
                                       </div>
                                       {taxes > 0 && (
                                         <div className="booking-card__price-row booking-card__price-row--taxes">
-                                          <span>Taxes</span>
+                                          <span>{t('bookings.taxes')}</span>
                                           <span>{formatPrice(taxes, booking.moneda)}</span>
                                         </div>
                                       )}
                                       <div className="booking-card__price-row booking-card__price-row--total">
-                                        <span>Total</span>
+                                        <span>{t('bookings.total')}</span>
                                         <span className="booking-card__price-final">
                                           {formatPrice(booking.total, booking.moneda)}
                                         </span>
@@ -430,8 +461,16 @@ const BookingsPage: React.FC = () => {
                                     </span>
                                   </div>
                                   <div className="booking-card__actions">
-                                    <Button variant="primary" size="small" dataTestId={`booking-detail-btn-${booking.id}`}>
-                                      DETAIL
+                                    <Button
+                                      variant="primary"
+                                      size="small"
+                                      onClick={() => {
+                                        setDetailBooking(travelerToHotelBooking(booking));
+                                        setIsDetailOpen(true);
+                                      }}
+                                      dataTestId={`booking-detail-btn-${booking.id}`}
+                                    >
+                                      {t('bookings.detail')}
                                     </Button>
                                     {isApproved(booking.estado) && (
                                       <a
@@ -440,7 +479,7 @@ const BookingsPage: React.FC = () => {
                                         data-testid={`booking-pay-btn-${booking.id}`}
                                         aria-label={`Pay for booking at ${booking.nombreHotel}`}
                                       >
-                                        PAY NOW
+                                        {t('bookings.payNow')}
                                       </a>
                                     )}
                                     {isCancellable(booking.estado) && (
@@ -451,7 +490,7 @@ const BookingsPage: React.FC = () => {
                                         onClick={() => openCancelModal(booking)}
                                         dataTestId={`booking-cancel-btn-${booking.id}`}
                                       >
-                                        CANCEL
+                                        {t('bookings.cancel')}
                                       </Button>
                                     )}
                                   </div>
@@ -477,6 +516,13 @@ const BookingsPage: React.FC = () => {
           {cancelError}
         </div>
       )}
+
+      <BookingDetailModal
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        booking={detailBooking ?? undefined}
+        dataTestId="bookings-detail-modal"
+      />
 
       <BookingCancelModal
         isOpen={isCancelOpen}

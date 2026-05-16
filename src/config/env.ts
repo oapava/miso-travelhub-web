@@ -9,6 +9,7 @@ interface RuntimeEnv {
   VITE_AUTH_BASE_URL?: string;
   VITE_SEARCH_BASE_URL?: string;
   VITE_BOOKING_BASE_URL?: string;
+  VITE_INVENTORY_BASE_URL?: string;
   VITE_ENV_NAME?: string;
 }
 
@@ -22,7 +23,9 @@ function runtimeVar(key: keyof RuntimeEnv): string {
   return window.__ENV__?.[key] ?? (import.meta.env[key] as string | undefined) ?? '';
 }
 
-export const AUTH_BASE_URL   = runtimeVar('VITE_AUTH_BASE_URL');
-export const SEARCH_BASE_URL = runtimeVar('VITE_SEARCH_BASE_URL');
-export const BOOKING_BASE_URL = runtimeVar('VITE_SEARCH_BASE_URL');
-export const ENV_NAME        = runtimeVar('VITE_ENV_NAME');
+export const AUTH_BASE_URL      = runtimeVar('VITE_AUTH_BASE_URL');
+export const SEARCH_BASE_URL    = runtimeVar('VITE_SEARCH_BASE_URL');
+export const BOOKING_BASE_URL   = runtimeVar('VITE_SEARCH_BASE_URL');
+/** Inventory service — falls back to SEARCH_BASE_URL if not explicitly set */
+export const INVENTORY_BASE_URL = runtimeVar('VITE_INVENTORY_BASE_URL') || runtimeVar('VITE_SEARCH_BASE_URL');
+export const ENV_NAME           = runtimeVar('VITE_ENV_NAME');

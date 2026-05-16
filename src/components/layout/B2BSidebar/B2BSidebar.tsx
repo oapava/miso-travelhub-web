@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { B2BRoutes } from '@/types';
 import './B2BSidebar.scss';
 
@@ -9,11 +10,12 @@ interface B2BSidebarProps {
   dataTestId?: string;
 }
 
+// `key` drives the stable data-testid; `labelKey` is the i18n translation key.
 const B2B_MENU_ITEMS = [
-  { path: B2BRoutes.DASHBOARD, label: 'Dashboard', icon: '⊕' },
-  { path: '/business/booking-manager', label: 'Booking Manager', icon: '⊕' },
-  { path: '/business/financial-reports', label: 'Financial Reports', icon: '⊕' },
-  { path: '/business/prices-manager', label: 'Prices Manager', icon: '⊕' },
+  { path: B2BRoutes.DASHBOARD,            key: 'dashboard',         labelKey: 'b2b.sidebar.dashboard',        icon: '⊕' },
+  { path: '/business/booking-manager',    key: 'booking-manager',   labelKey: 'b2b.sidebar.bookingManager',   icon: '⊕' },
+  { path: '/business/financial-reports',  key: 'financial-reports', labelKey: 'b2b.sidebar.financialReports', icon: '⊕' },
+  { path: '/business/prices-manager',     key: 'prices-manager',    labelKey: 'b2b.sidebar.pricesManager',    icon: '⊕' },
 ];
 
 const B2BSidebar: React.FC<B2BSidebarProps> = ({
@@ -22,11 +24,13 @@ const B2BSidebar: React.FC<B2BSidebarProps> = ({
   onLogout,
   dataTestId,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <aside className="b2b-sidebar" data-testid={dataTestId}>
       <div className="b2b-sidebar__content">
-        <h3 className="b2b-sidebar__title">Menu</h3>
-        <nav className="b2b-sidebar__nav" aria-label="Business navigation">
+        <h3 className="b2b-sidebar__title">{t('b2b.sidebar.menu')}</h3>
+        <nav className="b2b-sidebar__nav" aria-label={t('b2b.sidebar.businessNavigation')}>
           <ul className="b2b-sidebar__menu">
             {B2B_MENU_ITEMS.map((menuItem) => (
               <li key={menuItem.path} className="b2b-sidebar__menu-item">
@@ -36,12 +40,12 @@ const B2BSidebar: React.FC<B2BSidebarProps> = ({
                   className={({ isActive }) =>
                     `b2b-sidebar__link ${isActive ? 'b2b-sidebar__link--active' : ''}`
                   }
-                  data-testid={`b2b-sidebar-${menuItem.label.toLowerCase().replace(/\s/g, '-')}`}
+                  data-testid={`b2b-sidebar-${menuItem.key}`}
                 >
                   <span className="b2b-sidebar__link-icon" aria-hidden="true">
                     {menuItem.icon}
                   </span>
-                  {menuItem.label}
+                  {t(menuItem.labelKey)}
                 </NavLink>
               </li>
             ))}
@@ -67,7 +71,7 @@ const B2BSidebar: React.FC<B2BSidebarProps> = ({
           onClick={onLogout}
           data-testid="b2b-sidebar-logout"
         >
-          ← Logout
+          {t('b2b.sidebar.logout')}
         </button>
       </div>
     </aside>

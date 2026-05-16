@@ -31,7 +31,7 @@ describe('ResultsPage', () => {
     expect(screen.getByTestId('results-sidebar')).toBeInTheDocument();
     expect(screen.getByText(/Price range/i)).toBeInTheDocument();
     expect(screen.getByText(/Property classification/i)).toBeInTheDocument();
-    expect(screen.getByText(/Sorted by:/i)).toBeInTheDocument();
+    expect(screen.getByText(/results\.sortedBy/i)).toBeInTheDocument();
   });
 
   it('renders hotel list and pagination', () => {

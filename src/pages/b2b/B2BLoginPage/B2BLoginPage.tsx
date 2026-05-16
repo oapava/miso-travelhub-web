@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Logo, Button, Input } from '@/components/ui';
 import { authService } from '@/services/auth.service';
 import { useAuth } from '@/context/AuthContext';
@@ -8,6 +9,7 @@ import './B2BLoginPage.scss';
 const B2BLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login: contextLogin } = useAuth();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,12 +27,12 @@ const B2BLoginPage: React.FC = () => {
       const token = await authService.login(email, password);
       const user = await authService.getCurrentUser(token.access_token);
       if (user.rol === 'viajero' || user.rol === 'traveler') {
-        throw new Error('Access denied. This portal is for hotel administrators only.');
+        throw new Error(t('b2b.login.accessDenied'));
       }
       contextLogin(token, user);
       navigate('/business');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
+      setError(err instanceof Error ? err.message : t('b2b.login.loginFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -45,18 +47,18 @@ const B2BLoginPage: React.FC = () => {
           </div>
 
           <h1 className="b2b-login-page__heading">
-            Hello, <strong>Welcome Back!</strong>
+            {t('b2b.login.heading')}
           </h1>
 
           <p className="b2b-login-page__subtitle">
-            We are happy to see you <strong>again</strong>, let's start!
+            {t('b2b.login.subtitle')}
           </p>
 
           <form className="b2b-login-page__form" onSubmit={handleLogin}>
             <Input
-              label="Email"
+              label={t('b2b.login.emailLabel')}
               type="email"
-              placeholder="Enter your email"
+              placeholder={t('b2b.login.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               fullWidth
@@ -64,9 +66,9 @@ const B2BLoginPage: React.FC = () => {
             />
 
             <Input
-              label="Password"
+              label={t('b2b.login.passwordLabel')}
               type="password"
-              placeholder="Enter your password"
+              placeholder={t('b2b.login.passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               fullWidth
@@ -81,11 +83,11 @@ const B2BLoginPage: React.FC = () => {
 
             <div className="b2b-login-page__links-row">
               <a href="#" className="b2b-login-page__link b2b-login-page__link--bold">
-                Forgot your password?
+                {t('b2b.login.forgotPassword')}
               </a>
               <span className="b2b-login-page__separator">|</span>
               <a href="#" className="b2b-login-page__link">
-                Don't have an account? <strong>Sign up for free</strong>
+                {t('b2b.login.noAccount')} <strong>{t('b2b.login.signUp')}</strong>
               </a>
             </div>
 
@@ -97,7 +99,7 @@ const B2BLoginPage: React.FC = () => {
               disabled={isLoading}
               dataTestId="b2b-login-submit"
             >
-              {isLoading ? 'LOGGING IN...' : 'LOGIN'}
+              {isLoading ? t('b2b.login.loggingIn') : t('b2b.login.loginBtn')}
             </Button>
           </form>
         </div>
