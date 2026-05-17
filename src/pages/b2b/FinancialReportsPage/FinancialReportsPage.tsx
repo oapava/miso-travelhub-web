@@ -102,7 +102,7 @@ export function buildReportRows(
     .sort((a, b) => new Date(a.fechaCheckIn).getTime() - new Date(b.fechaCheckIn).getTime())
     .map(b => ({
       id:            b.id,
-      fecha:         b.fechaCheckIn.split('T')[0],
+      fecha:         b.fechaCheckIn.substring(0, 10),
       bookingNumber: b.codigo,
       guest:         b.nombreUser || `Guest ${b.viajeroId.substring(0, 8)}`,
       amount:        b.total,

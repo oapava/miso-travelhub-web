@@ -75,7 +75,7 @@ const PricesManagerPage: React.FC = () => {
           rooms.map((r, i) => ({
             ...r,
             baseTariff:
-              results[i].status === 'fulfilled'
+              results[i]?.status === 'fulfilled'
                 ? (results[i] as PromiseFulfilledResult<Tarifa>).value
                 : null,
           })),
@@ -124,12 +124,12 @@ const PricesManagerPage: React.FC = () => {
     setEditDiscount(room.baseTariff ? String(room.baseTariff.descuento) : '0');
     setEditStartDate(
       room.baseTariff?.fechaInicio
-        ? room.baseTariff.fechaInicio.split('T')[0]
+        ? room.baseTariff.fechaInicio.substring(0, 10)
         : '',
     );
     setEditEndDate(
       room.baseTariff?.fechaFin
-        ? room.baseTariff.fechaFin.split('T')[0]
+        ? room.baseTariff.fechaFin.substring(0, 10)
         : '',
     );
     setSaveError(null);
@@ -369,7 +369,7 @@ const PricesManagerPage: React.FC = () => {
                           onClick={() => item.baseTariff && handleOpenModal(item)}
                           disabled={!item.baseTariff}
                           data-testid={`prices-manager-config-btn-${item.id}`}
-                          aria-label={`Configure ${item.nombre ?? item.id}`}
+                          aria-label={`Configure ${item.tipo ?? item.id}`}
                           title={
                             !item.baseTariff
                               ? t('b2b.prices.noBasePriceTitle')

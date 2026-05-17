@@ -209,8 +209,8 @@ const TarifaDetailModal: React.FC<TarifaDetailModalProps> = ({
     setEditPrice(String(v.precioBase));
     setEditDiscountType('pct');
     setEditDiscount(String(v.descuento * 100));
-    setEditStartDate(v.fechaInicio ? v.fechaInicio.split('T')[0] : '');
-    setEditEndDate(v.fechaFin   ? v.fechaFin.split('T')[0]   : '');
+    setEditStartDate(v.fechaInicio ? v.fechaInicio.substring(0, 10) : '');
+    setEditEndDate(v.fechaFin   ? v.fechaFin.substring(0, 10)   : '');
     setEditError(null);
   };
 

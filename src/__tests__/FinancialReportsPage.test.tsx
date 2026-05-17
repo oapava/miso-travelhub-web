@@ -219,8 +219,8 @@ describe('FinancialReportsPage', () => {
     renderPage();
     const options = screen.getByTestId('financial-reports-month-select').querySelectorAll('option');
     expect(options).toHaveLength(12);
-    expect(options[0].textContent).toBe('January');
-    expect(options[11].textContent).toBe('December');
+    expect(options[0]!.textContent).toBe('January');
+    expect(options[11]!.textContent).toBe('December');
   });
 
   // ── Loading state ──────────────────────────────────────────────────────────
@@ -405,7 +405,7 @@ describe('FinancialReportsPage', () => {
     fireEvent.click(screen.getByTestId('financial-reports-download-btn'));
 
     expect(createObjectURL).toHaveBeenCalled();
-    const blobArg: Blob = createObjectURL.mock.calls[0][0];
+    const blobArg = (createObjectURL.mock.calls[0] as unknown as [Blob])[0];
     expect(blobArg.type).toContain('text/csv');
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
 
@@ -515,19 +515,19 @@ describe('FinancialReportsPage', () => {
 
     it('sorts rows by check-in date ascending', () => {
       const rows = buildReportRows(mockBookings as never, MONTH, YEAR);
-      expect(rows[0].fecha).toBe('2026-05-10');
-      expect(rows[1].fecha).toBe('2026-05-20');
+      expect(rows[0]!.fecha).toBe('2026-05-10');
+      expect(rows[1]!.fecha).toBe('2026-05-20');
     });
 
     it('uses metodoPago when present', () => {
       const withPayment = [{ ...mockBookings[0], metodoPago: 'credit_card' }];
       const rows        = buildReportRows(withPayment as never, MONTH, YEAR);
-      expect(rows[0].paymentMethod).toBe('credit_card');
+      expect(rows[0]!.paymentMethod).toBe('credit_card');
     });
 
     it('falls back to "—" when metodoPago is absent', () => {
       const rows = buildReportRows(mockBookings as never, MONTH, YEAR);
-      expect(rows[0].paymentMethod).toBe('—');
+      expect(rows[0]!.paymentMethod).toBe('—');
     });
 
     it('sum of row amounts equals gross income expectation', () => {
@@ -567,7 +567,7 @@ describe('FinancialReportsPage', () => {
       const removeSpy = jest.spyOn(document.body, 'removeChild').mockImplementation(el => el);
       const rows = buildReportRows(mockBookings as never, MONTH, YEAR);
       exportToCSV(rows, { gross: 826, taxes: 126, net: 700 }, MONTH, YEAR);
-      const blobArg: Blob = createObjectURL.mock.calls[0][0];
+      const blobArg = (createObjectURL.mock.calls[0] as unknown as [Blob])[0];
       expect(blobArg.type).toContain('text/csv');
       expect(revokeObjectURL).toHaveBeenCalledWith('blob:url');
       appendSpy.mockRestore();
@@ -579,7 +579,7 @@ describe('FinancialReportsPage', () => {
       const removeSpy  = jest.spyOn(document.body, 'removeChild').mockImplementation(el => el);
       const rows       = buildReportRows(mockBookings as never, MONTH, YEAR);
       exportToCSV(rows, { gross: 826, taxes: 126, net: 700 }, MONTH, YEAR);
-      const link = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
+      const link = (appendSpy.mock.calls[0] as [HTMLAnchorElement])[0];
       expect(link.download).toBe(`financial-report-${YEAR}-05.csv`);
       appendSpy.mockRestore();
       removeSpy.mockRestore();
