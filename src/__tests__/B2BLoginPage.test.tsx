@@ -9,6 +9,13 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'en', changeLanguage: jest.fn() },
+  }),
+}));
+
 jest.mock('@/services/auth.service', () => ({
   authService: {
     login: jest.fn(),
@@ -68,13 +75,12 @@ describe('B2BLoginPage', () => {
 
   it('renders the welcome heading', () => {
     renderPage();
-    expect(screen.getByText(/Hello,/i)).toBeInTheDocument();
-    expect(screen.getByText(/Welcome Back!/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('b2b.login.heading');
   });
 
   it('renders the subtitle', () => {
     renderPage();
-    expect(screen.getByText(/We are happy to see you/i)).toBeInTheDocument();
+    expect(screen.getByText('b2b.login.subtitle')).toBeInTheDocument();
   });
 
   it('renders email and password inputs', () => {
@@ -87,13 +93,13 @@ describe('B2BLoginPage', () => {
     renderPage();
     const btn = screen.getByTestId('b2b-login-submit');
     expect(btn).toBeInTheDocument();
-    expect(btn).toHaveTextContent('LOGIN');
+    expect(btn).toHaveTextContent('b2b.login.loginBtn');
   });
 
   it('renders forgot password and sign-up links', () => {
     renderPage();
-    expect(screen.getByText(/Forgot your password/i)).toBeInTheDocument();
-    expect(screen.getByText(/Sign up for free/i)).toBeInTheDocument();
+    expect(screen.getByText('b2b.login.forgotPassword')).toBeInTheDocument();
+    expect(screen.getByText('b2b.login.signUp')).toBeInTheDocument();
   });
 
   it('renders the image placeholder', () => {
@@ -210,7 +216,7 @@ describe('B2BLoginPage', () => {
     fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
     await waitFor(() =>
       expect(screen.getByTestId('b2b-login-error')).toHaveTextContent(
-        'Login failed. Please check your credentials.',
+        'b2b.login.loginFailed',
       ),
     );
   });
@@ -243,7 +249,7 @@ describe('B2BLoginPage', () => {
     fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
     await waitFor(() =>
       expect(screen.getByTestId('b2b-login-error')).toHaveTextContent(
-        'Access denied. This portal is for hotel administrators only.',
+        'b2b.login.accessDenied',
       ),
     );
   });
@@ -319,7 +325,7 @@ describe('B2BLoginPage', () => {
     });
     fireEvent.submit(screen.getByTestId('b2b-login-submit').closest('form')!);
     await waitFor(() => {
-      expect(screen.getByTestId('b2b-login-submit')).toHaveTextContent('LOGGING IN...');
+      expect(screen.getByTestId('b2b-login-submit')).toHaveTextContent('b2b.login.loggingIn');
       expect(screen.getByTestId('b2b-login-submit')).toBeDisabled();
     });
     await waitFor(async () => resolve(mockToken));

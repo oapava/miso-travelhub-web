@@ -25,6 +25,13 @@
     "test:e2e:firefox": "cypress run --browser firefox --headless",
     "test:e2e:electron": "cypress run --browser electron --headless",
     "test:e2e:cross-browser": "cypress run --browser chrome --headless && cypress run --browser firefox --headless",
+    "test:e2e:lighthouse": "cypress run --browser chrome --headless --spec 'cypress/e2e/lighthouse.cy.ts'",
+    "test:lighthouse": "lhci autorun",
+    "test:a11y": "npm run test:e2e:chrome -- --spec 'cypress/e2e/a11y.cy.ts'",
+    "test:summary": "node scripts/test-summary.mjs",
+    "test:summary:no-cases": "node scripts/test-summary.mjs --no-cases",
+    "test:full": "npm run test:e2e:cross-browser && node scripts/test-summary.mjs",
+    "test:full:a11y": "npm run test:e2e:lighthouse && node scripts/test-summary.mjs",
     "prepare": "husky"
   },
   "dependencies": {
@@ -39,6 +46,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@lhci/cli": "^0.15.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@types/jest": "^29.5.14",
@@ -48,6 +56,7 @@
     "@typescript-eslint/parser": "^8.24.1",
     "@vitejs/plugin-react": "^4.3.4",
     "axe-core": "^4.11.4",
+    "chrome-launcher": "^1.2.1",
     "cypress": "^15.14.2",
     "cypress-axe": "^1.7.0",
     "cypress-real-events": "^1.15.0",
@@ -61,6 +70,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "lighthouse": "^12.8.2",
     "prettier": "^3.5.3",
     "sass": "^1.83.4",
     "ts-jest": "^29.2.5",

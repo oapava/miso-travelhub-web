@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { B2BHeader, B2BSidebar } from '@/components/layout';
 import { StatCard, DataTable } from '@/components/shared';
 import { useAuth } from '@/context/AuthContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import {
   bookingService,
   getHotelIdFromToken,
@@ -77,10 +79,22 @@ function isConfirmed(estado: string) {
   return s === 'confirmado' || s === 'confirmada' || s === 'activo' || s === 'active';
 }
 
+/** Counts for occupation: confirmed/active bookings + paid/completed ones. */
+function isOccupied(estado: string) {
+  const s = estado.toLowerCase();
+  return (
+    s === 'confirmado' || s === 'confirmada' ||
+    s === 'activo'     || s === 'active'     ||
+    s === 'pagado'     || s === 'pagada'
+  );
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const DashboardPage: React.FC = () => {
   const { logout, accessToken, user } = useAuth();
+  const { currency } = useCurrency();
+  const { t } = useTranslation();
   const [bookings, setBookings]   = useState<HotelBooking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -93,14 +107,14 @@ const DashboardPage: React.FC = () => {
 
     const hotelId = getHotelIdFromToken(accessToken);
     const request = hotelId
-      ? bookingService.getHotelBookings(hotelId, accessToken)
-      : bookingService.getMyBookings(accessToken);
+      ? bookingService.getHotelBookings(hotelId, accessToken, currency)
+      : bookingService.getMyBookings(accessToken, { moneda: currency });
 
     request
       .then(data => setBookings(data as HotelBooking[]))
       .catch(err => setLoadError(err instanceof Error ? err.message : 'Could not load data.'))
       .finally(() => setIsLoading(false));
-  }, [accessToken]);
+  }, [accessToken, currency]);
 
   // ── Derived metrics ──────────────────────────────────────────────────────────
   const todayCount     = bookings.filter(b => isToday(b.fechaCheckIn)).length;
@@ -110,8 +124,9 @@ const DashboardPage: React.FC = () => {
   const totalIncome    = bookings
     .filter(b => !isCancelled(b.estado))
     .reduce((sum, b) => sum + (b.total || 0), 0);
+  const occupiedCount  = bookings.filter(b => isOccupied(b.estado)).length;
   const occupationPct  = bookings.length > 0
-    ? Math.round((confirmedCount / bookings.length) * 100)
+    ? Math.round((occupiedCount / bookings.length) * 100)
     : 0;
 
   // Last 5 bookings sorted by check-in descending
@@ -125,9 +140,9 @@ const DashboardPage: React.FC = () => {
 
   // Status breakdown bars
   const statusBars = [
-    { label: 'Confirmed', count: confirmedCount, color: '#4caf50' },
-    { label: 'Pending',   count: pendingCount,   color: '#ff9800' },
-    { label: 'Cancelled', count: cancelledCount, color: '#f44336' },
+    { label: t('b2b.dashboard.statusConfirmed'), count: confirmedCount, color: '#4caf50' },
+    { label: t('b2b.dashboard.statusPending'),   count: pendingCount,   color: '#ff9800' },
+    { label: t('b2b.dashboard.statusCancelled'), count: cancelledCount, color: '#f44336' },
   ];
   const maxStatus = Math.max(...statusBars.map(s => s.count), 1);
 
@@ -160,24 +175,24 @@ const DashboardPage: React.FC = () => {
             {/* ── KPI row ── */}
             <div className="dashboard-page__kpi-row">
               <StatCard
-                title="Today's Bookings"
+                title={t('b2b.dashboard.todaysBookings')}
                 mainValue={isLoading ? '…' : String(todayCount)}
                 subtitle={`${bookings.length} total`}
                 showChart
                 dataTestId="dashboard-bookings-card"
               />
               <StatCard
-                title="Confirmed"
+                title={t('b2b.dashboard.confirmed')}
                 mainValue={isLoading ? '…' : String(confirmedCount)}
                 dataTestId="dashboard-confirmed-card"
               />
               <StatCard
-                title="Pending"
+                title={t('b2b.dashboard.pending')}
                 mainValue={isLoading ? '…' : String(pendingCount)}
                 dataTestId="dashboard-pending-card"
               />
               <StatCard
-                title="Incomes"
+                title={t('b2b.dashboard.incomes')}
                 mainValue={isLoading ? '…' : `$${formatMoney(totalIncome)}`}
                 subtitle="USD"
                 showChart
@@ -191,11 +206,11 @@ const DashboardPage: React.FC = () => {
               {/* Last Bookings table */}
               <div className="dashboard-page__table-wrapper">
                 <DataTable
-                  title="Last Bookings"
+                  title={t('b2b.dashboard.lastBookings')}
                   columns={[
                     {
                       key: 'viajeroId',
-                      header: 'Name',
+                      header: t('b2b.dashboard.colName'),
                       render: (item: HotelBooking) => (
                         <div className="dashboard-page__name-cell">
                           <span className="dashboard-page__name">
@@ -209,19 +224,19 @@ const DashboardPage: React.FC = () => {
                     },
                     {
                       key: 'daysNights',
-                      header: 'Days/Nights',
+                      header: t('b2b.dashboard.colDaysNights'),
                       render: (item: HotelBooking) =>
                         calcDaysNights(item.fechaCheckIn, item.fechaCheckOut),
                     },
-                    { key: 'numHuespedes', header: 'Guests' },
+                    { key: 'numHuespedes', header: t('b2b.dashboard.colGuests') },
                     {
                       key: 'fechaCheckIn',
-                      header: 'Start',
+                      header: t('b2b.dashboard.colStart'),
                       render: (item: HotelBooking) => formatDateDDMMYY(item.fechaCheckIn),
                     },
                     {
                       key: 'fechaCheckOut',
-                      header: 'End',
+                      header: t('b2b.dashboard.colEnd'),
                       render: (item: HotelBooking) => formatDateDDMMYY(item.fechaCheckOut),
                     },
                     {
@@ -233,14 +248,14 @@ const DashboardPage: React.FC = () => {
                     },
                   ]}
                   data={recentBookings}
-                  emptyMessage={isLoading ? 'Loading bookings…' : 'No bookings yet.'}
+                  emptyMessage={isLoading ? t('b2b.dashboard.loadingBookings') : t('b2b.dashboard.noBookings')}
                   dataTestId="dashboard-last-bookings"
                 />
               </div>
 
               {/* Occupation Rate */}
               <div className="dashboard-page__occupation-card">
-                <h3 className="dashboard-page__section-title">Occupation Rate</h3>
+                <h3 className="dashboard-page__section-title">{t('b2b.dashboard.occupationRate')}</h3>
 
                 <div className="dashboard-page__occ-pct-row">
                   <span
@@ -253,7 +268,7 @@ const DashboardPage: React.FC = () => {
                     className="dashboard-page__occ-badge"
                     data-testid="dashboard-occupation-badge"
                   >
-                    {occupationPct}% Occupations Free
+                    {occupationPct}% {t('b2b.dashboard.occupationsFree')}
                   </span>
                 </div>
 
@@ -288,11 +303,11 @@ const DashboardPage: React.FC = () => {
             {/* ── Income chart: last 6 months ── */}
             <div className="dashboard-page__chart-card" data-testid="dashboard-income-chart">
               <h3 className="dashboard-page__section-title">
-                Income — Last 6 Months
+                {t('b2b.dashboard.incomeSixMonths')}
               </h3>
               <div
                 className="dashboard-page__bar-chart"
-                aria-label="Monthly income bar chart"
+                aria-label={t('b2b.dashboard.monthlyIncomeChart')}
               >
                 {monthlyData.map(({ month, value }) => (
                   <div key={month} className="dashboard-page__bar-col">

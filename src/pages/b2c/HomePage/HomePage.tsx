@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header, SearchBar, Footer } from '@/components/layout';
 import { FilterChip } from '@/components/ui';
 import { HotelCard } from '@/components/shared/HotelCard';
@@ -9,6 +10,7 @@ import './HomePage.scss';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const lastSearch = searchParamsStorage.load();
 
   const handleSearch = async (searchParams: LastSearchParams) => {
@@ -96,7 +98,13 @@ const HomePage: React.FC = () => {
     },
   ];
 
-  const securityTags = ['Free cancellation', 'Best price', 'Verified', 'Instant confirm', 'Secure'];
+  const securityTags = [
+    t('home.freeCancellation'),
+    t('home.bestPrice'),
+    t('home.verified'),
+    t('home.instantConfirm'),
+    t('home.secure'),
+  ];
 
   return (
     <div className="home-page" data-testid="home-page">
@@ -108,9 +116,9 @@ const HomePage: React.FC = () => {
         <div className="home-page__hero-background" />
         <div className="home-page__hero-overlay" />
         <div className="home-page__hero-content">
-          <h1 className="home-page__hero-title">Your Journey Starts Here</h1>
+          <h1 className="home-page__hero-title">{t('home.heroTitle')}</h1>
           <p className="home-page__hero-subtitle">
-            Find unique across hotels, villas and more.
+            {t('home.heroSubtitle')}
           </p>
         </div>
 
@@ -126,7 +134,7 @@ const HomePage: React.FC = () => {
       <section className="home-page__top-hotels" data-testid="home-page-top-hotels">
         <div className="home-page__section-container">
           <div className="home-page__top-hotels-header">
-            <h2 className="home-page__section-title">Top Hotels</h2>
+            <h2 className="home-page__section-title">{t('home.topHotels')}</h2>
             <div className="home-page__security-tags">
               {securityTags.map((tag, index) => (
                 <FilterChip

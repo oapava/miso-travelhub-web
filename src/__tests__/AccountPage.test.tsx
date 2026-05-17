@@ -68,8 +68,8 @@ describe('AccountPage', () => {
 
   it('renders the Account Information title', () => {
     renderPage();
-    expect(screen.getByRole('heading', { name: 'Account' })).toBeInTheDocument();
-    expect(screen.getByText('Information')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'account.title' })).toBeInTheDocument();
+    expect(screen.getByText('account.subtitle')).toBeInTheDocument();
   });
 
   it('renders the account form', () => {

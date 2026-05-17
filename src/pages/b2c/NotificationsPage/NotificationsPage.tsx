@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Header, AccountSidebar, Footer } from '@/components/layout';
 import { Breadcrumb, Toggle } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
@@ -6,6 +7,7 @@ import './NotificationsPage.scss';
 
 const NotificationsPage: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [notifications, setNotifications] = useState({
     whatsapp: true,
@@ -20,18 +22,18 @@ const NotificationsPage: React.FC = () => {
   const notificationSettings = [
     {
       id: 'whatsapp' as const,
-      label: 'Whatsapp Notifications',
-      description: 'Receive booking confirmations and updates via WhatsApp',
+      label: t('notifications.whatsappLabel'),
+      description: t('notifications.whatsappDesc'),
     },
     {
       id: 'email' as const,
-      label: 'Email Notifications',
-      description: 'Receive booking confirmations and updates via email',
+      label: t('notifications.emailLabel'),
+      description: t('notifications.emailDesc'),
     },
     {
       id: 'sms' as const,
-      label: 'SMS Notifications',
-      description: 'Receive booking confirmations and updates via SMS',
+      label: t('notifications.smsLabel'),
+      description: t('notifications.smsDesc'),
     },
   ];
 
@@ -42,9 +44,9 @@ const NotificationsPage: React.FC = () => {
       <div className="notifications-page__container">
         <Breadcrumb
           items={[
-            { label: 'Home', path: '/' },
-            { label: 'Account', path: '/account' },
-            { label: 'Notifications' },
+            { label: t('breadcrumb.home'), path: '/' },
+            { label: t('breadcrumb.account'), path: '/account' },
+            { label: t('breadcrumb.notifications') },
           ]}
         />
 
@@ -57,8 +59,8 @@ const NotificationsPage: React.FC = () => {
 
           <main className="notifications-page__main" data-testid="notifications-main">
             <div className="notifications-page__header">
-              <h1 className="notifications-page__title">Configuration</h1>
-              <p className="notifications-page__subtitle">Notifications</p>
+              <h1 className="notifications-page__title">{t('notifications.title')}</h1>
+              <p className="notifications-page__subtitle">{t('notifications.subtitle')}</p>
             </div>
 
             <div className="notifications-page__settings-list" data-testid="notifications-list">

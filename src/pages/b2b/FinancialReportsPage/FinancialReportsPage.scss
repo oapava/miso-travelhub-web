@@ -63,14 +63,92 @@
     }
   }
 
-  &__date-filters {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+  &__month-year-filters {
+    display: flex;
     gap: $spacing-md;
+    align-items: flex-end;
+
+    @include respond-to('tablet') {
+      flex-direction: column;
+      width: 100%;
+    }
+  }
+
+  &__select-label {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xs;
+    font-size: $font-size-sm;
+    color: $color-neutral-600;
+    font-weight: $font-weight-medium;
+  }
+
+  &__select {
+    height: 44px;
+    padding: 0 $spacing-sm;
+    border: 1px solid $color-neutral-300;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-sm;
+    color: $color-neutral-black;
+    background-color: $color-neutral-white;
+    cursor: pointer;
+    min-width: 130px;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary-700;
+    }
+  }
+
+  // ── Totals row ───────────────────────────────────────────────────────────────
+
+  &__totals {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-lg;
+    margin-bottom: $spacing-2xl;
 
     @include respond-to('tablet') {
       grid-template-columns: 1fr;
     }
+  }
+
+  &__total-card {
+    background-color: $color-neutral-white;
+    border-radius: $border-radius-md;
+    @include card-shadow;
+    padding: $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    &--net {
+      border-top: 3px solid $color-primary-700;
+    }
+  }
+
+  &__total-label {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  &__total-value {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $color-neutral-black;
+    line-height: 1.1;
+
+    &--net {
+      color: $color-primary-700;
+    }
+  }
+
+  &__total-sub {
+    font-size: $font-size-xs;
+    color: $color-neutral-400;
   }
 
   &__download-btn {
@@ -120,13 +198,10 @@
 
   &__summary {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: $spacing-lg;
     margin-bottom: $spacing-2xl;
-
-    @include respond-to('laptop') {
-      grid-template-columns: 1fr 1fr;
-    }
+    margin-top: $spacing-2xl;
 
     @include respond-to('tablet') {
       grid-template-columns: 1fr;

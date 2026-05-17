@@ -23,6 +23,15 @@ jest.mock('@/components/shared/SignUpModal/SignUpModal', () => ({
   __esModule: true,
   default: () => null,
 }));
+jest.mock('@/components/shared/BookingDetailModal/BookingDetailModal', () => ({
+  __esModule: true,
+  default: ({ isOpen, booking, dataTestId }: { isOpen: boolean; booking?: { nombreHotel?: string }; dataTestId?: string }) =>
+    isOpen ? (
+      <div data-testid={dataTestId ?? 'bookings-detail-modal'}>
+        {booking?.nombreHotel && <span>{booking.nombreHotel}</span>}
+      </div>
+    ) : null,
+}));
 
 jest.mock('@/services/booking.service', () => ({
   bookingService: {
@@ -109,7 +118,7 @@ describe('BookingsPage', () => {
 
   it('renders the Booking History title', () => {
     renderPage();
-    expect(screen.getByText('Booking History')).toBeInTheDocument();
+    expect(screen.getByText('bookings.title')).toBeInTheDocument();
   });
 
   it('renders the account sidebar', () => {
@@ -120,16 +129,16 @@ describe('BookingsPage', () => {
   it('shows empty state when not authenticated', async () => {
     renderPage();
     await waitFor(() =>
-      expect(screen.queryByText('Loading bookings...')).not.toBeInTheDocument(),
+      expect(screen.queryByText('bookings.loading')).not.toBeInTheDocument(),
     );
-    expect(screen.getByText('You have no bookings yet.')).toBeInTheDocument();
+    expect(screen.getByText('bookings.empty')).toBeInTheDocument();
   });
 
   it('shows loading state while fetching bookings', () => {
     mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
     mockGetMyBookings.mockReturnValue(new Promise(() => {})); // never resolves
     renderPage();
-    expect(screen.getByText('Loading bookings...')).toBeInTheDocument();
+    expect(screen.getByText('bookings.loading')).toBeInTheDocument();
   });
 
   it('calls getMyBookings with the access token and active currency', async () => {
@@ -194,7 +203,7 @@ describe('BookingsPage', () => {
     mockGetMyBookings.mockResolvedValue([]);
     renderPage();
     await waitFor(() =>
-      expect(screen.getByText('You have no bookings yet.')).toBeInTheDocument(),
+      expect(screen.getByText('bookings.empty')).toBeInTheDocument(),
     );
   });
 
@@ -266,7 +275,7 @@ describe('BookingsPage', () => {
     renderPage();
     await waitFor(() => {
       const info = screen.getByTestId('booking-pending-info-b3');
-      expect(info).toHaveTextContent(/approved.*payment/i);
+      expect(info).toHaveTextContent(/bookings\.pendingNotice/i);
     });
   });
 
@@ -393,5 +402,52 @@ describe('BookingsPage', () => {
     await waitFor(() => {
       expect(screen.queryByTestId('booking-cancel-btn-b1')).not.toBeInTheDocument();
     });
+  });
+
+  // ── DETAIL button ────────────────────────────────────────────────────────────
+
+  it('renders a DETAIL button for each booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('booking-detail-btn-b1')).toBeInTheDocument();
+      expect(screen.getByTestId('booking-detail-btn-b2')).toBeInTheDocument();
+    });
+  });
+
+  it('opens the detail modal when DETAIL button is clicked', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => screen.getByTestId('booking-detail-btn-b1'));
+    fireEvent.click(screen.getByTestId('booking-detail-btn-b1'));
+    expect(screen.getByTestId('bookings-detail-modal')).toBeInTheDocument();
+  });
+
+  it('detail modal shows the hotel name of the clicked booking', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => screen.getByTestId('booking-detail-btn-b1'));
+    fireEvent.click(screen.getByTestId('booking-detail-btn-b1'));
+    expect(within(screen.getByTestId('bookings-detail-modal')).getByText('Grand Cypress Hotel')).toBeInTheDocument();
+  });
+
+  it('detail modal is not visible before any DETAIL button is clicked', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => screen.getByTestId('booking-detail-btn-b1'));
+    expect(screen.queryByTestId('bookings-detail-modal')).not.toBeInTheDocument();
+  });
+
+  it('opens detail modal for second booking when its DETAIL button is clicked', async () => {
+    mockUseAuth.mockReturnValue(authUser as ReturnType<typeof useAuth>);
+    mockGetMyBookings.mockResolvedValue(mockBookings);
+    renderPage();
+    await waitFor(() => screen.getByTestId('booking-detail-btn-b2'));
+    fireEvent.click(screen.getByTestId('booking-detail-btn-b2'));
+    expect(within(screen.getByTestId('bookings-detail-modal')).getByText('Boutique City Villa')).toBeInTheDocument();
   });
 });

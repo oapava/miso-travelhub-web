@@ -108,7 +108,7 @@ const Header: React.FC<HeaderProps> = ({ dataTestId, searchInitialValues, onSear
                 <span className="header__user-name">{user?.nombre}</span>
                 <div className="header__user-links">
                   <Link to="/account" className="header__account-link" data-testid="header-account">
-                    Account
+                    {t('header.account')}
                   </Link>
                   <span className="header__user-divider">|</span>
                   <button
@@ -117,7 +117,7 @@ const Header: React.FC<HeaderProps> = ({ dataTestId, searchInitialValues, onSear
                     onClick={logout}
                     data-testid="header-logout"
                   >
-                    Logout
+                    {t('header.logout')}
                   </button>
                 </div>
               </div>

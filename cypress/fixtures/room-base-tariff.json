@@ -1,0 +1,9 @@
+{
+  "id": "tariff-base-01",
+  "habitacionId": "room-suite-01",
+  "precioBase": 200,
+  "descuento": 0.10,
+  "moneda": "USD",
+  "fechaInicio": null,
+  "fechaFin": null
+}
