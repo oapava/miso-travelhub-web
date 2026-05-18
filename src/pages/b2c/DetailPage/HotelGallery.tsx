@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import './HotelGallery.scss';
 
-const MOCK_IMAGES = [
+export const MOCK_IMAGES = [
   '/img/bg-hotel.png',
   '/img/hero-bg.png',
   '/img/login-bg-b2b.png',

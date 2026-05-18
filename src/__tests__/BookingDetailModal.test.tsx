@@ -453,4 +453,62 @@ describe('BookingDetailModal — rich view (booking prop)', () => {
     fireEvent.click(screen.getByLabelText('Close modal'));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  // ── Terminal-state button disabling ──────────────────────────────────────
+
+  const TERMINAL_STATES = [
+    'CANCELADA',
+    'CANCELADO',
+    'REEMBOLSADA',
+    'REEMBOLSADO',
+    'REEMBOLSANDO',
+    'PAGADA',
+    'PAGADO',
+  ] as const;
+
+  const ACTIVE_STATES = ['PENDIENTE', 'CONFIRMADO', 'CONFIRMADA'] as const;
+
+  TERMINAL_STATES.forEach((estado) => {
+    it(`disables CONFIRM and CANCEL buttons when estado is ${estado}`, () => {
+      renderRich({ estado });
+      expect(screen.getByTestId('booking-detail-modal-confirm-btn')).toBeDisabled();
+      expect(screen.getByTestId('booking-detail-modal-cancel-btn')).toBeDisabled();
+    });
+  });
+
+  ACTIVE_STATES.forEach((estado) => {
+    it(`keeps CONFIRM and CANCEL buttons enabled when estado is ${estado}`, () => {
+      renderRich({ estado });
+      expect(screen.getByTestId('booking-detail-modal-confirm-btn')).not.toBeDisabled();
+      expect(screen.getByTestId('booking-detail-modal-cancel-btn')).not.toBeDisabled();
+    });
+  });
+
+  it('does not call onConfirm when CONFIRM button is disabled (terminal state)', () => {
+    const onConfirm = jest.fn();
+    render(
+      <BookingDetailModal
+        isOpen={true}
+        onClose={jest.fn()}
+        onConfirm={onConfirm}
+        booking={{ ...mockBooking, estado: 'CANCELADA' }}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('booking-detail-modal-confirm-btn'));
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('does not call onCancel when CANCEL button is disabled (terminal state)', () => {
+    const onCancel = jest.fn();
+    render(
+      <BookingDetailModal
+        isOpen={true}
+        onClose={jest.fn()}
+        onCancel={onCancel}
+        booking={{ ...mockBooking, estado: 'REEMBOLSADA' }}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('booking-detail-modal-cancel-btn'));
+    expect(onCancel).not.toHaveBeenCalled();
+  });
 });

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header, Footer } from '@/components/layout';
 import { Breadcrumb, Select, Pagination } from '@/components/ui';
 import { HotelCard } from '@/components/shared/HotelCard';
@@ -171,6 +172,7 @@ const ITEMS_PER_PAGE = 5;
 const ResultsPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const routeState = (location.state as ResultsState | null) ?? {
     results: searchResultsStorage.load<HabitacionDisponible>() ?? [],
     searchParams: searchParamsStorage.load() ?? null,
@@ -284,8 +286,8 @@ const ResultsPage: React.FC = () => {
       <div className="results-page__container">
         <Breadcrumb
           items={[
-            { label: 'Home', path: '/' },
-            { label: 'results', path: '#' },
+            { label: t('breadcrumb.home'), path: '/' },
+            { label: t('breadcrumb.results'), path: '#' },
           ]}
         />
 
@@ -309,18 +311,18 @@ const ResultsPage: React.FC = () => {
             <div className="results-page__header">
               <h1 className="results-page__title">
                 {searchWasPerformed
-                  ? `${allHotels.length} places in ${routeState.searchParams!.location}`
-                  : 'Explore 300+ places in Paris'}
+                  ? t('results.title', { count: allHotels.length, location: routeState.searchParams!.location })
+                  : t('results.titleFallback')}
               </h1>
               <div className="results-page__sort">
-                <label htmlFor="results-sort-select" className="results-page__sort-label">Sorted by:</label>
+                <label htmlFor="results-sort-select" className="results-page__sort-label">{t('results.sortedBy')}</label>
                 <Select
                   id="results-sort-select"
                   options={[
-                    { value: 'top-reviewed', label: 'Top reviewed' },
-                    { value: 'price-low', label: 'Price: Low to High' },
-                    { value: 'price-high', label: 'Price: High to Low' },
-                    { value: 'rating', label: 'Highest Rated' },
+                    { value: 'top-reviewed', label: t('results.sortTopReviewed') },
+                    { value: 'price-low', label: t('results.sortPriceLow') },
+                    { value: 'price-high', label: t('results.sortPriceHigh') },
+                    { value: 'rating', label: t('results.sortRating') },
                   ]}
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
@@ -330,12 +332,12 @@ const ResultsPage: React.FC = () => {
             </div>
 
             {/* H2 visually-hidden para mantener la jerarquía H1→H2→H3 (WCAG 1.3.1) */}
-            <h2 className="visually-hidden">Lista de alojamientos</h2>
+            <h2 className="visually-hidden">{t('results.accommodationsList')}</h2>
 
             <div className="results-page__hotels-list">
               {allHotels.length === 0 && (
                 <p className="results-page__empty">
-                  No rooms found for your search. Try different dates or a different city.
+                  {t('results.empty')}
                 </p>
               )}
               {hotelsToShow.map((hotel) => (

@@ -2,6 +2,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import B2BSidebar from '@/components/layout/B2BSidebar/B2BSidebar';
 
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'en', changeLanguage: jest.fn() },
+  }),
+}));
+
 const renderSidebar = (onLogout = jest.fn()) =>
   render(
     <MemoryRouter initialEntries={['/business']}>
@@ -22,18 +29,18 @@ describe('B2BSidebar', () => {
 
   it('renders the Menu title', () => {
     renderSidebar();
-    expect(screen.getByText('Menu')).toBeInTheDocument();
+    expect(screen.getByText('b2b.sidebar.menu')).toBeInTheDocument();
   });
 
   it('renders business navigation landmark', () => {
     renderSidebar();
-    expect(screen.getByRole('navigation', { name: 'Business navigation' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'b2b.sidebar.businessNavigation' })).toBeInTheDocument();
   });
 
   it('renders Dashboard menu item', () => {
     renderSidebar();
     expect(screen.getByTestId('b2b-sidebar-dashboard')).toBeInTheDocument();
-    expect(screen.getByTestId('b2b-sidebar-dashboard')).toHaveTextContent('Dashboard');
+    expect(screen.getByTestId('b2b-sidebar-dashboard')).toHaveTextContent('b2b.sidebar.dashboard');
   });
 
   it('renders Booking Manager menu item', () => {

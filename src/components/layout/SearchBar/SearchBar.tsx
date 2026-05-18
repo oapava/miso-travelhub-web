@@ -39,6 +39,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   const { t } = useTranslation();
   const { currency } = useCurrency();
+
+  const guestLabels = [
+    { label: t('search.rooms'),    field: 'rooms'    as const, min: 1 },
+    { label: t('search.adults'),   field: 'adults'   as const, min: 1 },
+    { label: t('search.children'), field: 'children' as const, min: 0 },
+  ];
   const tomorrow = getTomorrow();
 
   const [selectedPlace, setSelectedPlace] = useState<'hotels' | 'apartments' | 'suites'>('hotels');
@@ -116,7 +122,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               className={`search-bar__places_box__item ${selectedPlace === place ? 'search-bar__places_box__item--active' : ''}`}
               aria-pressed={selectedPlace === place}
             >
-              {place.charAt(0).toUpperCase() + place.slice(1)}
+              {t(`search.${place}`)}
             </button>
           ))}
         </div>
@@ -125,7 +131,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       {/* ── Location — select from API cities ── */}
       <div className="search-bar__field">
         <label htmlFor="search-location" className="search-bar__label">
-          Location
+          {t('search.location')}
         </label>
         <select
           id="search-location"
@@ -135,7 +141,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           data-testid="search-bar-location"
         >
           <option value="" disabled>
-            {cities.length === 0 ? 'Loading cities…' : t('common.searchPlaceholder')}
+            {cities.length === 0 ? t('search.loadingCities') : t('common.searchPlaceholder')}
           </option>
           {cities.map((city) => (
             <option key={city} value={city}>{city}</option>
@@ -151,8 +157,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
         endDate={searchData.checkOut}
         minDate={tomorrow}
         onChange={handleDateChange}
-        startLabel="Check In"
-        endLabel="Check Out"
+        startLabel={t('search.checkIn')}
+        endLabel={t('search.checkOut')}
         startTestId="search-bar-checkin"
         endTestId="search-bar-checkout"
         className="search-bar__date-range"
@@ -163,7 +169,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       {/* ── Rooms & Guests ── */}
       <div className="search-bar__field search-bar__field--guests" ref={guestsRef}>
         {/* id asociado al botón mediante aria-labelledby */}
-        <label id="guests-label" className="search-bar__label">Rooms and Guests</label>
+        <label id="guests-label" className="search-bar__label">{t('search.roomsAndGuests')}</label>
         <button
           type="button"
           className="search-bar__guests-summary"
@@ -173,16 +179,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
           aria-labelledby="guests-label"
           data-testid="search-bar-guests-toggle"
         >
-          {searchData.rooms} Room, {searchData.adults} Adults, {searchData.children} Children
+          {t('search.guestsSummary', { rooms: searchData.rooms, adults: searchData.adults, children: searchData.children })}
         </button>
 
         {isGuestsOpen && (
-          <div className="search-bar__guests-dropdown" role="dialog" aria-label="Rooms and Guests">
-            {([
-              { label: 'Rooms',    field: 'rooms',    min: 1 },
-              { label: 'Adults',   field: 'adults',   min: 1 },
-              { label: 'Children', field: 'children', min: 0 },
-            ] as { label: string; field: 'rooms' | 'adults' | 'children'; min: number }[]).map(
+          <div className="search-bar__guests-dropdown" role="dialog" aria-label={t('search.roomsAndGuests')}>
+            {guestLabels.map(
               ({ label, field, min }) => (
                 <div key={field} className="search-bar__guests-row">
                   <span className="search-bar__guests-label">{label}</span>
@@ -191,7 +193,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                       type="button"
                       className="search-bar__guests-btn"
                       onClick={() => handleCounter(field, -1, min)}
-                      aria-label={`Decrease ${label}`}
+                      aria-label={t('search.decrease', { label })}
                       disabled={(searchData[field] as number) <= min}
                     >−</button>
                     <span className="search-bar__guests-value" data-testid={`search-bar-${field}`}>
@@ -201,7 +203,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                       type="button"
                       className="search-bar__guests-btn"
                       onClick={() => handleCounter(field, 1, min)}
-                      aria-label={`Increase ${label}`}
+                      aria-label={t('search.increase', { label })}
                     >+</button>
                   </div>
                 </div>

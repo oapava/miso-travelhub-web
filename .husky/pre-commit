@@ -1,7 +1,8 @@
 #!/bin/sh
 # ─────────────────────────────────────────────────────────────────────────────
-# Pre-commit: E2E Cross-Browser (Chrome + Firefox)
-# Levanta el dev-server, corre Cypress en ambos browsers y lo apaga al terminar.
+# Pre-commit: E2E Cross-Browser (Chrome + Firefox) + Test Report
+# Levanta el dev-server, corre Cypress en ambos browsers,
+# imprime el resumen de resultados y apaga el server.
 # ─────────────────────────────────────────────────────────────────────────────
 
 echo ""
@@ -13,6 +14,10 @@ cleanup() {
   [ -n "$DEV_PID" ] && kill "$DEV_PID" 2>/dev/null || true
 }
 trap cleanup EXIT
+
+# Limpia resultados anteriores para que el reporte muestre solo esta ejecución
+rm -f test-results/cypress-chrome.json test-results/cypress-firefox.json
+mkdir -p test-results
 
 # Inicia Vite en segundo plano
 npm run dev &
@@ -26,17 +31,26 @@ npx wait-on http://localhost:5173 --timeout 30000 || {
 
 FAILED=0
 
+# Lighthouse specs excluidas del pre-commit: cada página tarda ~45 s.
+# Ejecutar explícitamente con:
+#   npm run test:e2e:lighthouse   (Cypress task-based, solo Chrome)
+#   npm run test:lighthouse       (LHCI standalone, lee .lighthouserc.json)
+EXCLUDE_LIGHTHOUSE="excludeSpecPattern=cypress/e2e/lighthouse.cy.ts"
+
 # ── Chrome ────────────────────────────────────────────────────────────────────
 echo "🌐  Chrome…"
-npx cypress run --browser chrome --headless || FAILED=1
+npx cypress run --browser chrome --headless --config "$EXCLUDE_LIGHTHOUSE" || FAILED=1
 
 # ── Firefox ───────────────────────────────────────────────────────────────────
 echo ""
 echo "🦊  Firefox…"
-npx cypress run --browser firefox --headless || FAILED=1
+npx cypress run --browser firefox --headless --config "$EXCLUDE_LIGHTHOUSE" || FAILED=1
 
-# ── Resultado ─────────────────────────────────────────────────────────────────
+# ── Reporte de resultados ─────────────────────────────────────────────────────
 echo ""
+node scripts/test-summary.mjs
+
+# ── Resultado final ───────────────────────────────────────────────────────────
 if [ "$FAILED" -eq 0 ]; then
   echo "✅  Todas las pruebas E2E cross-browser pasaron. Continuando con el commit."
 else

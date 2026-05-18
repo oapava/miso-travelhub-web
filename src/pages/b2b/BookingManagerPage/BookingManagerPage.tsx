@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { B2BHeader, B2BSidebar } from '@/components/layout';
 import { DataTable } from '@/components/shared';
 import BookingDetailModal from '@/components/shared/BookingDetailModal/BookingDetailModal';
@@ -49,19 +50,31 @@ function estadoCssModifier(estado: string): string {
   if (lower === 'pendiente') return 'pending';
   if (lower === 'cancelado' || lower === 'cancelada') return 'cancelled';
   if (lower === 'pagado' || lower === 'pagada') return 'paid';
-  if (lower === 'reembolsando') return 'refunding';
+  if (lower === 'reembolsando' || lower === 'reembolsada' || lower === 'reembolsado') return 'refunding';
   return lower;
 }
 
-/** A paid or refunding booking cannot be confirmed or cancelled from B2B. */
+/**
+ * Returns true for any terminal state where Confirm / Cancel actions
+ * must be disabled: paid, cancelled, or any refund state.
+ */
 function isPaid(estado: string): boolean {
   const s = estado.toUpperCase();
-  return s === 'PAGADO' || s === 'PAGADA' || s === 'REEMBOLSANDO';
+  return (
+    s === 'PAGADO'       ||
+    s === 'PAGADA'       ||
+    s === 'CANCELADO'    ||
+    s === 'CANCELADA'    ||
+    s === 'REEMBOLSANDO' ||
+    s === 'REEMBOLSADA'  ||
+    s === 'REEMBOLSADO'
+  );
 }
 
 const BookingManagerPage: React.FC = () => {
   const { accessToken, logout, user } = useAuth();
   const { currency } = useCurrency();
+  const { t } = useTranslation();
 
   const [bookings, setBookings] = useState<HotelBooking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,7 +116,7 @@ const BookingManagerPage: React.FC = () => {
     request
       .then((data) => setBookings(data as HotelBooking[]))
       .catch((err: unknown) => {
-        setLoadError(err instanceof Error ? err.message : 'Could not load bookings.');
+        setLoadError(err instanceof Error ? err.message : t('b2b.bookingManager.couldNotLoadBookings'));
       })
       .finally(() => setIsLoading(false));
   }, [accessToken, currency]);
@@ -164,7 +177,7 @@ const BookingManagerPage: React.FC = () => {
       setIsCancelOpen(false);
       setIsConfirmOpen(true);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Could not confirm booking.');
+      setActionError(err instanceof Error ? err.message : t('b2b.bookingManager.couldNotConfirm'));
     } finally {
       setIsActionLoading(false);
     }
@@ -182,7 +195,7 @@ const BookingManagerPage: React.FC = () => {
       );
       closeAll();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Could not cancel booking.');
+      setActionError(err instanceof Error ? err.message : t('b2b.bookingManager.couldNotCancel'));
     } finally {
       setIsActionLoading(false);
     }
@@ -214,13 +227,13 @@ const BookingManagerPage: React.FC = () => {
             {/* ── Page header: title + filters ── */}
             <div className="booking-manager-page__page-header">
               <h1 className="booking-manager-page__title">
-                <strong>Booking Manager</strong>
+                <strong>{t('b2b.bookingManager.title')}</strong>
               </h1>
 
               <div className="booking-manager-page__filters">
                 <Input
                   label=""
-                  placeholder="Client"
+                  placeholder={t('b2b.bookingManager.clientFilter')}
                   value={clientFilter}
                   onChange={(e) => { setClientFilter(e.target.value); setCurrentPage(1); }}
                   dataTestId="booking-manager-client-filter"
@@ -229,10 +242,10 @@ const BookingManagerPage: React.FC = () => {
                 <Select
                   label=""
                   options={[
-                    { value: '', label: 'State' },
-                    { value: 'PENDIENTE', label: 'Pending' },
-                    { value: 'CONFIRMADO', label: 'Confirmed' },
-                    { value: 'CANCELADO', label: 'Cancelled' },
+                    { value: '', label: t('b2b.bookingManager.stateFilter') },
+                    { value: 'PENDIENTE', label: t('b2b.bookingManager.statePending') },
+                    { value: 'CONFIRMADO', label: t('b2b.bookingManager.stateConfirmed') },
+                    { value: 'CANCELADO', label: t('b2b.bookingManager.stateCancelled') },
                   ]}
                   value={stateFilter}
                   onChange={(e) => { setStateFilter(e.target.value); setCurrentPage(1); }}
@@ -257,11 +270,11 @@ const BookingManagerPage: React.FC = () => {
               </div>
             </div>
 
-            <h3 className="booking-manager-page__subtitle">Last Bookings</h3>
+            <h3 className="booking-manager-page__subtitle">{t('b2b.bookingManager.lastBookings')}</h3>
 
             {isLoading && (
               <p className="booking-manager-page__loading" data-testid="booking-manager-loading">
-                Loading bookings…
+                {t('b2b.bookingManager.loadingBookings')}
               </p>
             )}
 
@@ -279,7 +292,7 @@ const BookingManagerPage: React.FC = () => {
 
             {!isLoading && !loadError && filtered.length === 0 && (
               <p className="booking-manager-page__empty" data-testid="booking-manager-empty">
-                No bookings found.
+                {t('b2b.bookingManager.noBookings')}
               </p>
             )}
 
@@ -290,7 +303,7 @@ const BookingManagerPage: React.FC = () => {
                     // Client
                     {
                       key: 'viajeroId',
-                      header: 'Client',
+                      header: t('b2b.bookingManager.colClient'),
                       render: (item: HotelBooking) => {
                         const clientId = item.nombreUser ?? item.viajeroId ?? item.codigo ?? '—';
                         const initial  = clientId.charAt(0).toUpperCase();
@@ -320,7 +333,7 @@ const BookingManagerPage: React.FC = () => {
                     // Days/Nights
                     {
                       key: 'daysNights',
-                      header: 'Days/Nights',
+                      header: t('b2b.bookingManager.colDaysNights'),
                       render: (item: HotelBooking) => (
                         <span data-testid={`booking-daysnights-${item.id}`}>
                           {calcDaysNights(item.fechaCheckIn, item.fechaCheckOut)}
@@ -330,7 +343,7 @@ const BookingManagerPage: React.FC = () => {
                     // Guests
                     {
                       key: 'numHuespedes',
-                      header: 'Guests',
+                      header: t('b2b.bookingManager.colGuests'),
                       render: (item: HotelBooking) => (
                         <span data-testid={`booking-guests-${item.id}`}>
                           {item.numHuespedes}
@@ -340,7 +353,7 @@ const BookingManagerPage: React.FC = () => {
                     // Start date
                     {
                       key: 'fechaCheckIn',
-                      header: 'Start',
+                      header: t('b2b.bookingManager.colStart'),
                       render: (item: HotelBooking) => (
                         <span
                           className="booking-manager-page__date"
@@ -353,7 +366,7 @@ const BookingManagerPage: React.FC = () => {
                     // End date
                     {
                       key: 'fechaCheckOut',
-                      header: 'End',
+                      header: t('b2b.bookingManager.colEnd'),
                       render: (item: HotelBooking) => (
                         <span
                           className="booking-manager-page__date"
@@ -366,7 +379,7 @@ const BookingManagerPage: React.FC = () => {
                     // State
                     {
                       key: 'estado',
-                      header: 'State',
+                      header: t('b2b.bookingManager.colState'),
                       render: (item: HotelBooking) => (
                         <span
                           className={`booking-manager-page__state booking-manager-page__state--${estadoCssModifier(item.estado)}`}
@@ -379,42 +392,42 @@ const BookingManagerPage: React.FC = () => {
                     // Confirm action
                     {
                       key: 'confirm',
-                      header: 'Confirm',
+                      header: t('b2b.bookingManager.colConfirm'),
                       render: (item: HotelBooking) => (
                         <Button
                           variant="primary"
                           size="small"
                           onClick={() => void handleConfirmBooking(item)}
                           disabled={isActionLoading || isPaid(item.estado)}
-                          title={isPaid(item.estado) ? 'Booking already paid / refunding' : undefined}
+                          title={isPaid(item.estado) ? t('b2b.bookingManager.alreadyPaidTitle') : undefined}
                           dataTestId={`booking-confirm-btn-${item.id}`}
                         >
-                          CONFIRM
+                          {t('b2b.bookingManager.confirmBtn')}
                         </Button>
                       ),
                     },
                     // Cancel action
                     {
                       key: 'cancel',
-                      header: 'Cancel',
+                      header: t('b2b.bookingManager.colCancel'),
                       render: (item: HotelBooking) => (
                         <Button
                           variant="primary"
                           size="small"
                           className="booking-manager-page__cancel-btn"
                           onClick={() => openCancel(item)}
-                          disabled={isPaid(item.estado)}
-                          title={isPaid(item.estado) ? 'Booking already paid / refunding' : undefined}
+                          disabled={isActionLoading || isPaid(item.estado)}
+                          title={isPaid(item.estado) ? t('b2b.bookingManager.alreadyPaidTitle') : undefined}
                           dataTestId={`booking-cancel-btn-${item.id}`}
                         >
-                          CANCEL
+                          {t('b2b.bookingManager.cancelBtn')}
                         </Button>
                       ),
                     },
                     // Detail
                     {
                       key: 'detail',
-                      header: 'Detail',
+                      header: t('b2b.bookingManager.colDetail'),
                       render: (item: HotelBooking) => (
                         <Button
                           variant="outline"

@@ -1,0 +1,78 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:5173/",
+        "http://localhost:5173/business/login",
+        "http://localhost:5173/results",
+        "http://localhost:5173/detail/room-001"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "onlyCategories": ["accessibility"],
+        "formFactor": "desktop",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1280,
+          "height": 800,
+          "deviceScaleFactor": 1,
+          "disabled": false
+        },
+        "throttling": {
+          "rttMs": 0,
+          "throughputKbps": 0,
+          "cpuSlowdownMultiplier": 1
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:accessibility": ["error", { "minScore": 0.82 }],
+
+        "aria-allowed-attr":          ["warn", { "minScore": 1 }],
+        "aria-command-name":          ["warn", { "minScore": 1 }],
+        "aria-hidden-body":           ["warn", { "minScore": 1 }],
+        "aria-hidden-focus":          ["warn", { "minScore": 1 }],
+        "aria-input-field-name":      ["warn", { "minScore": 1 }],
+        "aria-meter-name":            ["warn", { "minScore": 1 }],
+        "aria-progressbar-name":      ["warn", { "minScore": 1 }],
+        "aria-required-attr":         ["warn", { "minScore": 1 }],
+        "aria-required-children":     ["warn", { "minScore": 1 }],
+        "aria-required-parent":       ["warn", { "minScore": 1 }],
+        "aria-roles":                 ["warn", { "minScore": 1 }],
+        "aria-toggle-field-name":     ["warn", { "minScore": 1 }],
+        "aria-tooltip-name":          ["warn", { "minScore": 1 }],
+        "aria-treeitem-name":         ["warn", { "minScore": 1 }],
+        "aria-valid-attr":            ["warn", { "minScore": 1 }],
+        "aria-valid-attr-value":      ["warn", { "minScore": 1 }],
+
+        "button-name":                ["warn", { "minScore": 1 }],
+        "document-title":             ["warn", { "minScore": 1 }],
+        "duplicate-id-active":        ["warn", { "minScore": 1 }],
+        "focus-traps":                ["warn", { "minScore": 1 }],
+        "focusable-controls":         ["warn", { "minScore": 1 }],
+        "frame-title":                ["warn", { "minScore": 1 }],
+        "heading-order":              ["warn", { "minScore": 1 }],
+        "html-has-lang":              ["warn", { "minScore": 1 }],
+        "html-lang-valid":            ["warn", { "minScore": 1 }],
+        "image-alt":                  ["warn", { "minScore": 1 }],
+        "input-image-alt":            ["warn", { "minScore": 1 }],
+        "interactive-element-affordance": ["warn", { "minScore": 1 }],
+        "landmark-one-main":          ["warn", { "minScore": 1 }],
+        "link-name":                  ["warn", { "minScore": 1 }],
+        "list":                       ["warn", { "minScore": 1 }],
+        "listitem":                   ["warn", { "minScore": 1 }],
+        "meta-refresh":               ["warn", { "minScore": 1 }],
+        "meta-viewport":              ["warn", { "minScore": 1 }],
+        "skip-link":                  ["warn", { "minScore": 1 }],
+        "tabindex":                   ["warn", { "minScore": 1 }],
+        "td-headers-attr":            ["warn", { "minScore": 1 }],
+        "valid-lang":                 ["warn", { "minScore": 1 }]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}

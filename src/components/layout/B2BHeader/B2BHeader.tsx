@@ -14,7 +14,7 @@ const B2BHeader: React.FC<B2BHeaderProps> = ({
   currentDate,
   dataTestId,
 }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { currency, setCurrency, supportedCurrencies } = useCurrency();
   const displayDate =
     currentDate ||
@@ -42,7 +42,7 @@ const B2BHeader: React.FC<B2BHeaderProps> = ({
             type="button"
             className="b2b-header__lang-toggle"
             onClick={handleLanguageToggle}
-            aria-label="Change language"
+            aria-label={t('b2b.header.changeLanguage')}
             data-testid="b2b-header-language"
           >
             {i18n.language.toUpperCase()}
@@ -51,7 +51,7 @@ const B2BHeader: React.FC<B2BHeaderProps> = ({
             className="b2b-header__currency"
             value={currency}
             onChange={(e) => setCurrency(e.target.value as SupportedCurrency)}
-            aria-label="Select currency"
+            aria-label={t('b2b.header.selectCurrency')}
             data-testid="b2b-header-currency-select"
           >
             {supportedCurrencies.map((c) => (
@@ -61,7 +61,7 @@ const B2BHeader: React.FC<B2BHeaderProps> = ({
           <button
             type="button"
             className="b2b-header__notification"
-            aria-label="Notifications"
+            aria-label={t('b2b.header.notifications')}
             data-testid="b2b-header-notifications"
           >
             🔔

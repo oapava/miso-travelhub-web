@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header, Footer } from '@/components/layout';
 import { Breadcrumb, Badge, StarRating, Button, AmenityTag, PriceDisplay, DateRangePicker, Toast } from '@/components/ui';
 import { searchParamsStorage } from '@/services/search-params.storage';
@@ -10,7 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import BookingModal from '@/components/shared/BookingModal/BookingModal';
 import BookingConfirmModal from '@/components/shared/BookingConfirmModal/BookingConfirmModal';
 import AddReviewModal from '@/components/shared/AddReviewModal/AddReviewModal';
-import HotelGallery from './HotelGallery';
+import HotelGallery, { MOCK_IMAGES } from './HotelGallery';
 import HotelReviews from './HotelReviews';
 import './DetailPage.scss';
 
@@ -73,6 +74,7 @@ const DetailPage: React.FC = () => {
   const { hotelId } = useParams<{ hotelId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const hotel = (location.state as { hotel?: HotelDetail } | null)?.hotel ?? null;
   const { isAuthenticated, accessToken } = useAuth();
   const { currency } = useCurrency();
@@ -282,6 +284,9 @@ const DetailPage: React.FC = () => {
   const hotelOriginalPrice = hotel?.originalPrice;
   const hotelDiscount      = hotel?.discountPercentage;
 
+  // Fall back to mock images when the API returns an empty array
+  const galleryImages = roomDetailImages.length > 0 ? roomDetailImages : MOCK_IMAGES;
+
   const locationLine = [hotelAddress, hotelDistance, hotelAccess].filter(Boolean).join(' · ');
 
   const starLabel: Record<number, string> = {
@@ -350,7 +355,7 @@ const DetailPage: React.FC = () => {
           {/* Gallery — full width */}
           <div className="detail-page__gallery" data-testid="detail-gallery">
             <HotelGallery
-              images={roomDetailImages}
+              images={galleryImages}
               dataTestId="detail-hotel-gallery"
             />
           </div>
@@ -364,7 +369,7 @@ const DetailPage: React.FC = () => {
                 className="detail-page__section"
                 data-testid="detail-description"
               >
-                <h2 className="detail-page__section-title">Description</h2>
+                <h2 className="detail-page__section-title">{t('detail.description')}</h2>
                 <p className="detail-page__description-text">
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
                   incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
@@ -381,7 +386,7 @@ const DetailPage: React.FC = () => {
                 data-testid="detail-amenities"
               >
                 <div className="detail-page__amenities-header">
-                  <h2 className="detail-page__section-title">Amenities</h2>
+                  <h2 className="detail-page__section-title">{t('detail.amenities')}</h2>
                   {amenitiesSubtitle && (
                     <p className="detail-page__amenities-subtitle">{amenitiesSubtitle}</p>
                   )}
@@ -399,7 +404,7 @@ const DetailPage: React.FC = () => {
                 className="detail-page__section"
                 data-testid="detail-location"
               >
-                <h2 className="detail-page__section-title">Location</h2>
+                <h2 className="detail-page__section-title">{t('detail.location')}</h2>
                 <div className="detail-page__map-placeholder" data-testid="detail-map">
                   Map
                 </div>
@@ -460,7 +465,7 @@ const DetailPage: React.FC = () => {
 
               {/* Rooms & guests */}
               <div className="detail-page__rooms-guests" data-testid="detail-rooms-guests">
-                <span className="detail-page__form-label">Rooms and guests</span>
+                <span className="detail-page__form-label">{t('detail.roomsAndGuests')}</span>
                 {priceError && (
                   <p className="detail-page__price-error" data-testid="detail-price-error">
                     {priceError}
@@ -480,17 +485,17 @@ const DetailPage: React.FC = () => {
               {/* Desglose de precio */}
               {priceBreakdown ? (
                 <div className="detail-page__price-breakdown" data-testid="detail-price-breakdown">
-                  <h3 className="detail-page__price-breakdown__title">Price breakdown</h3>
+                  <h3 className="detail-page__price-breakdown__title">{t('detail.priceBreakdown')}</h3>
 
                   <div className="detail-page__price-breakdown__row">
-                    <span>Subtotal</span>
+                    <span>{t('detail.subtotal')}</span>
                     <span>{formatPrice(priceBreakdown.subtotal_sin_descuento, priceBreakdown.moneda)}</span>
                   </div>
 
                   {priceBreakdown.descuento > 0 && (
                     <>
                       <div className="detail-page__price-breakdown__row detail-page__price-breakdown__row--discount">
-                        <span>Discount ({Math.round(priceBreakdown.descuento * 100)}%)</span>
+                        <span>{t('detail.discount', { pct: Math.round(priceBreakdown.descuento * 100) })}</span>
                         <span>
                           −{formatPrice(
                             priceBreakdown.subtotal_sin_descuento - priceBreakdown.subtotal_con_descuento,
@@ -499,14 +504,14 @@ const DetailPage: React.FC = () => {
                         </span>
                       </div>
                       <div className="detail-page__price-breakdown__row detail-page__price-breakdown__row--subtotal">
-                        <span>Discounted subtotal</span>
+                        <span>{t('detail.discountedSubtotal')}</span>
                         <span>{formatPrice(priceBreakdown.subtotal_con_descuento, priceBreakdown.moneda)}</span>
                       </div>
                     </>
                   )}
 
                   <div className="detail-page__price-breakdown__row detail-page__price-breakdown__row--taxes">
-                    <span>Taxes</span>
+                    <span>{t('detail.taxes')}</span>
                     <span>
                       {formatPrice(
                         priceBreakdown.total - priceBreakdown.subtotal_con_descuento,
@@ -518,7 +523,7 @@ const DetailPage: React.FC = () => {
                   <div className="detail-page__price-breakdown__divider" aria-hidden="true" />
 
                   <div className="detail-page__price-breakdown__row detail-page__price-breakdown__row--total">
-                    <span>Total</span>
+                    <span>{t('detail.total')}</span>
                     <span>{formatPrice(priceBreakdown.total, priceBreakdown.moneda)}</span>
                   </div>
 
@@ -567,7 +572,7 @@ const DetailPage: React.FC = () => {
         checkOut={endDate}
         guests={parseInt(guests, 10)}
         rooms={parseInt(rooms, 10)}
-        imageUrl={roomDetailImages[0]}
+        imageUrl={galleryImages[0]}
         priceBreakdown={priceBreakdown ?? undefined}
         originalPrice={hotelOriginalPrice}
         finalPrice={hotelPrice}
@@ -584,7 +589,7 @@ const DetailPage: React.FC = () => {
         }}
         destination={hotelName}
         bookingResult={bookingResult ?? undefined}
-        imageUrl={roomDetailImages[0]}
+        imageUrl={galleryImages[0]}
         dataTestId="detail-confirm-modal"
       />
 

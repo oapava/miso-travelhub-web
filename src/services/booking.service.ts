@@ -134,6 +134,8 @@ export interface HotelBooking {
   emailHuesped?: string;
   /** Guest contact phone */
   telefonoHuesped?: string;
+  /** Payment method, e.g. "credit_card", "transfer" — returned when available */
+  metodoPago?: string;
 }
 
 // ─── JWT helper (no external dependency) ─────────────────────────────────────

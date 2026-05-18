@@ -1,0 +1,238 @@
+.tariff-detail-modal {
+  &__container {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xl;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    @include heading($font-size-xl);
+    color: $color-neutral-black;
+    margin: 0;
+  }
+
+  &__room-type {
+    @include body-text($font-size-sm);
+    background-color: $color-primary-100;
+    color: $color-primary-700;
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $border-radius-sm;
+    font-weight: $font-weight-medium;
+  }
+
+  &__loading,
+  &__empty {
+    @include body-text($font-size-base);
+    color: $color-neutral-500;
+    text-align: center;
+    padding: $spacing-2xl 0;
+  }
+
+  &__error {
+    @include body-text($font-size-sm);
+    color: $color-error;
+    border: 1px solid $color-error;
+    border-radius: $border-radius-sm;
+    padding: $spacing-sm $spacing-md;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+
+    &--form {
+      background-color: $color-neutral-50;
+      border-radius: $border-radius-md;
+      padding: $spacing-lg;
+    }
+  }
+
+  &__section-title {
+    @include heading($font-size-base);
+    color: $color-neutral-black;
+    margin: 0;
+    padding-bottom: $spacing-sm;
+    border-bottom: 1px solid $color-neutral-200;
+  }
+
+  // ── Base tariff grid ───────────────────────────────────────────────────────
+
+  &__base-grid {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &__base-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-sm 0;
+  }
+
+  &__base-label {
+    @include body-text($font-size-sm);
+    color: $color-neutral-900;
+  }
+
+  &__base-value {
+    @include body-text($font-size-base);
+    font-weight: $font-weight-medium;
+    color: $color-neutral-black;
+
+    &--final {
+      color: $color-primary-700;
+      font-weight: $font-weight-bold;
+      @include body-text($font-size-lg);
+    }
+  }
+
+  // ── Variations table ────────────────────────────────────────────────────────
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    @include body-text($font-size-sm);
+
+    th,
+    td {
+      padding: $spacing-sm $spacing-md;
+      text-align: left;
+      border-bottom: 1px solid $color-neutral-100;
+    }
+
+    th {
+      color: $color-neutral-600;
+      font-weight: $font-weight-semibold;
+      background-color: $color-neutral-50;
+    }
+
+    td {
+      color: $color-neutral-black;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+  }
+
+  &__delete-btn {
+    background-color: $color-error !important;
+
+    &:hover {
+      background-color: darken($color-error, 8%) !important;
+    }
+  }
+
+  &__discount-input{
+    width: 80px;
+  }
+
+  // ── Row action buttons ─────────────────────────────────────────────────────
+
+  &__row-actions,
+  &__edit-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-xs;
+    flex-wrap: wrap;
+  }
+
+  // ── Inline edit row ────────────────────────────────────────────────────────
+
+  &__edit-row {
+    background-color: $color-primary-100;
+
+    td {
+      vertical-align: top;
+    }
+  }
+
+  &__inline-error {
+    @include body-text($font-size-xs);
+    color: $color-error;
+    margin: 0 0 $spacing-xs;
+    white-space: nowrap;
+  }
+
+  // ── Discount type + value ──────────────────────────────────────────────────
+
+  &__discount-fields {
+    display: flex;
+    gap: $spacing-xs;
+    align-items: center;
+  }
+
+  &__discount-type-select {
+    height: 40px;
+    padding: 0 $spacing-xs;
+    border: 1px solid $color-neutral-300;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-sm;
+    color: $color-neutral-black;
+    background-color: $color-neutral-white;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary-700;
+    }
+  }
+
+  // ── Final price preview ────────────────────────────────────────────────────
+
+  &__price-preview {
+    @include body-text($font-size-sm);
+    color: $color-primary-700;
+    font-weight: $font-weight-semibold;
+    margin: $spacing-xs 0 0;
+  }
+
+  // ── Add variation form ──────────────────────────────────────────────────────
+
+  &__form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md;
+
+    @include respond-to('mobile') {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__form-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__form-label {
+    @include body-text($font-size-sm);
+    color: $color-neutral-700;
+    font-weight: $font-weight-medium;
+  }
+
+  &__form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: $spacing-sm;
+  }
+
+  // ── Footer ─────────────────────────────────────────────────────────────────
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: $spacing-md;
+    border-top: 1px solid $color-neutral-200;
+  }
+}

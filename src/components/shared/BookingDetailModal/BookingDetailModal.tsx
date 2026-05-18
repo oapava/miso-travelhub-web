@@ -39,6 +39,23 @@ function formatPrice(amount: number, moneda: string): string {
   }
 }
 
+/**
+ * Returns true for any terminal state where Confirm / Cancel actions
+ * must be disabled: paid, cancelled, or any refund state.
+ */
+function isPaid(estado: string): boolean {
+  const s = estado.toUpperCase();
+  return (
+    s === 'PAGADO'       ||
+    s === 'PAGADA'       ||
+    s === 'CANCELADO'    ||
+    s === 'CANCELADA'    ||
+    s === 'REEMBOLSANDO' ||
+    s === 'REEMBOLSADA'  ||
+    s === 'REEMBOLSADO'
+  );
+}
+
 function getStatusVariant(estado: string): 'success' | 'info' | 'warning' {
   const s = estado.toLowerCase();
   if (s === 'confirmado' || s === 'confirmada' || s === 'activo' || s === 'active') return 'success';
@@ -415,6 +432,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               variant="primary"
               size="small"
               onClick={handleConfirm}
+              disabled={isPaid(booking.estado)}
+              title={isPaid(booking.estado) ? 'Booking already paid / refunding' : undefined}
               dataTestId={`${dataTestId}-confirm-btn`}
             >
               CONFIRM
@@ -424,6 +443,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               size="small"
               className="booking-detail-modal__cancel-btn"
               onClick={handleCancel}
+              disabled={isPaid(booking.estado)}
+              title={isPaid(booking.estado) ? 'Booking already paid / refunding' : undefined}
               dataTestId={`${dataTestId}-cancel-btn`}
             >
               CANCEL

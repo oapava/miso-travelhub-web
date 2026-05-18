@@ -47,8 +47,8 @@ describe('NotificationsPage', () => {
 
   it('renders the configuration title', () => {
     renderPage();
-    expect(screen.getByText('Configuration')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Configuration' })).toBeInTheDocument();
+    expect(screen.getByText('notifications.title')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'notifications.title' })).toBeInTheDocument();
   });
 
   it('renders the notifications list', () => {
@@ -59,19 +59,19 @@ describe('NotificationsPage', () => {
   it('renders WhatsApp notification setting', () => {
     renderPage();
     expect(screen.getByTestId('notification-setting-whatsapp')).toBeInTheDocument();
-    expect(screen.getByText('Whatsapp Notifications')).toBeInTheDocument();
+    expect(screen.getByText('notifications.whatsappLabel')).toBeInTheDocument();
   });
 
   it('renders Email notification setting', () => {
     renderPage();
     expect(screen.getByTestId('notification-setting-email')).toBeInTheDocument();
-    expect(screen.getByText('Email Notifications')).toBeInTheDocument();
+    expect(screen.getByText('notifications.emailLabel')).toBeInTheDocument();
   });
 
   it('renders SMS notification setting', () => {
     renderPage();
     expect(screen.getByTestId('notification-setting-sms')).toBeInTheDocument();
-    expect(screen.getByText('SMS Notifications')).toBeInTheDocument();
+    expect(screen.getByText('notifications.smsLabel')).toBeInTheDocument();
   });
 
   it('renders WhatsApp toggle as active by default', () => {
@@ -118,13 +118,13 @@ describe('NotificationsPage', () => {
   it('renders description for each notification setting', () => {
     renderPage();
     expect(
-      screen.getByText('Receive booking confirmations and updates via WhatsApp'),
+      screen.getByText('notifications.whatsappDesc'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Receive booking confirmations and updates via email'),
+      screen.getByText('notifications.emailDesc'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Receive booking confirmations and updates via SMS'),
+      screen.getByText('notifications.smsDesc'),
     ).toBeInTheDocument();
   });
 

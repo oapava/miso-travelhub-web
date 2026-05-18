@@ -9,3 +9,4 @@ export { default as BookingDetailModal } from './BookingDetailModal/BookingDetai
 export { default as BookingConfirmActionModal } from './BookingConfirmActionModal/BookingConfirmActionModal';
 export { default as BookingCancelModal } from './BookingCancelModal/BookingCancelModal';
 export { default as PriceConfigModal } from './PriceConfigModal/PriceConfigModal';
+export { default as TarifaDetailModal } from './TarifaDetailModal/TarifaDetailModal';

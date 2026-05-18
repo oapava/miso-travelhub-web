@@ -35,3 +35,7 @@ npm-debug.log*
 
 .github-actions-dev-key.jsongithub-actions-dev-key.json
 *-key.json
+
+# Lighthouse CI results
+.lighthouseci/
+test-results/
