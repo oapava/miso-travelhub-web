@@ -443,8 +443,6 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               size="small"
               className="booking-detail-modal__cancel-btn"
               onClick={handleCancel}
-              disabled={isPaid(booking.estado)}
-              title={isPaid(booking.estado) ? 'Booking already paid / refunding' : undefined}
               dataTestId={`${dataTestId}-cancel-btn`}
             >
               CANCEL

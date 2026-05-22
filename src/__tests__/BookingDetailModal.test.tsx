@@ -469,10 +469,10 @@ describe('BookingDetailModal — rich view (booking prop)', () => {
   const ACTIVE_STATES = ['PENDIENTE', 'CONFIRMADO', 'CONFIRMADA'] as const;
 
   TERMINAL_STATES.forEach((estado) => {
-    it(`disables CONFIRM and CANCEL buttons when estado is ${estado}`, () => {
+    it(`disables CONFIRM button and keeps CANCEL enabled when estado is ${estado}`, () => {
       renderRich({ estado });
       expect(screen.getByTestId('booking-detail-modal-confirm-btn')).toBeDisabled();
-      expect(screen.getByTestId('booking-detail-modal-cancel-btn')).toBeDisabled();
+      expect(screen.getByTestId('booking-detail-modal-cancel-btn')).not.toBeDisabled();
     });
   });
 
@@ -498,7 +498,7 @@ describe('BookingDetailModal — rich view (booking prop)', () => {
     expect(onConfirm).not.toHaveBeenCalled();
   });
 
-  it('does not call onCancel when CANCEL button is disabled (terminal state)', () => {
+  it('calls onCancel when CANCEL button is clicked in a terminal state', () => {
     const onCancel = jest.fn();
     render(
       <BookingDetailModal
@@ -509,6 +509,6 @@ describe('BookingDetailModal — rich view (booking prop)', () => {
       />,
     );
     fireEvent.click(screen.getByTestId('booking-detail-modal-cancel-btn'));
-    expect(onCancel).not.toHaveBeenCalled();
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });
