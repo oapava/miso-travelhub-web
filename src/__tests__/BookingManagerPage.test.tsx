@@ -474,57 +474,57 @@ describe('BookingManagerPage', () => {
     moneda: 'USD',
   });
 
-  it('disables CONFIRM and CANCEL buttons for a CANCELADA booking', async () => {
+  it('disables CONFIRM button for a CANCELADA booking and keeps CANCEL enabled', async () => {
     mockGetBookings.mockResolvedValueOnce([terminalBooking('tc1', 'CANCELADA')]);
     renderPage();
     await waitFor(() => {
       expect(screen.getByTestId('booking-confirm-btn-tc1')).toBeDisabled();
-      expect(screen.getByTestId('booking-cancel-btn-tc1')).toBeDisabled();
+      expect(screen.getByTestId('booking-cancel-btn-tc1')).not.toBeDisabled();
     });
   });
 
-  it('disables CONFIRM and CANCEL buttons for a CANCELADO booking', async () => {
+  it('disables CONFIRM button for a CANCELADO booking and keeps CANCEL enabled', async () => {
     mockGetBookings.mockResolvedValueOnce([terminalBooking('tc2', 'CANCELADO')]);
     renderPage();
     await waitFor(() => {
       expect(screen.getByTestId('booking-confirm-btn-tc2')).toBeDisabled();
-      expect(screen.getByTestId('booking-cancel-btn-tc2')).toBeDisabled();
+      expect(screen.getByTestId('booking-cancel-btn-tc2')).not.toBeDisabled();
     });
   });
 
-  it('disables CONFIRM and CANCEL buttons for a REEMBOLSADA booking', async () => {
+  it('disables CONFIRM button for a REEMBOLSADA booking and keeps CANCEL enabled', async () => {
     mockGetBookings.mockResolvedValueOnce([terminalBooking('tr1', 'REEMBOLSADA')]);
     renderPage();
     await waitFor(() => {
       expect(screen.getByTestId('booking-confirm-btn-tr1')).toBeDisabled();
-      expect(screen.getByTestId('booking-cancel-btn-tr1')).toBeDisabled();
+      expect(screen.getByTestId('booking-cancel-btn-tr1')).not.toBeDisabled();
     });
   });
 
-  it('disables CONFIRM and CANCEL buttons for a REEMBOLSADO booking', async () => {
+  it('disables CONFIRM button for a REEMBOLSADO booking and keeps CANCEL enabled', async () => {
     mockGetBookings.mockResolvedValueOnce([terminalBooking('tr2', 'REEMBOLSADO')]);
     renderPage();
     await waitFor(() => {
       expect(screen.getByTestId('booking-confirm-btn-tr2')).toBeDisabled();
-      expect(screen.getByTestId('booking-cancel-btn-tr2')).toBeDisabled();
+      expect(screen.getByTestId('booking-cancel-btn-tr2')).not.toBeDisabled();
     });
   });
 
-  it('disables CONFIRM and CANCEL buttons for a REEMBOLSANDO booking', async () => {
+  it('disables CONFIRM button for a REEMBOLSANDO booking and keeps CANCEL enabled', async () => {
     mockGetBookings.mockResolvedValueOnce([terminalBooking('tr3', 'REEMBOLSANDO')]);
     renderPage();
     await waitFor(() => {
       expect(screen.getByTestId('booking-confirm-btn-tr3')).toBeDisabled();
-      expect(screen.getByTestId('booking-cancel-btn-tr3')).toBeDisabled();
+      expect(screen.getByTestId('booking-cancel-btn-tr3')).not.toBeDisabled();
     });
   });
 
-  it('disables CONFIRM and CANCEL buttons for a PAGADA booking', async () => {
+  it('disables CONFIRM button for a PAGADA booking and keeps CANCEL enabled', async () => {
     mockGetBookings.mockResolvedValueOnce([terminalBooking('tp1', 'PAGADA')]);
     renderPage();
     await waitFor(() => {
       expect(screen.getByTestId('booking-confirm-btn-tp1')).toBeDisabled();
-      expect(screen.getByTestId('booking-cancel-btn-tp1')).toBeDisabled();
+      expect(screen.getByTestId('booking-cancel-btn-tp1')).not.toBeDisabled();
     });
   });
 

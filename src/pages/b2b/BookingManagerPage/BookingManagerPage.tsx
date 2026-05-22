@@ -416,8 +416,7 @@ const BookingManagerPage: React.FC = () => {
                           size="small"
                           className="booking-manager-page__cancel-btn"
                           onClick={() => openCancel(item)}
-                          disabled={isActionLoading || isPaid(item.estado)}
-                          title={isPaid(item.estado) ? t('b2b.bookingManager.alreadyPaidTitle') : undefined}
+                          disabled={isActionLoading}
                           dataTestId={`booking-cancel-btn-${item.id}`}
                         >
                           {t('b2b.bookingManager.cancelBtn')}
