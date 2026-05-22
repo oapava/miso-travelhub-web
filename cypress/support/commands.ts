@@ -83,13 +83,11 @@ Cypress.Commands.add('loginAsB2C', () => {
     expiresAt: Date.now() + 3_600_000, // 1 hour from now
     user: B2C_USER,
   };
-  // Visit the app root first to ensure localStorage is set on the correct origin
-  // (localhost:5173). Calling cy.window() before any cy.visit() in Chrome returns
-  // the about:blank window, causing the session to be written to the wrong origin.
-  cy.visit('/', { log: false });
-  cy.window({ log: false }).then((win) => {
-    win.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  });
+  // Store the session in Cypress.env so the window:before:load handler in
+  // e2e.ts can inject it into localStorage BEFORE React initialises AuthContext.
+  // This avoids a double cy.visit and guarantees accessToken is non-null on the
+  // very first render of the target page.
+  Cypress.env('PENDING_SESSION', JSON.stringify(session));
 });
 
 Cypress.Commands.add('loginAsB2B', () => {
@@ -99,11 +97,6 @@ Cypress.Commands.add('loginAsB2B', () => {
     expiresAt: Date.now() + 3_600_000,
     user: B2B_USER,
   };
-  // Visit the app root first to ensure localStorage is set on the correct origin
-  // (localhost:5173). Calling cy.window() before any cy.visit() in Chrome returns
-  // the about:blank window, causing the session to be written to the wrong origin.
-  cy.visit('/', { log: false });
-  cy.window({ log: false }).then((win) => {
-    win.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  });
+  // Same approach as loginAsB2C — schedule the session for the next cy.visit.
+  Cypress.env('PENDING_SESSION', JSON.stringify(session));
 });

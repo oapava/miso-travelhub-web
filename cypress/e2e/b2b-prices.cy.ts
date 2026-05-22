@@ -58,6 +58,14 @@ function setupWithRooms() {
 
   cy.visit('/business/prices-manager');
   cy.wait('@getRooms');
+  // Wait for all three per-room tariff requests to settle so the table is
+  // fully rendered before any test body runs.  Without these waits, the
+  // test body's new intercepts can override the 404 stubs before the
+  // component's Promise.allSettled resolves, preventing baseTariff from
+  // being set to null and hiding the "Set price" button.
+  cy.wait('@getSuiteTariff');
+  cy.wait('@getStandardTariff');
+  cy.wait('@getDeluxeTariff');
 }
 
 // ─── Page structure ────────────────────────────────────────────────────────────
